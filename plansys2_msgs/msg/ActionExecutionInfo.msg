@@ -6,8 +6,8 @@ int8 CANCELLED=5
 
 int8 status
 
-builtin_interfaces/Time start_stamp
-builtin_interfaces/Time status_stamp
+std_msgs/Time start_stamp
+std_msgs/Time status_stamp
 
 string action_full_name
 
@@ -15,7 +15,7 @@ string action
 string[] arguments
 
 # predicted duration of the action from the planner
-builtin_interfaces/Duration duration
+std_msgs/Duration duration
 
 float32 completion
 string message_status

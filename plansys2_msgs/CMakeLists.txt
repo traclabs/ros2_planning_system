@@ -2,51 +2,72 @@ project(plansys2_msgs)
 
 cmake_minimum_required(VERSION 3.5)
 
-find_package(ament_cmake REQUIRED)
-find_package(builtin_interfaces REQUIRED)
-find_package(rosidl_default_generators REQUIRED)
-find_package(std_msgs REQUIRED)
-find_package(action_msgs REQUIRED)
+set(MSG_DEPS
+  std_msgs
+  actionlib_msgs
+  )
 
-rosidl_generate_interfaces(${PROJECT_NAME}
-  "msg/Action.msg"
-  "msg/ActionExecution.msg"
-  "msg/ActionExecutionInfo.msg"
-  "msg/ActionPerformerStatus.msg"
-  "msg/DurativeAction.msg"
-  "msg/Knowledge.msg"
-  "msg/Node.msg"
-  "msg/Param.msg"
-  "msg/Plan.msg"
-  "msg/PlanItem.msg"
-  "msg/Tree.msg"
-  "srv/AddProblem.srv"
-  "srv/AddProblemGoal.srv"
-  "srv/AffectNode.srv"
-  "srv/AffectParam.srv"
-  "srv/ExistNode.srv"
-  "srv/GetDomain.srv"
-  "srv/GetDomainActions.srv"
-  "srv/GetDomainActionDetails.srv"
-  "srv/GetDomainDurativeActionDetails.srv"
-  "srv/GetDomainName.srv"
-  "srv/GetDomainTypes.srv"
-  "srv/GetDomainConstants.srv"
-  "srv/GetNodeDetails.srv"
-  "srv/GetPlan.srv"
-  "srv/GetOrderedSubGoals.srv"
-  "srv/GetProblem.srv"
-  "srv/GetProblemGoal.srv"
-  "srv/GetProblemInstances.srv"
-  "srv/GetProblemInstanceDetails.srv"
-  "srv/GetStates.srv"
-  "srv/IsProblemGoalSatisfied.srv"
-  "srv/RemoveProblemGoal.srv"
-  "srv/ClearProblemKnowledge.srv"
-  "action/ExecutePlan.action"
-  DEPENDENCIES builtin_interfaces std_msgs action_msgs
+find_package(catkin REQUIRED COMPONENTS
+  message_generation
+  ${MSG_DEPS}
 )
 
-ament_export_dependencies(rosidl_default_runtime)
+add_message_files(
+  DIRECTORY msg
+  FILES
+  Action.msg
+  ActionExecution.msg
+  ActionExecutionInfo.msg
+  ActionPerformerStatus.msg
+  DurativeAction.msg
+  Knowledge.msg
+  Node.msg
+  Param.msg
+  Plan.msg
+  PlanItem.msg
+  Tree.msg
+)
 
-ament_package()
+add_service_files(
+  FILES
+  AddProblem.srv
+  AddProblemGoal.srv
+  AffectNode.srv
+  AffectParam.srv
+  ExistNode.srv
+  GetDomain.srv
+  GetDomainActions.srv
+  GetDomainActionDetails.srv
+  GetDomainDurativeActionDetails.srv
+  GetDomainName.srv
+  GetDomainTypes.srv
+  GetDomainConstants.srv
+  GetNodeDetails.srv
+  GetPlan.srv
+  GetOrderedSubGoals.srv
+  GetProblem.srv
+  GetProblemGoal.srv
+  GetProblemInstances.srv
+  GetProblemInstanceDetails.srv
+  GetStates.srv
+  IsProblemGoalSatisfied.srv
+  RemoveProblemGoal.srv
+  ClearProblemKnowledge.srv
+)
+
+add_action_files (
+  DIRECTORY action
+  FILES
+  ExecutePlan.action
+)
+
+generate_messages(
+  DEPENDENCIES
+  ${MSG_DEPS}
+)
+
+catkin_package(
+  LIBRARIES
+  CATKIN_DEPENDS message_runtime ${MSG_DEPS}
+  DEPENDS
+)

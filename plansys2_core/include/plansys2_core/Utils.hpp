@@ -11,6 +11,9 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+// Modifications from TRACLabs: Backport to ROS1
+// Copyright 2022
 
 #ifndef PLANSYS2_CORE__UTILS_HPP_
 #define PLANSYS2_CORE__UTILS_HPP_

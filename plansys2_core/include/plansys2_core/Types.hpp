@@ -18,22 +18,22 @@
 #include <string>
 #include <vector>
 
-#include "plansys2_msgs/msg/node.hpp"
-#include "plansys2_msgs/msg/param.hpp"
-#include "plansys2_msgs/msg/tree.hpp"
+#include <plansys2_msgs/Node.h>
+#include <plansys2_msgs/Param.h>
+#include <plansys2_msgs/Tree.h>
 
-#include "plansys2_pddl_parser/Utils.h"
+#include <plansys2_pddl_parser/Utils.h>
 
 namespace plansys2
 {
 
-class Instance : public plansys2_msgs::msg::Param
+class Instance : public plansys2_msgs::Param
 {
 public:
   Instance()
-  : plansys2_msgs::msg::Param() {}
+  : plansys2_msgs::Param() {}
   explicit Instance(const std::string & name, const std::string & type = {})
-  : plansys2_msgs::msg::Param(parser::pddl::fromStringParam(name, type)) {}
+  : plansys2_msgs::Param(parser::pddl::fromStringParam(name, type)) {}
   Instance(const plansys2_msgs::msg::Param & instance)  // NOLINT(runtime/explicit)
   : plansys2_msgs::msg::Param(instance) {}
 };
