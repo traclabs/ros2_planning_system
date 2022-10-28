@@ -19,7 +19,7 @@
 #include <memory>
 #include <string>
 
-#include "plansys2_core/PlanSolverBase.hpp"
+#include <plansys2_core/PlanSolverBase.hpp>
 
 namespace plansys2
 {
@@ -28,15 +28,16 @@ class POPFPlanSolver : public PlanSolverBase
 {
 private:
   std::string parameter_name_;
-  rclcpp_lifecycle::LifecycleNode::SharedPtr lc_node_;
+  std::shared_ptr<ros::lifecycle::ManagedNode> lc_node_;
 
 public:
   POPFPlanSolver();
 
-  void configure(rclcpp_lifecycle::LifecycleNode::SharedPtr &, const std::string &);
+  void configure(std::shared_ptr<ros::lifecycle::ManagedNode> &, const std::string &);
 
-  std::optional<plansys2_msgs::msg::Plan> getPlan(
-    const std::string & domain, const std::string & problem,
+  std::optional<plansys2_msgs::Plan> getPlan(
+    const std::string & domain,
+    const std::string & problem,
     const std::string & node_namespace = "");
 
   bool is_valid_domain(

@@ -21,9 +21,10 @@
 #include <cstdio>
 #include <cstdlib>
 #include <fstream>
+#include <ros/package.h>
 
-#include "plansys2_msgs/msg/plan_item.hpp"
-#include "plansys2_popf_plan_solver/popf_plan_solver.hpp"
+#include <plansys2_msgs/PlanItem.h>
+#include <plansys2_popf_plan_solver/popf_plan_solver.hpp>
 
 namespace plansys2
 {
@@ -32,19 +33,19 @@ POPFPlanSolver::POPFPlanSolver()
 {
 }
 
-void POPFPlanSolver::configure(
-  rclcpp_lifecycle::LifecycleNode::SharedPtr & lc_node,
-  const std::string & plugin_name)
+void POPFPlanSolver::configure(std::shared_ptr<ros::lifecycle::ManagedNode> & lc_node,
+			       const std::string & plugin_name)
 {
   parameter_name_ = plugin_name + ".arguments";
   lc_node_ = lc_node;
-  lc_node_->declare_parameter<std::string>(parameter_name_, "");
+  // Backport: No need to declare parameters in ROS1
+  //lc_node_->declare_parameter<std::string>(parameter_name_, "");
 }
 
-std::optional<plansys2_msgs::msg::Plan>
-POPFPlanSolver::getPlan(
-  const std::string & domain, const std::string & problem,
-  const std::string & node_namespace)
+std::optional<plansys2_msgs::Plan>
+POPFPlanSolver::getPlan(const std::string & domain,
+			const std::string & problem,
+			const std::string & node_namespace)
 {
   if (system(nullptr) == 0) {
     return {};
@@ -60,7 +61,7 @@ POPFPlanSolver::getPlan(
     std::filesystem::create_directories(tp);
   }
 
-  plansys2_msgs::msg::Plan ret;
+  plansys2_msgs::Plan ret;
   std::ofstream domain_out("/tmp/" + node_namespace + "/domain.pddl");
   domain_out << domain;
   domain_out.close();
@@ -69,9 +70,14 @@ POPFPlanSolver::getPlan(
   problem_out << problem;
   problem_out.close();
 
+
+  std::string popf_bin = ros::package::getPath("popf_plan_solver") + ("/common/bin/popf");
+  std::string extra_params;
+  lc_node_->getBaseNode().getParam(parameter_name_, extra_params);
+
   int status = system(
-    ("ros2 run popf popf " +
-    lc_node_->get_parameter(parameter_name_).value_to_string() +
+    (popf_bin +
+      extra_params +
     " /tmp/" + node_namespace + "/domain.pddl /tmp/" + node_namespace +
     "/problem.pddl > /tmp/" + node_namespace + "/plan").c_str());
 
@@ -90,7 +96,7 @@ POPFPlanSolver::getPlan(
           solution = true;
         }
       } else if (line.front() != ';') {
-        plansys2_msgs::msg::PlanItem item;
+        plansys2_msgs::PlanItem item;
         size_t colon_pos = line.find(":");
         size_t colon_par = line.find(")");
         size_t colon_bra = line.find("[");
@@ -172,5 +178,5 @@ POPFPlanSolver::is_valid_domain(
 
 }  // namespace plansys2
 
-#include "pluginlib/class_list_macros.hpp"
-PLUGINLIB_EXPORT_CLASS(plansys2::POPFPlanSolver, plansys2::PlanSolverBase);
+#include <pluginlib/class_list_macros.hpp>
+PLUGINLIB_EXPORT_CLASS(plansys2::POPFPlanSolver, plansys2::PlanSolverBase)
