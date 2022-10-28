@@ -5,8 +5,8 @@
 #include <stdexcept>
 #include <vector>
 
-#include "plansys2_pddl_parser/TokenStruct.h"
-#include "plansys2_pddl_parser/Type.h"
+#include <plansys2_pddl_parser/TokenStruct.h>
+#include <plansys2_pddl_parser/Type.h>
 
 namespace parser { namespace pddl {
 

@@ -1,5 +1,5 @@
 
-#include "plansys2_pddl_parser/Domain.h"
+#include <plansys2_pddl_parser/Domain.h>
 
 namespace parser { namespace pddl {
 
@@ -8,7 +8,10 @@ Derived::Derived( const Derived * z, Domain & d )
 	if ( z->cond ) cond = z->cond->copy( d );
 }
 
-void Derived::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< std::string > & ts, const Domain & d ) const {
+void Derived::PDDLPrint( std::ostream & s,
+			 unsigned indent,
+			 const TokenStruct< std::string > & ts,
+			 const Domain & d ) const {
 	s << "( :derived ( " << name;
 
 	TokenStruct< std::string > dstruct( ts );
@@ -27,11 +30,15 @@ void Derived::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< s
 	s << "\n)\n";
 }
 
-plansys2_msgs::msg::Node::SharedPtr Derived::getTree( plansys2_msgs::msg::Tree & tree, const Domain & d, const std::vector<std::string> & replace ) const {
+plansys2_msgs::NodeSharedPtr Derived::getTree( plansys2_msgs::Tree & tree,
+						 const Domain & d,
+						 const std::vector<std::string> & replace ) const {
     throw UnsupportedConstruct("Derived");
 }
 
-void Derived::parse( Stringreader & f, TokenStruct< std::string > & ts, Domain & d ) {
+void Derived::parse( Stringreader & f,
+		     TokenStruct< std::string > & ts,
+		     Domain & d ) {
 	f.next();
 	f.assert_token( "(" );
 	name = f.getToken( d.preds );

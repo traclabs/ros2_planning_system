@@ -1,9 +1,12 @@
 
-#include "plansys2_pddl_parser/Domain.h"
+#include <plansys2_pddl_parser/Domain.h>
 
 namespace parser { namespace pddl {
 
-void Or::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< std::string > & ts, const Domain & d ) const {
+void Or::PDDLPrint( std::ostream & s,
+		    unsigned indent,
+		    const TokenStruct< std::string > & ts,
+		    const Domain & d ) const {
 	tabindent( s, indent );
 	s << "( or\n";
 	if ( first ) first->PDDLPrint( s, indent + 1, ts, d );
@@ -22,7 +25,9 @@ void Or::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< std::s
 	s << ")";
 }
 
-plansys2_msgs::msg::Node::SharedPtr Or::getTree( plansys2_msgs::msg::Tree & tree, const Domain & d, const std::vector<std::string> & replace ) const {
+plansys2_msgs::NodeSharedPtr Or::getTree( plansys2_msgs::Tree & tree,
+					    const Domain & d,
+					    const std::vector<std::string> & replace ) const {
     throw UnsupportedConstruct("Or");
 }
 

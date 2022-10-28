@@ -1,5 +1,5 @@
 
-#include "plansys2_pddl_parser/Domain.h"
+#include <plansys2_pddl_parser/Domain.h>
 
 namespace parser { namespace pddl {
 
@@ -11,7 +11,7 @@ void TypeGround::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct
 	s << " )";
 }
 
-plansys2_msgs::msg::Node::SharedPtr TypeGround::getTree( plansys2_msgs::msg::Tree & tree, const Domain & d, const std::vector<std::string> & replace ) const {
+plansys2_msgs::NodeSharedPtr TypeGround::getTree( plansys2_msgs::Tree & tree, const Domain & d, const std::vector<std::string> & replace ) const {
     return Ground::getTree(tree, d, replace);
 }
 

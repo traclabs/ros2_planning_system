@@ -1,9 +1,12 @@
 
-#include "plansys2_pddl_parser/Domain.h"
+#include <plansys2_pddl_parser/Domain.h>
 
 namespace parser { namespace pddl {
 
-void Oneof::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< std::string > & ts, const Domain & d ) const {
+void Oneof::PDDLPrint( std::ostream & s,
+		       unsigned indent,
+		       const TokenStruct< std::string > & ts,
+		       const Domain & d ) const {
 	tabindent( s, indent );
 	s << "( oneof\n";
 	for ( unsigned i = 0; i < conds.size(); ++i ) {
@@ -14,7 +17,9 @@ void Oneof::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< std
 	s << ")";
 }
 
-plansys2_msgs::msg::Node::SharedPtr Oneof::getTree( plansys2_msgs::msg::Tree & tree, const Domain & d, const std::vector<std::string> & replace ) const {
+plansys2_msgs::NodeSharedPtr Oneof::getTree( plansys2_msgs::Tree & tree,
+					       const Domain & d,
+					       const std::vector<std::string> & replace ) const {
     throw UnsupportedConstruct("Oneof");
 }
 

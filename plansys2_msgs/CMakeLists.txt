@@ -67,6 +67,7 @@ generate_messages(
 )
 
 catkin_package(
+  INCLUDE_DIRS include
   LIBRARIES
   CATKIN_DEPENDS message_runtime ${MSG_DEPS}
   DEPENDS

@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "plansys2_pddl_parser/Condition.h"
+#include <plansys2_pddl_parser/Condition.h>
 
 namespace parser { namespace pddl {
 

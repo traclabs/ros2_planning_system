@@ -1,9 +1,12 @@
 
-#include "plansys2_pddl_parser/Domain.h"
+#include <plansys2_pddl_parser/Domain.h>
 
 namespace parser { namespace pddl {
 
-void ParamCond::printParams( unsigned first, std::ostream & s, TokenStruct< std::string > & ts, const Domain & d ) const {
+void ParamCond::printParams( unsigned first,
+			     std::ostream & s,
+			     TokenStruct< std::string > & ts,
+			     const Domain & d ) const {
 	s << "(";
 	for ( unsigned i = first; i < params.size(); ++i ) {
 		std::stringstream ss;

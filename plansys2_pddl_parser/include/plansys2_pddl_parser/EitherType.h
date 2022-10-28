@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "plansys2_pddl_parser/Type.h"
+#include <plansys2_pddl_parser/Type.h>
 
 namespace parser { namespace pddl {
 

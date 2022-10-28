@@ -1,7 +1,7 @@
 
 #include <iomanip>
 
-#include "plansys2_pddl_parser/Domain.h"
+#include <plansys2_pddl_parser/Domain.h>
 
 namespace parser { namespace pddl {
 
@@ -22,14 +22,14 @@ void GroundFunc<int>::PDDLPrint( std::ostream & s, unsigned indent, const TokenS
 }
 
 template <>
-plansys2_msgs::msg::Node::SharedPtr GroundFunc<double>::getTree( plansys2_msgs::msg::Tree & tree, const Domain & d, const std::vector<std::string> & replace ) const {
+plansys2_msgs::NodeSharedPtr GroundFunc<double>::getTree( plansys2_msgs::Tree & tree, const Domain & d, const std::vector<std::string> & replace ) const {
     auto node = TypeGround::getTree(tree, d, replace);
     node->value = value;
     return node;
 }
 
 template <>
-plansys2_msgs::msg::Node::SharedPtr GroundFunc<int>::getTree( plansys2_msgs::msg::Tree & tree, const Domain & d, const std::vector<std::string> & replace ) const {
+plansys2_msgs::NodeSharedPtr GroundFunc<int>::getTree( plansys2_msgs::Tree & tree, const Domain & d, const std::vector<std::string> & replace ) const {
     auto node = TypeGround::getTree(tree, d, replace);
     node->value = value;
     return node;

@@ -1,8 +1,8 @@
 
 #pragma once
 
-#include "plansys2_pddl_parser/Condition.h"
-#include "plansys2_pddl_parser/Basic.h"
+#include <plansys2_pddl_parser/Condition.h>
+#include <plansys2_pddl_parser/Basic.h>
 
 namespace parser { namespace pddl {
 
@@ -32,7 +32,9 @@ public:
 		stream << name << params << "\n";
 	}
 
-	void printParams( unsigned first, std::ostream & s, TokenStruct< std::string > & ts, const Domain & d ) const;
+	void printParams( unsigned first, std::ostream & s,
+			  TokenStruct< std::string > & ts,
+			  const Domain & d ) const;
 };
 
 typedef std::vector< ParamCond * > ParamCondVec;

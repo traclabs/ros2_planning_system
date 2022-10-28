@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "plansys2_pddl_parser/TokenStruct.h"
+#include <plansys2_pddl_parser/TokenStruct.h>
 
 namespace parser { namespace pddl {
 

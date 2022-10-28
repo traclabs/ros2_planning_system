@@ -1,10 +1,12 @@
 
 #pragma once
 
-#include "plansys2_msgs/msg/node.hpp"
-#include "plansys2_msgs/msg/tree.hpp"
+#include <plansys2_msgs/shared_ptr_typedefs.h>
 
-#include "plansys2_pddl_parser/Condition.h"
+#include <plansys2_msgs/Node.h>
+#include <plansys2_msgs/Tree.h>
+
+#include <plansys2_pddl_parser/Condition.h>
 
 namespace parser { namespace pddl {
 
@@ -71,17 +73,17 @@ public:
 		s << " )";
 	}
 
-	plansys2_msgs::msg::Node::SharedPtr getTree( plansys2_msgs::msg::Tree & tree, const Domain & d, const std::vector<std::string> & replace = {} ) const override {
-		plansys2_msgs::msg::Node::SharedPtr node = std::make_shared<plansys2_msgs::msg::Node>();
-		node->node_type = plansys2_msgs::msg::Node::EXPRESSION;
+	plansys2_msgs::NodeSharedPtr getTree( plansys2_msgs::Tree & tree, const Domain & d, const std::vector<std::string> & replace = {} ) const override {
+		plansys2_msgs::NodeSharedPtr node = std::make_shared<plansys2_msgs::Node>();
+		node->node_type = plansys2_msgs::Node::EXPRESSION;
 		node->expression_type = getExprType(op);
 		node->node_id = tree.nodes.size();
 		tree.nodes.push_back(*node);
 
-		plansys2_msgs::msg::Node::SharedPtr left_child = left->getTree(tree, d, replace);
+		plansys2_msgs::NodeSharedPtr left_child = left->getTree(tree, d, replace);
 		tree.nodes[node->node_id].children.push_back(left_child->node_id);
 
-		plansys2_msgs::msg::Node::SharedPtr right_child = right->getTree(tree, d, replace);
+		plansys2_msgs::NodeSharedPtr right_child = right->getTree(tree, d, replace);
 		tree.nodes[node->node_id].children.push_back(right_child->node_id);
 
 		return node;
@@ -146,7 +148,7 @@ public:
 
 	void PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< std::string > & ts, const Domain & d ) const override;
 
-	plansys2_msgs::msg::Node::SharedPtr getTree( plansys2_msgs::msg::Tree & tree, const Domain & d, const std::vector<std::string> & replace = {} ) const override;
+	plansys2_msgs::NodeSharedPtr getTree( plansys2_msgs::Tree & tree, const Domain & d, const std::vector<std::string> & replace = {} ) const override;
 
 	double evaluate() { return 1; }
 
@@ -179,9 +181,11 @@ public:
 		s << value;
 	}
 
-	plansys2_msgs::msg::Node::SharedPtr getTree( plansys2_msgs::msg::Tree & tree, const Domain & d, const std::vector<std::string> & replace = {} ) const override {
-		plansys2_msgs::msg::Node::SharedPtr node = std::make_shared<plansys2_msgs::msg::Node>();
-		node->node_type = plansys2_msgs::msg::Node::NUMBER;
+  plansys2_msgs::NodeSharedPtr getTree( plansys2_msgs::Tree & tree,
+					  const Domain & d,
+					  const std::vector<std::string> & replace = {} ) const override {
+		plansys2_msgs::NodeSharedPtr node = std::make_shared<plansys2_msgs::Node>();
+		node->node_type = plansys2_msgs::Node::NUMBER;
 		node->node_id = tree.nodes.size();
 		node->value = value;
 		tree.nodes.push_back(*node);
@@ -209,7 +213,7 @@ class DurationExpression : public Expression {
 		s << "?duration";
 	}
 
-	plansys2_msgs::msg::Node::SharedPtr getTree( plansys2_msgs::msg::Tree & tree, const Domain & d, const std::vector<std::string> & replace = {} ) const override {
+	plansys2_msgs::NodeSharedPtr getTree( plansys2_msgs::Tree & tree, const Domain & d, const std::vector<std::string> & replace = {} ) const override {
 		throw UnsupportedConstruct("DurationExpression");
 	}
 
@@ -253,7 +257,9 @@ public:
 		s << ts[param];
 	}
 
-	plansys2_msgs::msg::Node::SharedPtr getTree( plansys2_msgs::msg::Tree & tree, const Domain & d, const std::vector<std::string> & replace = {} ) const override {
+	plansys2_msgs::NodeSharedPtr getTree( plansys2_msgs::Tree & tree,
+						const Domain & d,
+						const std::vector<std::string> & replace = {} ) const override {
 		throw UnsupportedConstruct("ParamExpression");
 	}
 
@@ -288,7 +294,7 @@ public:
 
 	void PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< std::string > & ts, const Domain & d ) const override;
 
-	plansys2_msgs::msg::Node::SharedPtr getTree( plansys2_msgs::msg::Tree & tree, const Domain & d, const std::vector<std::string> & replace = {} ) const override {
+	plansys2_msgs::NodeSharedPtr getTree( plansys2_msgs::Tree & tree, const Domain & d, const std::vector<std::string> & replace = {} ) const override {
 		throw UnsupportedConstruct("ConstExpression");
 	}
 

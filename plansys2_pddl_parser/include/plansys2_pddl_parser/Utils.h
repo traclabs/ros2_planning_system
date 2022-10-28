@@ -15,11 +15,13 @@
 #ifndef PLANSYS2_PDDL_PARSER__UTILS_H_
 #define PLANSYS2_PDDL_PARSER__UTILS_H_
 
-#include "plansys2_msgs/msg/action.hpp"
-#include "plansys2_msgs/msg/durative_action.hpp"
-#include "plansys2_msgs/msg/node.hpp"
-#include "plansys2_msgs/msg/param.hpp"
-#include "plansys2_msgs/msg/tree.hpp"
+#include <plansys2_msgs/shared_ptr_typedefs.h>
+
+#include <plansys2_msgs/Action.h>
+#include <plansys2_msgs/DurativeAction.h>
+#include <plansys2_msgs/Node.h>
+#include <plansys2_msgs/Param.h>
+#include <plansys2_msgs/Tree.h>
 
 namespace parser
 {
@@ -38,7 +40,7 @@ std::string getReducedString(const std::string & expr);
  * \param[in] input The input string
  * \return The node type
  */
-uint8_t getNodeType(const std::string & expr, uint8_t def = plansys2_msgs::msg::Node::UNKNOWN);
+uint8_t getNodeType(const std::string & expr, uint8_t def = plansys2_msgs::Node::UNKNOWN);
 
 /// Returns expression type and start position of an expression in a string
 /**
@@ -76,29 +78,29 @@ int getParenthesis(const std::string & wexpr, int start);
 
 std::vector<std::string> getSubExpr(const std::string & expr);
 
-std::string nameActionsToString(const std::shared_ptr<plansys2_msgs::msg::Action> action);
+std::string nameActionsToString(const std::shared_ptr<plansys2_msgs::Action> action);
 
-std::string nameActionsToString(const std::shared_ptr<plansys2_msgs::msg::DurativeAction> action);
+std::string nameActionsToString(const std::shared_ptr<plansys2_msgs::DurativeAction> action);
 
-std::string toString(const plansys2_msgs::msg::Tree & tree, uint32_t node_id = 0, bool negate = false);
+std::string toString(const plansys2_msgs::Tree & tree, uint32_t node_id = 0, bool negate = false);
 
-std::string toString(const plansys2_msgs::msg::Node & node);
+std::string toString(const plansys2_msgs::Node & node);
 
-std::string toStringPredicate(const plansys2_msgs::msg::Tree & tree, uint32_t node_id, bool negate);
+std::string toStringPredicate(const plansys2_msgs::Tree & tree, uint32_t node_id, bool negate);
 
-std::string toStringFunction(const plansys2_msgs::msg::Tree & tree, uint32_t node_id, bool negate);
+std::string toStringFunction(const plansys2_msgs::Tree & tree, uint32_t node_id, bool negate);
 
-std::string toStringNumber(const plansys2_msgs::msg::Tree & tree, uint32_t node_id, bool negate);
+std::string toStringNumber(const plansys2_msgs::Tree & tree, uint32_t node_id, bool negate);
 
-std::string toStringAnd(const plansys2_msgs::msg::Tree & tree, uint32_t node_id, bool negate);
+std::string toStringAnd(const plansys2_msgs::Tree & tree, uint32_t node_id, bool negate);
 
-std::string toStringOr(const plansys2_msgs::msg::Tree & tree, uint32_t node_id, bool negate);
+std::string toStringOr(const plansys2_msgs::Tree & tree, uint32_t node_id, bool negate);
 
-std::string toStringNot(const plansys2_msgs::msg::Tree & tree, uint32_t node_id, bool negate);
+std::string toStringNot(const plansys2_msgs::Tree & tree, uint32_t node_id, bool negate);
 
-std::string toStringExpression(const plansys2_msgs::msg::Tree & tree, uint32_t node_id, bool negate);
+std::string toStringExpression(const plansys2_msgs::Tree & tree, uint32_t node_id, bool negate);
 
-std::string toStringFunctionModifier(const plansys2_msgs::msg::Tree & tree, uint32_t node_id, bool negate);
+std::string toStringFunctionModifier(const plansys2_msgs::Tree & tree, uint32_t node_id, bool negate);
 
 /// This function creates a complete tree.
 /**
@@ -109,39 +111,39 @@ std::string toStringFunctionModifier(const plansys2_msgs::msg::Tree & tree, uint
  * \param[in] construct A string containing the associated PDDL constructs
  * \return A smart pointer to the node created
 */
-plansys2_msgs::msg::Node::SharedPtr fromString(plansys2_msgs::msg::Tree & tree, const std::string & expr, bool negate = false, uint8_t parent = plansys2_msgs::msg::Node::UNKNOWN);
+plansys2_msgs::NodeSharedPtr fromString(plansys2_msgs::Tree & tree, const std::string & expr, bool negate = false, uint8_t parent = plansys2_msgs::Node::UNKNOWN);
 
-plansys2_msgs::msg::Tree fromString(const std::string & expr, bool negate = false, uint8_t parent = plansys2_msgs::msg::Node::UNKNOWN);
+plansys2_msgs::Tree fromString(const std::string & expr, bool negate = false, uint8_t parent = plansys2_msgs::Node::UNKNOWN);
 
-plansys2_msgs::msg::Node fromStringPredicate(const std::string & predicate);
+plansys2_msgs::Node fromStringPredicate(const std::string & predicate);
 
-plansys2_msgs::msg::Node fromStringFunction(const std::string & function);
+plansys2_msgs::Node fromStringFunction(const std::string & function);
 
-plansys2_msgs::msg::Param fromStringParam(const std::string & name, const std::string & type = {});
+plansys2_msgs::Param fromStringParam(const std::string & name, const std::string & type = {});
 
-plansys2_msgs::msg::Tree fromPredicates(const std::vector<std::string> & preds);
+plansys2_msgs::Tree fromPredicates(const std::vector<std::string> & preds);
 
-plansys2_msgs::msg::Tree::SharedPtr fromSubtree(const plansys2_msgs::msg::Tree & subtree, uint8_t node_type);
+plansys2_msgs::TreeSharedPtr fromSubtree(const plansys2_msgs::Tree & subtree, uint8_t node_type);
 
-plansys2_msgs::msg::Tree::SharedPtr fromSubtrees(const std::vector<plansys2_msgs::msg::Tree> & subtrees, uint8_t node_type);
+plansys2_msgs::TreeSharedPtr fromSubtrees(const std::vector<plansys2_msgs::Tree> & subtrees, uint8_t node_type);
 
-std::vector<uint32_t> getSubtreeIds(const plansys2_msgs::msg::Tree & tree);
+std::vector<uint32_t> getSubtreeIds(const plansys2_msgs::Tree & tree);
 
-std::vector<plansys2_msgs::msg::Tree> getSubtrees(const plansys2_msgs::msg::Tree & tree);
+std::vector<plansys2_msgs::Tree> getSubtrees(const plansys2_msgs::Tree & tree);
 
-void getSubtreeChildren(plansys2_msgs::msg::Tree & subtree, const plansys2_msgs::msg::Tree & tree, uint32_t tree_parent, uint32_t subtree_parent);
+void getSubtreeChildren(plansys2_msgs::Tree & subtree, const plansys2_msgs::Tree & tree, uint32_t tree_parent, uint32_t subtree_parent);
 
-void getPredicates(std::vector<plansys2_msgs::msg::Node> & predicates, const plansys2_msgs::msg::Tree & tree, uint32_t node_id = 0, bool negate = false);
+void getPredicates(std::vector<plansys2_msgs::Node> & predicates, const plansys2_msgs::Tree & tree, uint32_t node_id = 0, bool negate = false);
 
-void getFunctions(std::vector<plansys2_msgs::msg::Node> & functions, const plansys2_msgs::msg::Tree & tree, uint32_t node_id = 0, bool negate = false);
+void getFunctions(std::vector<plansys2_msgs::Node> & functions, const plansys2_msgs::Tree & tree, uint32_t node_id = 0, bool negate = false);
 
-bool checkTreeEquality(const plansys2_msgs::msg::Tree & first, const plansys2_msgs::msg::Tree & second);
+bool checkTreeEquality(const plansys2_msgs::Tree & first, const plansys2_msgs::Tree & second);
 
-bool checkNodeEquality(const plansys2_msgs::msg::Node & first, const plansys2_msgs::msg::Node & second);
+bool checkNodeEquality(const plansys2_msgs::Node & first, const plansys2_msgs::Node & second);
 
-bool checkParamEquality(const plansys2_msgs::msg::Param & first, const plansys2_msgs::msg::Param & second);
+bool checkParamEquality(const plansys2_msgs::Param & first, const plansys2_msgs::Param & second);
 
-bool empty(const plansys2_msgs::msg::Tree & tree);
+bool empty(const plansys2_msgs::Tree & tree);
 
 }  // namespace pddl
 }  // namespace parser

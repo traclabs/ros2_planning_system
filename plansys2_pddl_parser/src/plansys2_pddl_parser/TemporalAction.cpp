@@ -1,5 +1,5 @@
 
-#include "plansys2_pddl_parser/Instance.h"
+#include <plansys2_pddl_parser/Instance.h>
 
 namespace parser { namespace pddl {
 
@@ -46,7 +46,7 @@ void TemporalAction::PDDLPrint( std::ostream & s, unsigned indent, const TokenSt
 	s << ")\n";
 }
 
-plansys2_msgs::msg::Node::SharedPtr TemporalAction::getTree( plansys2_msgs::msg::Tree & tree, const Domain & d, const std::vector<std::string> & replace ) const {
+plansys2_msgs::NodeSharedPtr TemporalAction::getTree( plansys2_msgs::Tree & tree, const Domain & d, const std::vector<std::string> & replace ) const {
     throw UnsupportedConstruct("TemporalAction");
 }
 

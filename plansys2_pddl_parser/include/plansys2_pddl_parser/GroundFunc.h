@@ -1,10 +1,10 @@
 
 #pragma once
 
-#include "plansys2_msgs/msg/node.hpp"
-#include "plansys2_msgs/msg/tree.hpp"
+#include <plansys2_msgs/Node.h>
+#include <plansys2_msgs/Tree.h>
 
-#include "plansys2_pddl_parser/TypeGround.h"
+#include <plansys2_pddl_parser/TypeGround.h>
 
 namespace parser { namespace pddl {
 
@@ -23,7 +23,9 @@ public:
 
 	void PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< std::string > & ts, const Domain & d ) const override;
 
-	plansys2_msgs::msg::Node::SharedPtr getTree( plansys2_msgs::msg::Tree & tree, const Domain & d, const std::vector<std::string> & replace = {} ) const override;
+	plansys2_msgs::NodeSharedPtr getTree( plansys2_msgs::Tree & tree,
+						const Domain & d,
+						const std::vector<std::string> & replace = {} ) const override;
 
 	void print( std::ostream & stream ) const {
 		stream << name << params << value << "\n";

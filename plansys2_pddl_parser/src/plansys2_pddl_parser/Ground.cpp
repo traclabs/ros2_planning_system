@@ -1,5 +1,5 @@
 
-#include "plansys2_pddl_parser/Domain.h"
+#include <plansys2_pddl_parser/Domain.h>
 
 namespace parser { namespace pddl {
 
@@ -17,17 +17,17 @@ void Ground::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< st
 	s << " )";
 }
 
-plansys2_msgs::msg::Node::SharedPtr Ground::getTree( plansys2_msgs::msg::Tree & tree, const Domain & d, const std::vector<std::string> & replace ) const {
-    plansys2_msgs::msg::Node::SharedPtr node = std::make_shared<plansys2_msgs::msg::Node>();
+plansys2_msgs::NodeSharedPtr Ground::getTree( plansys2_msgs::Tree & tree, const Domain & d, const std::vector<std::string> & replace ) const {
+    plansys2_msgs::NodeSharedPtr node = std::make_shared<plansys2_msgs::Node>();
     if ( d.funcs.index( name ) >= 0) {
-        node->node_type = plansys2_msgs::msg::Node::FUNCTION;
+        node->node_type = plansys2_msgs::Node::FUNCTION;
     } else {
-        node->node_type = plansys2_msgs::msg::Node::PREDICATE;
+        node->node_type = plansys2_msgs::Node::PREDICATE;
     }
     node->node_id = tree.nodes.size();
     node->name = name;
     for ( unsigned i = 0; i < params.size(); ++i ) {
-        plansys2_msgs::msg::Param param;
+        plansys2_msgs::Param param;
         if (i < replace.size()){
           if (params[i] >= 0)  // param has a variable value; replace by action-args
           {

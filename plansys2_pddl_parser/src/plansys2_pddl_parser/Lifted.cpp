@@ -1,9 +1,11 @@
 
-#include "plansys2_pddl_parser/Domain.h"
+#include <plansys2_pddl_parser/Domain.h>
 
 namespace parser { namespace pddl {
 
-void Lifted::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< std::string > & ts, const Domain & d ) const {
+void Lifted::PDDLPrint( std::ostream & s, unsigned indent,
+			const TokenStruct< std::string > & ts,
+			const Domain & d ) const {
 	tabindent( s, indent );
 	s << "( " << name;
 	for ( unsigned i = 0; i < params.size(); ++i ) {
@@ -14,7 +16,9 @@ void Lifted::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< st
 	s << " )";
 }
 
-plansys2_msgs::msg::Node::SharedPtr Lifted::getTree( plansys2_msgs::msg::Tree & tree, const Domain & d, const std::vector<std::string> & replace ) const {
+plansys2_msgs::NodeSharedPtr Lifted::getTree( plansys2_msgs::Tree & tree,
+						const Domain & d,
+						const std::vector<std::string> & replace ) const {
     throw UnsupportedConstruct("Lifted");
 }
 

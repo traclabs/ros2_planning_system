@@ -1,5 +1,5 @@
 
-#include "plansys2_pddl_parser/Domain.h"
+#include <plansys2_pddl_parser/Domain.h>
 
 namespace parser { namespace pddl {
 
@@ -8,7 +8,7 @@ void Function::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< 
 	if ( returnType >= 0 ) s << " - " << d.types[returnType]->name;
 }
 
-plansys2_msgs::msg::Node::SharedPtr Function::getTree( plansys2_msgs::msg::Tree & tree, const Domain & d, const std::vector<std::string> & replace ) const {
+plansys2_msgs::NodeSharedPtr Function::getTree( plansys2_msgs::Tree & tree, const Domain & d, const std::vector<std::string> & replace ) const {
     throw UnsupportedConstruct("Function");
 }
 

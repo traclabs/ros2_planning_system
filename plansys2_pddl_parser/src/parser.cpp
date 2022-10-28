@@ -4,7 +4,7 @@
 #include <streambuf>
 
 
-#include "plansys2_pddl_parser/Instance.h"
+#include <plansys2_pddl_parser/Instance.h>
 
 using namespace parser::pddl;
 

@@ -1,5 +1,5 @@
 
-#include "plansys2_pddl_parser/Domain.h"
+#include <plansys2_pddl_parser/Domain.h>
 
 namespace parser { namespace pddl {
 
@@ -10,14 +10,14 @@ void Not::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< std::
 	s << " )";
 }
 
-plansys2_msgs::msg::Node::SharedPtr Not::getTree( plansys2_msgs::msg::Tree & tree, const Domain & d, const std::vector<std::string> & replace ) const {
-    plansys2_msgs::msg::Node::SharedPtr node = std::make_shared<plansys2_msgs::msg::Node>();
-    node->node_type = plansys2_msgs::msg::Node::NOT;
+plansys2_msgs::NodeSharedPtr Not::getTree( plansys2_msgs::Tree & tree, const Domain & d, const std::vector<std::string> & replace ) const {
+    plansys2_msgs::NodeSharedPtr node = std::make_shared<plansys2_msgs::Node>();
+    node->node_type = plansys2_msgs::Node::NOT;
     node->node_id = tree.nodes.size();
     tree.nodes.push_back(*node);
 
     if (cond) {
-        plansys2_msgs::msg::Node::SharedPtr child = cond->getTree(tree, d, replace);
+        plansys2_msgs::NodeSharedPtr child = cond->getTree(tree, d, replace);
         tree.nodes[node->node_id].children.push_back(child->node_id);
     }
 

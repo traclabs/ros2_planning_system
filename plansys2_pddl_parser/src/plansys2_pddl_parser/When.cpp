@@ -1,9 +1,12 @@
 
-#include "plansys2_pddl_parser/Domain.h"
+#include <plansys2_pddl_parser/Domain.h>
 
 namespace parser { namespace pddl {
 
-void When::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< std::string > & ts, const Domain & d ) const {
+void When::PDDLPrint( std::ostream & s,
+		      unsigned indent,
+		      const TokenStruct< std::string > & ts,
+		      const Domain & d ) const {
 	tabindent( s, indent );
 	s << "( when\n";
 	if ( pars ) pars->PDDLPrint( s, indent + 1, ts, d );
@@ -22,7 +25,7 @@ void When::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< std:
 	s << ")";
 }
 
-plansys2_msgs::msg::Node::SharedPtr When::getTree( plansys2_msgs::msg::Tree & tree, const Domain & d, const std::vector<std::string> & replace ) const {
+plansys2_msgs::NodeSharedPtr When::getTree( plansys2_msgs::Tree & tree, const Domain & d, const std::vector<std::string> & replace ) const {
     throw UnsupportedConstruct("When");
 }
 

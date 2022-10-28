@@ -2,20 +2,29 @@ project(plansys2_pddl_parser)
 
 cmake_minimum_required(VERSION 3.5)
 
-find_package(ament_cmake REQUIRED)
-find_package(rclcpp REQUIRED)
-find_package(plansys2_msgs REQUIRED)
-find_package(std_msgs REQUIRED)
+set(DEPS
+  plansys2_msgs
+  std_msgs
+  roscpp
+  )
 
 set(CMAKE_CXX_STANDARD 17)
 
-set(dependencies
-    rclcpp
-    plansys2_msgs
-    std_msgs
+find_package(catkin REQUIRED COMPONENTS
+  ${DEPS}
+)  
+
+catkin_package(
+  INCLUDE_DIRS include
+  LIBRARIES ${PROJECT_NAME}
+  CATKIN_DEPENDS ${DEPS}
+  DEPENDS
 )
 
-include_directories(include)
+include_directories(
+  include
+  ${catkin_INCLUDE_DIRS}
+)
 
 set(PDDL-PARSER-SOURCES
   src/plansys2_pddl_parser/GroundFunc.cpp
@@ -40,34 +49,29 @@ set(PDDL-PARSER-SOURCES
 )
 
 add_library(${PROJECT_NAME} SHARED ${PDDL-PARSER-SOURCES})
-ament_target_dependencies(${PROJECT_NAME} rclcpp plansys2_msgs)
+target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
 
 add_executable(parser src/parser.cpp)
 target_link_libraries(parser ${PROJECT_NAME})
 
-install(DIRECTORY include/
-  DESTINATION include/
+
+install(DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp"
 )
 
 install(TARGETS
   ${PROJECT_NAME}
-  parser
+#  parser
   ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib
-  RUNTIME DESTINATION lib/${PROJECT_NAME}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
-if(BUILD_TESTING)
-  # find_package(ament_lint_auto REQUIRED)
-  # ament_lint_auto_find_test_dependencies()
-  find_package(ament_cmake_gtest REQUIRED)
-  find_package(ament_index_cpp REQUIRED)
-  set(dependencies ${dependencies} ament_index_cpp)
-  add_subdirectory(test)
-endif()
+#if(BUILD_TESTING)
+#  find_package(ament_cmake_gtest REQUIRED)
+#  find_package(ament_index_cpp REQUIRED)
+#  set(dependencies ${dependencies} ament_index_cpp)
+#  add_subdirectory(test)
+#endif()
 
-ament_export_include_directories(include)
-ament_export_libraries(${PROJECT_NAME})
-ament_export_dependencies(${dependencies})
-
-ament_package()

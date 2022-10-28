@@ -1,5 +1,6 @@
 
-#include "plansys2_pddl_parser/Instance.h"
+#include <plansys2_pddl_parser/Instance.h>
+#include <plansys2_pddl_parser/Expression.h>
 
 namespace parser { namespace pddl {
 
@@ -19,13 +20,13 @@ void FunctionExpression::PDDLPrint( std::ostream & s, unsigned indent, const Tok
 	s << " )";
 }
 
-plansys2_msgs::msg::Node::SharedPtr FunctionExpression::getTree( plansys2_msgs::msg::Tree & tree, const Domain & d, const std::vector<std::string> & replace ) const {
-    plansys2_msgs::msg::Node::SharedPtr node = std::make_shared<plansys2_msgs::msg::Node>();
-    node->node_type = plansys2_msgs::msg::Node::FUNCTION;
+plansys2_msgs::NodeSharedPtr FunctionExpression::getTree( plansys2_msgs::Tree & tree, const Domain & d, const std::vector<std::string> & replace ) const {
+    plansys2_msgs::NodeSharedPtr node = std::make_shared<plansys2_msgs::Node>();
+    node->node_type = plansys2_msgs::Node::FUNCTION;
     node->node_id = tree.nodes.size();
     node->name = fun->name;
     for ( unsigned i = 0; i < fun->params.size(); ++i ) {
-        plansys2_msgs::msg::Param param;
+        plansys2_msgs::Param param;
         if (i < replace.size()) {
           param.name = replace[fun->params[i]];
         } else {
