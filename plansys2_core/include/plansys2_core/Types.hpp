@@ -34,41 +34,41 @@ public:
   : plansys2_msgs::Param() {}
   explicit Instance(const std::string & name, const std::string & type = {})
   : plansys2_msgs::Param(parser::pddl::fromStringParam(name, type)) {}
-  Instance(const plansys2_msgs::msg::Param & instance)  // NOLINT(runtime/explicit)
-  : plansys2_msgs::msg::Param(instance) {}
+  Instance(const plansys2_msgs::Param & instance)  // NOLINT(runtime/explicit)
+  : plansys2_msgs::Param(instance) {}
 };
 
-class Predicate : public plansys2_msgs::msg::Node
+class Predicate : public plansys2_msgs::Node
 {
 public:
   Predicate()
-  : plansys2_msgs::msg::Node() {}
+  : plansys2_msgs::Node() {}
   explicit Predicate(const std::string & pred)
-  : plansys2_msgs::msg::Node(parser::pddl::fromStringPredicate(pred)) {}
-  Predicate(const plansys2_msgs::msg::Node & pred)  // NOLINT(runtime/explicit)
-  : plansys2_msgs::msg::Node(pred) {}
+  : plansys2_msgs::Node(parser::pddl::fromStringPredicate(pred)) {}
+  Predicate(const plansys2_msgs::Node & pred)  // NOLINT(runtime/explicit)
+  : plansys2_msgs::Node(pred) {}
 };
 
-class Function : public plansys2_msgs::msg::Node
+class Function : public plansys2_msgs::Node
 {
 public:
   Function()
-  : plansys2_msgs::msg::Node() {}
+  : plansys2_msgs::Node() {}
   explicit Function(const std::string & func)
-  : plansys2_msgs::msg::Node(parser::pddl::fromStringFunction(func)) {}
-  Function(const plansys2_msgs::msg::Node & func)  // NOLINT(runtime/explicit)
-  : plansys2_msgs::msg::Node(func) {}
+  : plansys2_msgs::Node(parser::pddl::fromStringFunction(func)) {}
+  Function(const plansys2_msgs::Node & func)  // NOLINT(runtime/explicit)
+  : plansys2_msgs::Node(func) {}
 };
 
-class Goal : public plansys2_msgs::msg::Tree
+class Goal : public plansys2_msgs::Tree
 {
 public:
   Goal()
-  : plansys2_msgs::msg::Tree() {}
+  : plansys2_msgs::Tree() {}
   explicit Goal(const std::string & goal)
-  : plansys2_msgs::msg::Tree(parser::pddl::fromString(goal)) {}
-  Goal(const plansys2_msgs::msg::Tree & goal)  // NOLINT(runtime/explicit)
-  : plansys2_msgs::msg::Tree(goal) {}
+  : plansys2_msgs::Tree(parser::pddl::fromString(goal)) {}
+  Goal(const plansys2_msgs::Tree & goal)  // NOLINT(runtime/explicit)
+  : plansys2_msgs::Tree(goal) {}
 };
 
 template<class toT, class fromT>

@@ -16,12 +16,13 @@
 #include <sstream>
 #include <vector>
 
-#include "plansys2_core/Utils.hpp"
+#include <plansys2_core/Utils.hpp>
 
 namespace plansys2
 {
 
-std::vector<std::string> tokenize(const std::string & string, const std::string & delim)
+std::vector<std::string> tokenize(const std::string & string,
+				  const std::string & delim)
 {
   std::string::size_type lastPos = 0, pos = string.find_first_of(delim, lastPos);
   std::vector<std::string> tokens;

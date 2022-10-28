@@ -24,7 +24,8 @@
 namespace plansys2
 {
 
-std::vector<std::string> tokenize(const std::string & string, const std::string & delim);
+std::vector<std::string> tokenize(const std::string & string,
+				  const std::string & delim);
 
 /**
  * @brief get a substring without empty lines

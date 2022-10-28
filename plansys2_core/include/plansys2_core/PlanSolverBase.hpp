@@ -11,7 +11,10 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
+//
+// Modifications by TRACLabs: Backported to ROS1
+// Copyright 2022
+//
 #ifndef PLANSYS2_CORE__PLANSOLVERBASE_HPP_
 #define PLANSYS2_CORE__PLANSOLVERBASE_HPP_
 
@@ -19,10 +22,10 @@
 #include <string>
 #include <memory>
 
-#include "plansys2_msgs/msg/plan.hpp"
+#include <plansys2_msgs/Plan.h>
 
-#include "rclcpp/rclcpp.hpp"
-#include "rclcpp_lifecycle/lifecycle_node.hpp"
+#include <ros/ros.h>
+#include <lifecycle/managed_node.h>
 
 namespace plansys2
 {
@@ -34,11 +37,12 @@ public:
 
   PlanSolverBase() {}
 
-  virtual void configure(rclcpp_lifecycle::LifecycleNode::SharedPtr &, const std::string &) {}
+  virtual void configure(std::shared_ptr<ros::lifecycle::ManagedNode> &,
+			 const std::string &) {}
 
-  virtual std::optional<plansys2_msgs::msg::Plan> getPlan(
-    const std::string & domain, const std::string & problem,
-    const std::string & node_namespace = "") = 0;
+  virtual std::optional<plansys2_msgs::Plan> getPlan(const std::string & domain,
+						     const std::string & problem,
+						     const std::string & node_namespace = "") = 0;
 };
 
 }  // namespace plansys2
