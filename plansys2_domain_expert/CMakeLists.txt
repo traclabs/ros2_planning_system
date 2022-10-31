@@ -34,16 +34,16 @@ include_directories(
 
 set(DOMAIN_EXPERT_SOURCES
   src/plansys2_domain_expert/DomainExpert.cpp
-#  src/plansys2_domain_expert/DomainExpertClient.cpp
+  src/plansys2_domain_expert/DomainExpertClient.cpp
   src/plansys2_domain_expert/DomainReader.cpp
-#  src/plansys2_domain_expert/DomainExpertNode.cpp
+  src/plansys2_domain_expert/DomainExpertNode.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${DOMAIN_EXPERT_SOURCES})
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
 
-#add_executable(domain_expert_node src/domain_expert_node.cpp)
-#target_link_libraries(domain_expert_node ${PROJECT_NAME})
+add_executable(domain_expert_node src/domain_expert_node.cpp)
+target_link_libraries(domain_expert_node ${PROJECT_NAME})
 
 install(DIRECTORY include/${PROJECT_NAME}/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
@@ -59,7 +59,7 @@ endforeach(dir)
 
 install(TARGETS
   ${PROJECT_NAME}
-#  domain_expert_node
+  domain_expert_node
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

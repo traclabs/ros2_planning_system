@@ -115,7 +115,7 @@ public:
    * \return An Action object containing the action name, parameters, requirements and effects.
    *    If the action does not exist, the value returned has not value.
    */
-  plansys2_msgs::msg::Action::SharedPtr getAction(
+  plansys2_msgs::ActionSharedPtr getAction(
     const std::string & action,
     const std::vector<std::string> & params = {});
 
@@ -131,7 +131,7 @@ public:
    * \return A Durative Action object containing the action name, parameters, requirements and
    *    effects. If the action does not exist, the value returned has not value.
    */
-  plansys2_msgs::msg::DurativeAction::SharedPtr getDurativeAction(
+  plansys2_msgs::DurativeActionSharedPtr getDurativeAction(
     const std::string & action,
     const std::vector<std::string> & params = {});
 

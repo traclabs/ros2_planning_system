@@ -14,15 +14,16 @@
 
 #include <memory>
 
-#include "plansys2_domain_expert/DomainExpertNode.hpp"
-#include "rclcpp/rclcpp.hpp"
+#include <plansys2_domain_expert/DomainExpertNode.hpp>
+#include <ros/ros.h>
 
 int main(int argc, char ** argv)
 {
-  rclcpp::init(argc, argv);
-  auto node = std::make_shared<plansys2::DomainExpertNode>();
-  rclcpp::spin(node->get_node_base_interface());
-  rclcpp::shutdown();
+  ros::init(argc, argv, "domain_expert_node");
+  ros::NodeHandle nh("domain_expert");
+  plansys2::DomainExpertNode den(nh);
+
+  ros::spin();
 
   return 0;
 }

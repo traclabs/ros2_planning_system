@@ -54,7 +54,7 @@ std::string DomainExpertClient::getName()
   plansys2_msgs::GetDomainName srv;
   get_name_client_.call(srv);
 
-  return srv.result.name;
+  return srv.response.name;
 }
 
 std::vector<std::string> DomainExpertClient::getTypes()
@@ -66,7 +66,7 @@ std::vector<std::string> DomainExpertClient::getTypes()
   plansys2_msgs::GetDomainTypes srv;
   get_types_client_.call(srv);
 
-  return srv.result.types;
+  return srv.response.types;
 }
 
 std::vector<std::string> DomainExpertClient::getConstants(const std::string & type)
@@ -77,7 +77,7 @@ std::vector<std::string> DomainExpertClient::getConstants(const std::string & ty
   plansys2_msgs::GetDomainConstants srv;
   get_constants_client_.call(srv);
   
-  return srv.result.constants;
+  return srv.response.constants;
 
 }
 
@@ -91,7 +91,7 @@ std::vector<plansys2::Predicate> DomainExpertClient::getPredicates()
   plansys2_msgs::GetStates srv;
   get_predicates_client_.call(srv);
 
-  ret = plansys2::convertVector<plansys2::Predicate, plansys2_msgs::msg::Node>(srv.result.states);
+  ret = plansys2::convertVector<plansys2::Predicate, plansys2_msgs::Node>(srv.response.states);
 
   return ret;
 }
@@ -108,12 +108,12 @@ std::optional<plansys2::Predicate> DomainExpertClient::getPredicate(const std::s
   if(!get_predicate_details_client_.call(srv))
     return {};
 
-  if (srv.result.success) {
-    return srv.result.node;
+  if (srv.response.success) {
+    return srv.response.node;
   } else {
     ROS_ERROR_STREAM(getNodeName() << " " <<
 		     get_predicate_details_client_.getService() << ": " <<
-		     srv.result.error_info);
+		     srv.response.error_info);
     return {};
   }
   
@@ -130,8 +130,8 @@ std::vector<plansys2::Function> DomainExpertClient::getFunctions()
   plansys2_msgs::GetStates srv;
   get_functions_client_.call(srv);
 
-  ret = plansys2::convertVector<plansys2::Function, plansys2_msgs::msg::Node>(
-    srv.result.states);
+  ret = plansys2::convertVector<plansys2::Function, plansys2_msgs::Node>(
+    srv.response.states);
 
   return ret;
 }
@@ -150,12 +150,12 @@ std::optional<plansys2::Function> DomainExpertClient::getFunction(const std::str
     return {};
   }
 
-  if (srv.result.success) {
-    return srv.result.node;
+  if (srv.response.success) {
+    return srv.response.node;
   } else {
     ROS_ERROR_STREAM(getNodeName() << " " <<
 		     get_function_details_client_.getService() << ": " <<
-		     srv.result.error_info);
+		     srv.response.error_info);
     return {};
   }
   return {};
@@ -165,73 +165,44 @@ std::vector<std::string> DomainExpertClient::getActions()
 {
   std::vector<std::string> ret;
 
-  while (!get_actions_client_->wait_for_service(std::chrono::seconds(1))) {
-    if (!rclcpp::ok()) {
-      return ret;
-    }
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      get_actions_client_->get_service_name() <<
-        " service client: waiting for service to appear...");
-  }
+  while (!get_actions_client_.waitForExistence(ros::Duration(1.0)))
+    ROS_INFO_STREAM(getNodeName() << " Waiting for service " << get_actions_client_.getService() << " to appear");    
 
-  auto request = std::make_shared<plansys2_msgs::GetDomainActions::Request>();
+  plansys2_msgs::GetDomainActions srv;
 
-  auto future_result = get_actions_client_->async_send_request(request);
-
-  if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::FutureReturnCode::SUCCESS)
-  {
-    return ret;
-  }
-
-  auto result = *future_result.get();
-
-  for (size_t i = 0; i < result.actions.size(); i++) {
-    ret.push_back(result.actions[i]);
+  if(!get_actions_client_.call(srv))
+    return {};
+  
+  for (size_t i = 0; i < srv.response.actions.size(); i++) {
+    ret.push_back(srv.response.actions[i]);
   }
 
   return ret;
 }
 
-plansys2_msgs::msg::Action::SharedPtr
-DomainExpertClient::getAction(
-  const std::string & action,
-  const std::vector<std::string> & params)
+plansys2_msgs::ActionSharedPtr
+DomainExpertClient::getAction( const std::string & action,
+			       const std::vector<std::string> & params)
 {
-  while (!get_action_details_client_->wait_for_service(std::chrono::seconds(1))) {
-    if (!rclcpp::ok()) {
-      return {};
-    }
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      get_action_details_client_->get_service_name() <<
-        " service client: waiting for service to appear...");
-  }
+  while (!get_action_details_client_.waitForExistence(ros::Duration(1.0)))
+    ROS_INFO_STREAM(getNodeName() << " Waiting for service " << get_action_details_client_.getService() << " to appear");    
 
-  auto request = std::make_shared<plansys2_msgs::GetDomainActionDetails::Request>();
+  plansys2_msgs::GetDomainActionDetails srv;
 
-  request->action = action;
-  request->parameters = params;
-
-  auto future_result = get_action_details_client_->async_send_request(request);
-
-  if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::FutureReturnCode::SUCCESS)
+  srv.request.action = action;
+  srv.request.parameters = params;
+  
+  if (!get_action_details_client_.call(srv))
   {
     return {};
   }
 
-  auto result = *future_result.get();
-
-
-  if (result.success) {
-    return std::make_shared<plansys2_msgs::msg::Action>(result.action);
+  if (srv.response.success) {
+    return std::make_shared<plansys2_msgs::Action>(srv.response.action);
   } else {
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      get_action_details_client_->get_service_name() << ": " <<
-        result.error_info);
+    ROS_ERROR("%s -- %s -- error: %s", getNodeName().c_str(),
+	      get_action_details_client_.getService().c_str(),
+	      srv.response.error_info.c_str());
     return {};
   }
 }
@@ -241,106 +212,79 @@ DomainExpertClient::getDurativeActions()
 {
   std::vector<std::string> ret;
 
-  while (!get_durative_actions_client_->wait_for_service(std::chrono::seconds(1))) {
-    if (!rclcpp::ok()) {
-      return ret;
-    }
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      get_durative_actions_client_->get_service_name() <<
-        " service client: waiting for service to appear...");
-  }
+  while (!get_durative_actions_client_.waitForExistence(ros::Duration(1.0)))
+    ROS_INFO_STREAM(getNodeName() << " Waiting for service " << get_durative_actions_client_.getService() << " to appear");    
 
-  auto request = std::make_shared<plansys2_msgs::GetDomainActions::Request>();
+  plansys2_msgs::GetDomainActions srv;
 
-  auto future_result = get_durative_actions_client_->async_send_request(request);
-
-  if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::FutureReturnCode::SUCCESS)
+  if(!get_durative_actions_client_.call(srv))
   {
     return ret;
   }
 
-  auto result = *future_result.get();
-
-  for (size_t i = 0; i < result.actions.size(); i++) {
-    ret.push_back(result.actions[i]);
+  for (size_t i = 0; i < srv.response.actions.size(); i++) {
+    ret.push_back(srv.response.actions[i]);
   }
 
   return ret;
 }
 
-plansys2_msgs::msg::DurativeAction::SharedPtr
+plansys2_msgs::DurativeActionSharedPtr
 DomainExpertClient::getDurativeAction(
   const std::string & action,
   const std::vector<std::string> & params)
 {
-  while (!get_durative_action_details_client_->wait_for_service(std::chrono::seconds(1))) {
-    if (!rclcpp::ok()) {
-      return nullptr;
-    }
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      get_durative_action_details_client_->get_service_name() <<
-        " service client: waiting for service to appear...");
-  }
-
-  auto request = std::make_shared<plansys2_msgs::GetDomainDurativeActionDetails::Request>();
-
-  request->durative_action = action;
-  request->parameters = params;
-
-  auto future_result = get_durative_action_details_client_->async_send_request(request);
-
-  if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::FutureReturnCode::SUCCESS)
+  while (!get_durative_action_details_client_.waitForExistence(ros::Duration(1.0)))
   {
-    return nullptr;
+    if (!ros::ok())
+      return nullptr;
+    
+    ROS_INFO_STREAM(getNodeName() << " Waiting for service " << get_durative_actions_client_.getService() << " to appear");    
   }
 
-  auto result = *future_result.get();
+  plansys2_msgs::GetDomainDurativeActionDetails srv;
 
-  if (result.success) {
-    return std::make_shared<plansys2_msgs::msg::DurativeAction>(
-      result.durative_action);
+  srv.request.durative_action = action;
+  srv.request.parameters = params;
+
+  if (!get_durative_action_details_client_.call(srv))
+    return nullptr;
+  
+  if (srv.response.success) {
+    return std::make_shared<plansys2_msgs::DurativeAction>(
+      srv.response.durative_action);
   } else {
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      get_durative_action_details_client_->get_service_name() << ": " <<
-        result.error_info);
+    ROS_ERROR_STREAM(getNodeName() <<
+		     get_durative_action_details_client_.getService()
+		     << ": " <<
+		     srv.response.error_info);
     return nullptr;
   }
 }
 
-std::string
-DomainExpertClient::getDomain()
+std::string DomainExpertClient::getDomain()
 {
   std::string ret;
 
-  while (!get_domain_client_->wait_for_service(std::chrono::seconds(1))) {
-    if (!rclcpp::ok()) {
+  while (!get_domain_client_.waitForExistence(ros::Duration(1.0)))
+  {
+    if (!ros::ok()) {
       return ret;
     }
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      get_domain_client_->get_service_name() <<
-        " service client: waiting for service to appear...");
-  }
+    
+    ROS_ERROR_STREAM(getNodeName() <<
+		     get_domain_client_.getService() <<
+		     " service client: waiting for service to appear...");   
+  } 
+ 
+  plansys2_msgs::GetDomain srv;
 
-  auto request = std::make_shared<plansys2_msgs::GetDomain::Request>();
-
-  auto future_result = get_domain_client_->async_send_request(request);
-
-  if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::FutureReturnCode::SUCCESS)
-  {
+  if(!get_domain_client_.call(srv))
     return ret;
-  }
 
-  auto result = *future_result.get();
-
-  ret = result.domain;
+  ret = srv.response.domain;
 
   return ret;
 }
+
 }  // namespace plansys2
