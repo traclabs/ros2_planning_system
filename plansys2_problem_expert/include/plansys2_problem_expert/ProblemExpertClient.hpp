@@ -19,28 +19,28 @@
 #include <string>
 #include <vector>
 
-#include "plansys2_problem_expert/ProblemExpertInterface.hpp"
-#include "plansys2_core/Types.hpp"
+#include <plansys2_problem_expert/ProblemExpertInterface.hpp>
+#include <plansys2_core/Types.hpp>
 
-#include "plansys2_msgs/msg/node.hpp"
-#include "plansys2_msgs/msg/param.hpp"
-#include "plansys2_msgs/msg/tree.hpp"
-#include "plansys2_msgs/srv/add_problem.hpp"
-#include "plansys2_msgs/srv/add_problem_goal.hpp"
-#include "plansys2_msgs/srv/affect_node.hpp"
-#include "plansys2_msgs/srv/affect_param.hpp"
-#include "plansys2_msgs/srv/exist_node.hpp"
-#include "plansys2_msgs/srv/get_problem.hpp"
-#include "plansys2_msgs/srv/get_problem_goal.hpp"
-#include "plansys2_msgs/srv/get_problem_instance_details.hpp"
-#include "plansys2_msgs/srv/get_problem_instances.hpp"
-#include "plansys2_msgs/srv/get_node_details.hpp"
-#include "plansys2_msgs/srv/get_states.hpp"
-#include "plansys2_msgs/srv/is_problem_goal_satisfied.hpp"
-#include "plansys2_msgs/srv/remove_problem_goal.hpp"
-#include "plansys2_msgs/srv/clear_problem_knowledge.hpp"
+#include <plansys2_msgs/Node.h>
+#include <plansys2_msgs/Param.h>
+#include <plansys2_msgs/Tree.h>
+#include <plansys2_msgs/AddProblem.h>
+#include <plansys2_msgs/AddProblemGoal.h>
+#include <plansys2_msgs/AffectNode.h>
+#include <plansys2_msgs/AffectParam.h>
+#include <plansys2_msgs/ExistNode.h>
+#include <plansys2_msgs/GetProblem.h>
+#include <plansys2_msgs/GetProblemGoal.h>
+#include <plansys2_msgs/GetProblemInstanceDetails.h>
+#include <plansys2_msgs/GetProblemInstances.h>
+#include <plansys2_msgs/GetNodeDetails.h>
+#include <plansys2_msgs/GetStates.h>
+#include <plansys2_msgs/IsProblemGoalSatisfied.h>
+#include <plansys2_msgs/RemoveProblemGoal.h>
+#include <plansys2_msgs/ClearProblemKnowledge.h>
 
-#include "rclcpp/rclcpp.hpp"
+#include <ros/ros.h>
 
 namespace plansys2
 {
@@ -78,55 +78,36 @@ public:
   std::string getProblem();
   bool addProblem(const std::string & problem_str);
 
-  rclcpp::Time getUpdateTime() const {return update_time_;}
+  ros::Time getUpdateTime() const {return update_time_;}
 
+  std::string getName() { return std::string("ProblemExpertClient"); }
+  
 private:
-  rclcpp::Client<plansys2_msgs::srv::AddProblem>::SharedPtr
-    add_problem_client_;
-  rclcpp::Client<plansys2_msgs::srv::AddProblemGoal>::SharedPtr
-    add_problem_goal_client_;
-  rclcpp::Client<plansys2_msgs::srv::AffectParam>::SharedPtr
-    add_problem_instance_client_;
-  rclcpp::Client<plansys2_msgs::srv::AffectNode>::SharedPtr
-    add_problem_predicate_client_;
-  rclcpp::Client<plansys2_msgs::srv::AffectNode>::SharedPtr
-    add_problem_function_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetProblemGoal>::SharedPtr
-    get_problem_goal_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetProblemInstanceDetails>::SharedPtr
-    get_problem_instance_details_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetProblemInstances>::SharedPtr
-    get_problem_instances_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetNodeDetails>::SharedPtr
-    get_problem_predicate_details_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetStates>::SharedPtr
-    get_problem_predicates_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetNodeDetails>::SharedPtr
-    get_problem_function_details_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetStates>::SharedPtr
-    get_problem_functions_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetProblem>::SharedPtr
-    get_problem_client_;
-  rclcpp::Client<plansys2_msgs::srv::RemoveProblemGoal>::SharedPtr
-    remove_problem_goal_client_;
-  rclcpp::Client<plansys2_msgs::srv::ClearProblemKnowledge>::SharedPtr
-    clear_problem_knowledge_client_;
-  rclcpp::Client<plansys2_msgs::srv::AffectParam>::SharedPtr
-    remove_problem_instance_client_;
-  rclcpp::Client<plansys2_msgs::srv::AffectNode>::SharedPtr
-    remove_problem_predicate_client_;
-  rclcpp::Client<plansys2_msgs::srv::AffectNode>::SharedPtr
-    remove_problem_function_client_;
-  rclcpp::Client<plansys2_msgs::srv::ExistNode>::SharedPtr
-    exist_problem_predicate_client_;
-  rclcpp::Client<plansys2_msgs::srv::ExistNode>::SharedPtr
-    exist_problem_function_client_;
-  rclcpp::Client<plansys2_msgs::srv::AffectNode>::SharedPtr
-    update_problem_function_client_;
-  rclcpp::Client<plansys2_msgs::srv::IsProblemGoalSatisfied>::SharedPtr
-    is_problem_goal_satisfied_client_;
-  rclcpp::Node::SharedPtr node_;
-  rclcpp::Time update_time_;
+  ros::ServiceClient add_problem_client_;
+  ros::ServiceClient add_problem_goal_client_;
+  ros::ServiceClient add_problem_instance_client_;
+  ros::ServiceClient add_problem_predicate_client_;
+  ros::ServiceClient add_problem_function_client_;
+  ros::ServiceClient get_problem_goal_client_;
+  ros::ServiceClient get_problem_instance_details_client_;
+  ros::ServiceClient get_problem_instances_client_;
+  ros::ServiceClient get_problem_predicate_details_client_;
+  ros::ServiceClient get_problem_predicates_client_;
+  ros::ServiceClient get_problem_function_details_client_;
+  ros::ServiceClient get_problem_functions_client_;
+  ros::ServiceClient get_problem_client_;
+  ros::ServiceClient remove_problem_goal_client_;
+  ros::ServiceClient clear_problem_knowledge_client_;
+  ros::ServiceClient remove_problem_instance_client_;
+  ros::ServiceClient remove_problem_predicate_client_;
+  ros::ServiceClient remove_problem_function_client_;
+  ros::ServiceClient exist_problem_predicate_client_;
+  ros::ServiceClient exist_problem_function_client_;
+  ros::ServiceClient update_problem_function_client_;
+  ros::ServiceClient is_problem_goal_satisfied_client_;
+
+  ros::NodeHandle node_;
+  ros::Time update_time_;
 };
 
 }  // namespace plansys2

@@ -14,15 +14,16 @@
 
 #include <memory>
 
-#include "plansys2_problem_expert/ProblemExpertNode.hpp"
-#include "rclcpp/rclcpp.hpp"
+#include <plansys2_problem_expert/ProblemExpertNode.hpp>
+#include <ros/ros.h>
 
 int main(int argc, char ** argv)
 {
-  rclcpp::init(argc, argv);
-  auto node = std::make_shared<plansys2::ProblemExpertNode>();
-  rclcpp::spin(node->get_node_base_interface());
-  rclcpp::shutdown();
+  ros::init(argc, argv, "problem_expert");
+  ros::NodeHandle nh("problem_expert");
+  plansys2::ProblemExpertNode pen(nh);
+
+  ros::spin();
 
   return 0;
 }

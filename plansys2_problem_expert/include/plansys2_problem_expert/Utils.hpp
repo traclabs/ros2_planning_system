@@ -23,9 +23,9 @@
 #include <set>
 #include <utility>
 
-#include "plansys2_problem_expert/ProblemExpertClient.hpp"
-#include "plansys2_domain_expert/DomainExpertClient.hpp"
-#include "plansys2_msgs/msg/tree.hpp"
+#include <plansys2_problem_expert/ProblemExpertClient.hpp>
+#include <plansys2_domain_expert/DomainExpertClient.hpp>
+#include <plansys2_msgs/Tree.h>
 
 namespace plansys2
 {
@@ -45,7 +45,7 @@ namespace plansys2
  *         result(2) value of numeric expression
  */
 std::tuple<bool, bool, double> evaluate(
-  const plansys2_msgs::msg::Tree & tree,
+  const plansys2_msgs::Tree & tree,
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client,
   std::vector<plansys2::Predicate> & predicates,
   std::vector<plansys2::Function> & functions,
@@ -55,13 +55,13 @@ std::tuple<bool, bool, double> evaluate(
   bool negate = false);
 
 std::tuple<bool, bool, double> evaluate(
-  const plansys2_msgs::msg::Tree & tree,
+  const plansys2_msgs::Tree & tree,
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client,
   bool apply = false,
   uint32_t node_id = 0);
 
 std::tuple<bool, bool, double> evaluate(
-  const plansys2_msgs::msg::Tree & tree,
+  const plansys2_msgs::Tree & tree,
   std::vector<plansys2::Predicate> & predicates,
   std::vector<plansys2::Function> & functions,
   bool apply = false,
@@ -76,12 +76,12 @@ std::tuple<bool, bool, double> evaluate(
 * This function calls the evaluate function.
 */
 bool check(
-  const plansys2_msgs::msg::Tree & tree,
+  const plansys2_msgs::Tree & tree,
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client,
   uint32_t node_id = 0);
 
 bool check(
-  const plansys2_msgs::msg::Tree & tree,
+  const plansys2_msgs::Tree & tree,
   std::vector<plansys2::Predicate> & predicates,
   std::vector<plansys2::Function> & functions,
   uint32_t node_id = 0);
@@ -95,12 +95,12 @@ bool check(
  * This function calls the evaluate function.
  */
 bool apply(
-  const plansys2_msgs::msg::Tree & tree,
+  const plansys2_msgs::Tree & tree,
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client,
   uint32_t node_id = 0);
 
 bool apply(
-  const plansys2_msgs::msg::Tree & tree,
+  const plansys2_msgs::Tree & tree,
   std::vector<plansys2::Predicate> & predicates,
   std::vector<plansys2::Function> & functions,
   uint32_t node_id = 0);

@@ -18,11 +18,11 @@
 #include <string>
 #include <vector>
 
-#include "plansys2_msgs/msg/node.hpp"
-#include "plansys2_msgs/msg/param.hpp"
-#include "plansys2_msgs/msg/tree.hpp"
+#include <plansys2_msgs/Node.h>
+#include <plansys2_msgs/Param.h>
+#include <plansys2_msgs/Tree.h>
 
-#include "plansys2_core/Types.hpp"
+#include <plansys2_core/Types.hpp>
 
 namespace plansys2
 {

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "plansys2_problem_expert/ProblemExpertClient.hpp"
+#include <plansys2_problem_expert/ProblemExpertClient.hpp>
 
 #include <optional>
 #include <algorithm>
@@ -20,105 +20,65 @@
 #include <vector>
 #include <memory>
 
-#include "plansys2_pddl_parser/Utils.h"
+#include <plansys2_pddl_parser/Utils.h>
 
 namespace plansys2
 {
 
 ProblemExpertClient::ProblemExpertClient()
 {
-  node_ = rclcpp::Node::make_shared("problem_expert_client");
-
-  add_problem_client_ = node_->create_client<plansys2_msgs::srv::AddProblem>(
-    "problem_expert/add_problem");
-  add_problem_goal_client_ = node_->create_client<plansys2_msgs::srv::AddProblemGoal>(
-    "problem_expert/add_problem_goal");
-  add_problem_instance_client_ = node_->create_client<plansys2_msgs::srv::AffectParam>(
-    "problem_expert/add_problem_instance");
-  add_problem_predicate_client_ = node_->create_client<plansys2_msgs::srv::AffectNode>(
-    "problem_expert/add_problem_predicate");
-  add_problem_function_client_ = node_->create_client<plansys2_msgs::srv::AffectNode>(
-    "problem_expert/add_problem_function");
-  get_problem_goal_client_ = node_->create_client<plansys2_msgs::srv::GetProblemGoal>(
-    "problem_expert/get_problem_goal");
-  get_problem_instance_details_client_ =
-    node_->create_client<plansys2_msgs::srv::GetProblemInstanceDetails>(
-    "problem_expert/get_problem_instance");
-  get_problem_instances_client_ = node_->create_client<plansys2_msgs::srv::GetProblemInstances>(
-    "problem_expert/get_problem_instances");
-  get_problem_predicate_details_client_ =
-    node_->create_client<plansys2_msgs::srv::GetNodeDetails>(
-    "problem_expert/get_problem_predicate");
-  get_problem_predicates_client_ = node_->create_client<plansys2_msgs::srv::GetStates>(
-    "problem_expert/get_problem_predicates");
-  get_problem_function_details_client_ =
-    node_->create_client<plansys2_msgs::srv::GetNodeDetails>(
-    "problem_expert/get_problem_function");
-  get_problem_functions_client_ = node_->create_client<plansys2_msgs::srv::GetStates>(
-    "problem_expert/get_problem_functions");
-  get_problem_client_ = node_->create_client<plansys2_msgs::srv::GetProblem>(
-    "problem_expert/get_problem");
-  remove_problem_goal_client_ = node_->create_client<plansys2_msgs::srv::RemoveProblemGoal>(
-    "problem_expert/remove_problem_goal");
-  clear_problem_knowledge_client_ = node_->create_client<plansys2_msgs::srv::ClearProblemKnowledge>(
-    "problem_expert/clear_problem_knowledge");
-  remove_problem_instance_client_ =
-    node_->create_client<plansys2_msgs::srv::AffectParam>(
-    "problem_expert/remove_problem_instance");
-  remove_problem_predicate_client_ =
-    node_->create_client<plansys2_msgs::srv::AffectNode>(
-    "problem_expert/remove_problem_predicate");
-  remove_problem_function_client_ =
-    node_->create_client<plansys2_msgs::srv::AffectNode>(
-    "problem_expert/remove_problem_function");
-  exist_problem_predicate_client_ =
-    node_->create_client<plansys2_msgs::srv::ExistNode>(
-    "problem_expert/exist_problem_predicate");
-  exist_problem_function_client_ =
-    node_->create_client<plansys2_msgs::srv::ExistNode>(
-    "problem_expert/exist_problem_function");
-  update_problem_function_client_ =
-    node_->create_client<plansys2_msgs::srv::AffectNode>(
-    "problem_expert/update_problem_function");
-  is_problem_goal_satisfied_client_ =
-    node_->create_client<plansys2_msgs::srv::IsProblemGoalSatisfied>(
-    "problem_expert/is_problem_goal_satisfied");
+  node_ = ros::NodeHandle("problem_expert_client");
+  
+  add_problem_client_ = node_.serviceClient<plansys2_msgs::AddProblem>("problem_expert/add_problem");
+  add_problem_goal_client_ = node_.serviceClient<plansys2_msgs::AddProblemGoal>("problem_expert/add_problem_goal");
+  add_problem_instance_client_ = node_.serviceClient<plansys2_msgs::AffectParam>("problem_expert/add_problem_instance");
+  add_problem_predicate_client_ = node_.serviceClient<plansys2_msgs::AffectNode>("problem_expert/add_problem_predicate");
+  add_problem_function_client_ = node_.serviceClient<plansys2_msgs::AffectNode>("problem_expert/add_problem_function");
+  get_problem_goal_client_ = node_.serviceClient<plansys2_msgs::GetProblemGoal>("problem_expert/get_problem_goal");
+  get_problem_instance_details_client_ = node_.serviceClient<plansys2_msgs::GetProblemInstanceDetails>("problem_expert/get_problem_instance");
+  get_problem_instances_client_ = node_.serviceClient<plansys2_msgs::GetProblemInstances>("problem_expert/get_problem_instances");
+  get_problem_predicate_details_client_ = node_.serviceClient<plansys2_msgs::GetNodeDetails>("problem_expert/get_problem_predicate");
+  get_problem_predicates_client_ = node_.serviceClient<plansys2_msgs::GetStates>("problem_expert/get_problem_predicates");
+  get_problem_function_details_client_ = node_.serviceClient<plansys2_msgs::GetNodeDetails>("problem_expert/get_problem_function");
+  get_problem_functions_client_ = node_.serviceClient<plansys2_msgs::GetStates>("problem_expert/get_problem_functions");
+  get_problem_client_ = node_.serviceClient<plansys2_msgs::GetProblem>("problem_expert/get_problem");
+  remove_problem_goal_client_ = node_.serviceClient<plansys2_msgs::RemoveProblemGoal>("problem_expert/remove_problem_goal");
+  clear_problem_knowledge_client_ = node_.serviceClient<plansys2_msgs::ClearProblemKnowledge>("problem_expert/clear_problem_knowledge");
+  remove_problem_instance_client_ = node_.serviceClient<plansys2_msgs::AffectParam>("problem_expert/remove_problem_instance");
+  remove_problem_predicate_client_ = node_.serviceClient<plansys2_msgs::AffectNode>("problem_expert/remove_problem_predicate");
+  remove_problem_function_client_ = node_.serviceClient<plansys2_msgs::AffectNode>("problem_expert/remove_problem_function");
+  exist_problem_predicate_client_ = node_.serviceClient<plansys2_msgs::ExistNode>("problem_expert/exist_problem_predicate");
+  exist_problem_function_client_ = node_.serviceClient<plansys2_msgs::ExistNode>("problem_expert/exist_problem_function");
+  update_problem_function_client_ = node_.serviceClient<plansys2_msgs::AffectNode>( "problem_expert/update_problem_function");
+  is_problem_goal_satisfied_client_ = node_.serviceClient<plansys2_msgs::IsProblemGoalSatisfied>( "problem_expert/is_problem_goal_satisfied");
+  
 }
 
 std::vector<plansys2::Instance>
 ProblemExpertClient::getInstances()
 {
-  while (!get_problem_instances_client_->wait_for_service(std::chrono::seconds(5))) {
-    if (!rclcpp::ok()) {
-      return {};
-    }
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      get_problem_instances_client_->get_service_name() <<
-        " service  client: waiting for service to appear...");
-  }
-
-  auto request = std::make_shared<plansys2_msgs::srv::GetProblemInstances::Request>();
-
-  auto future_result = get_problem_instances_client_->async_send_request(request);
-
-  if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::FutureReturnCode::SUCCESS)
+  while (!get_problem_instances_client_.waitForExistence(ros::Duration(1.0)))
   {
-    return {};
+    if (!ros::ok())
+      return {};
+    
+    ROS_INFO_STREAM(getName() << " Waiting for service " << get_problem_instances_client_.getService() << " to appear");      
   }
+  
+  plansys2_msgs::GetProblemInstances srv;;
 
-  auto result = *future_result.get();
+  if (!get_problem_instances_client_.call(srv))
+    return {};
+  
 
-  if (result.success) {
-    return plansys2::convertVector<plansys2::Instance, plansys2_msgs::msg::Param>(
-      result.instances);
+  if (srv.response.success) {
+    return plansys2::convertVector<plansys2::Instance, plansys2_msgs::Param>(
+      srv.response.instances);
   } else {
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      node_->get_namespace() <<
-        get_problem_instances_client_->get_service_name() << ": " <<
-        result.error_info);
+    ROS_ERROR_STREAM(getName() <<
+		     node_.getNamespace() <<
+		     get_problem_instances_client_.getService() << ": " <<
+		     srv.response.error_info);
     return {};
   }
 }
@@ -126,37 +86,29 @@ ProblemExpertClient::getInstances()
 bool
 ProblemExpertClient::addInstance(const plansys2::Instance & instance)
 {
-  while (!add_problem_instance_client_->wait_for_service(std::chrono::seconds(5))) {
-    if (!rclcpp::ok()) {
-      return false;
-    }
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      add_problem_instance_client_->get_service_name() <<
-        " service  client: waiting for service to appear...");
+  while (!add_problem_instance_client_.waitForExistence(ros::Duration(1.0)))
+  {
+    if (!ros::ok())
+      return {};
+    
+    ROS_INFO_STREAM(getName() << " Waiting for service " << add_problem_instance_client_.getService() << " to appear");      
   }
 
-  auto request = std::make_shared<plansys2_msgs::srv::AffectParam::Request>();
-  request->param = instance;
+  plansys2_msgs::AffectParam srv;
+  srv.request.param = instance;
 
-  auto future_result = add_problem_instance_client_->async_send_request(request);
-
-  if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::FutureReturnCode::SUCCESS)
+  if (!add_problem_instance_client_.call(srv))
   {
     return false;
   }
 
-  auto result = *future_result.get();
-
-  if (result.success) {
-    update_time_ = node_->now();
+  if (srv.response.success) {
+    update_time_ = ros::Time::now();
     return true;
   } else {
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      add_problem_instance_client_->get_service_name() << ": " <<
-        result.error_info);
+    ROS_ERROR_STREAM(getName() <<
+		     add_problem_instance_client_.getService() << ": " <<
+		     srv.response.error_info);
     return false;
   }
 }
@@ -164,113 +116,90 @@ ProblemExpertClient::addInstance(const plansys2::Instance & instance)
 bool
 ProblemExpertClient::removeInstance(const plansys2::Instance & instance)
 {
-  while (!remove_problem_instance_client_->wait_for_service(std::chrono::seconds(5))) {
-    if (!rclcpp::ok()) {
-      return false;
-    }
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      remove_problem_instance_client_->get_service_name() <<
-        " service  client: waiting for service to appear...");
+  while (!remove_problem_instance_client_.waitForExistence(ros::Duration(1.0)))
+  {
+    if (!ros::ok())
+      return {};
+    
+    ROS_INFO_STREAM(getName() << " Waiting for service " << remove_problem_instance_client_.getService() << " to appear");      
   }
+  
+  plansys2_msgs::AffectParam srv;
+  srv.request.param = instance;
 
-  auto request = std::make_shared<plansys2_msgs::srv::AffectParam::Request>();
-  request->param = instance;
-
-  auto future_result = remove_problem_instance_client_->async_send_request(request);
-
-  if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::FutureReturnCode::SUCCESS)
+  if (!remove_problem_instance_client_.call(srv))
   {
     return false;
   }
 
-  auto result = *future_result.get();
-
-  if (result.success) {
-    update_time_ = node_->now();
+  if (srv.response.success) {
+    update_time_ = ros::Time::now();
     return true;
   } else {
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      remove_problem_instance_client_->get_service_name() << ": " <<
-        result.error_info);
+    ROS_ERROR_STREAM(getName() <<
+		     remove_problem_instance_client_.getService() << ": " <<
+		     srv.response.error_info);
     return false;
   }
+
 }
 
 
 std::optional<plansys2::Instance>
 ProblemExpertClient::getInstance(const std::string & name)
 {
-  while (!get_problem_instance_details_client_->wait_for_service(std::chrono::seconds(5))) {
-    if (!rclcpp::ok()) {
+  while (!get_problem_instance_details_client_.waitForExistence(ros::Duration(1.0)))
+  {
+    if (!ros::ok())
       return {};
-    }
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      get_problem_instance_details_client_->get_service_name() <<
-        " service  client: waiting for service to appear...");
+    
+    ROS_INFO_STREAM(getName() << " Waiting for service " << get_problem_instance_details_client_.getService() << " to appear");      
   }
 
-  auto request = std::make_shared<plansys2_msgs::srv::GetProblemInstanceDetails::Request>();
+  
+  plansys2_msgs::GetProblemInstanceDetails srv;
+  srv.request.instance = name;
 
-  request->instance = name;
-
-  auto future_result = get_problem_instance_details_client_->async_send_request(request);
-
-  if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::FutureReturnCode::SUCCESS)
+  if (!get_problem_instance_details_client_.call(srv))
   {
     return {};
   }
 
-  auto result = *future_result.get();
-
-  if (result.success) {
-    return result.instance;
+  if (srv.response.success) {
+    return srv.response.instance;
   } else {
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      get_problem_instance_details_client_->get_service_name() << ": " <<
-        result.error_info);
+    ROS_ERROR_STREAM(getName() <<
+		     get_problem_instance_details_client_.getService() << ": " <<
+		     srv.response.error_info);
     return {};
   }
+
 }
 
 std::vector<plansys2::Predicate>
 ProblemExpertClient::getPredicates()
 {
-  while (!get_problem_predicates_client_->wait_for_service(std::chrono::seconds(5))) {
-    if (!rclcpp::ok()) {
+  while (!get_problem_predicates_client_.waitForExistence(ros::Duration(1.0)))
+  {
+    if (!ros::ok())
       return {};
-    }
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      get_problem_predicates_client_->get_service_name() <<
-        " service  client: waiting for service to appear...");
+    
+    ROS_INFO_STREAM(getName() << " Waiting for service " << get_problem_predicates_client_.getService() << " to appear");      
   }
 
-  auto request = std::make_shared<plansys2_msgs::srv::GetStates::Request>();
+  plansys2_msgs::GetStates srv;
 
-  auto future_result = get_problem_predicates_client_->async_send_request(request);
-
-  if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::FutureReturnCode::SUCCESS)
+  if( !get_problem_predicates_client_.call(srv))
   {
     return {};
   }
 
-  auto result = *future_result.get();
-
-  if (result.success) {
-    return plansys2::convertVector<plansys2::Predicate, plansys2_msgs::msg::Node>(
-      result.states);
+  if (srv.response.success) {
+    return plansys2::convertVector<plansys2::Predicate, plansys2_msgs::Node>(srv.response.states);
   } else {
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      get_problem_predicates_client_->get_service_name() << ": " <<
-        result.error_info);
+    ROS_ERROR_STREAM(getName() << 
+		     get_problem_predicates_client_.getService() << ": " <<
+		     srv.response.error_info);
     return {};
   }
 }
@@ -278,37 +207,30 @@ ProblemExpertClient::getPredicates()
 bool
 ProblemExpertClient::addPredicate(const plansys2::Predicate & predicate)
 {
-  while (!add_problem_predicate_client_->wait_for_service(std::chrono::seconds(5))) {
-    if (!rclcpp::ok()) {
+  while (!add_problem_predicate_client_.waitForExistence(ros::Duration(1.0))) {
+    if (!ros::ok()) {
       return false;
     }
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      add_problem_predicate_client_->get_service_name() <<
+    ROS_ERROR_STREAM(getName() << 
+      add_problem_predicate_client_.getService() <<
         " service  client: waiting for service to appear...");
   }
 
-  auto request = std::make_shared<plansys2_msgs::srv::AffectNode::Request>();
-  request->node = predicate;
+  plansys2_msgs::AffectNode srv;
+  srv.request.node = predicate;
 
-  auto future_result = add_problem_predicate_client_->async_send_request(request);
-
-  if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::FutureReturnCode::SUCCESS)
+  if (!add_problem_predicate_client_.call(srv))
   {
     return false;
   }
 
-  auto result = *future_result.get();
-
-  if (result.success) {
-    update_time_ = node_->now();
+  if (srv.response.success) {
+    update_time_ = ros::Time::now();
     return true;
   } else {
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      add_problem_predicate_client_->get_service_name() << ": " <<
-        result.error_info);
+    ROS_ERROR_STREAM(getName() << 
+		     add_problem_predicate_client_.getService() << ": " <<
+		     srv.response.error_info);
     return false;
   }
 }
@@ -316,104 +238,90 @@ ProblemExpertClient::addPredicate(const plansys2::Predicate & predicate)
 bool
 ProblemExpertClient::removePredicate(const plansys2::Predicate & predicate)
 {
-  while (!remove_problem_predicate_client_->wait_for_service(std::chrono::seconds(5))) {
-    if (!rclcpp::ok()) {
+  while (!remove_problem_predicate_client_.waitForExistence(ros::Duration(1.0))) {
+    if (!ros::ok()) {
       return false;
     }
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      remove_problem_predicate_client_->get_service_name() <<
+    ROS_ERROR_STREAM(getName() << 
+      remove_problem_predicate_client_.getService() <<
         " service  client: waiting for service to appear...");
   }
 
-  auto request = std::make_shared<plansys2_msgs::srv::AffectNode::Request>();
-  request->node = predicate;
+  plansys2_msgs::AffectNode srv;
+  srv.request.node = predicate;
 
-  auto future_result = remove_problem_predicate_client_->async_send_request(request);
-
-  if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::FutureReturnCode::SUCCESS)
+  if (!remove_problem_predicate_client_.call(srv))
   {
     return false;
   }
 
-  auto result = *future_result.get();
-
-  if (result.success) {
-    update_time_ = node_->now();
+  if (srv.response.success) {
+    update_time_ = ros::Time::now();
     return true;
   } else {
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      remove_problem_predicate_client_->get_service_name() << ": " <<
-        result.error_info);
+    ROS_ERROR_STREAM(getName() << 
+      remove_problem_predicate_client_.getService() << ": " <<
+        srv.response.error_info);
     return false;
   }
+  
 }
 
 bool
 ProblemExpertClient::existPredicate(const plansys2::Predicate & predicate)
 {
-  while (!exist_problem_predicate_client_->wait_for_service(std::chrono::seconds(5))) {
-    if (!rclcpp::ok()) {
+  while (!exist_problem_predicate_client_.waitForExistence(ros::Duration(1.0))) {
+    if (!ros::ok()) {
       return false;
     }
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      exist_problem_predicate_client_->get_service_name() <<
+    ROS_ERROR_STREAM(getName() << 
+      exist_problem_predicate_client_.getService() <<
         " service  client: waiting for service to appear...");
   }
 
-  auto request = std::make_shared<plansys2_msgs::srv::ExistNode::Request>();
-  request->node = predicate;
+  plansys2_msgs::ExistNode srv;
+  srv.request.node = predicate;
 
-  auto future_result = exist_problem_predicate_client_->async_send_request(request);
-
-  if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::FutureReturnCode::SUCCESS)
+  if (!exist_problem_predicate_client_.call(srv))
   {
     return false;
   }
 
-  auto result = *future_result.get();
+  return srv.response.exist;
 
-  return result.exist;
 }
 
 std::optional<plansys2::Predicate>
 ProblemExpertClient::getPredicate(const std::string & predicate)
 {
-  while (!get_problem_predicate_details_client_->wait_for_service(std::chrono::seconds(5))) {
-    if (!rclcpp::ok()) {
+  
+  while (!get_problem_predicate_details_client_.waitForExistence(ros::Duration(1.0))) {
+    if (!ros::ok()) {
       return {};
     }
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      get_problem_predicate_details_client_->get_service_name() <<
+    ROS_ERROR_STREAM(getName() << 
+      get_problem_predicate_details_client_.getService() <<
         " service  client: waiting for service to appear...");
   }
 
-  auto request = std::make_shared<plansys2_msgs::srv::GetNodeDetails::Request>();
+  plansys2_msgs::GetNodeDetails srv;
 
-  request->expression = predicate;
+  srv.request.expression = predicate;
 
-  auto future_result = get_problem_predicate_details_client_->async_send_request(request);
+  
 
-  if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::FutureReturnCode::SUCCESS)
+  if (!get_problem_predicate_details_client_.call(srv))
   {
     return {};
   }
 
-  auto result = *future_result.get();
-
-  if (result.success) {
-    return result.node;
+  if (srv.response.success) {
+    return srv.response.node;
   } else {
-    RCLCPP_DEBUG_STREAM(
-      node_->get_logger(),
-      get_problem_predicate_details_client_->get_service_name() << ": " <<
-        result.error_info);
+    ROS_DEBUG_STREAM(
+		     getName() <<
+		     get_problem_predicate_details_client_.getService() << ": " <<
+		     srv.response.error_info);
     return {};
   }
 }
@@ -421,408 +329,338 @@ ProblemExpertClient::getPredicate(const std::string & predicate)
 std::vector<plansys2::Function>
 ProblemExpertClient::getFunctions()
 {
-  while (!get_problem_functions_client_->wait_for_service(std::chrono::seconds(5))) {
-    if (!rclcpp::ok()) {
+  while (!get_problem_functions_client_.waitForExistence(ros::Duration(1.0))) {
+    if (!ros::ok()) {
       return {};
     }
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      get_problem_functions_client_->get_service_name() <<
+    ROS_ERROR_STREAM(getName() << 
+      get_problem_functions_client_.getService() <<
         " service  client: waiting for service to appear...");
   }
 
-  auto request = std::make_shared<plansys2_msgs::srv::GetStates::Request>();
+  plansys2_msgs::GetStates srv;
 
-  auto future_result = get_problem_functions_client_->async_send_request(request);
-
-  if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::FutureReturnCode::SUCCESS)
+  if (!get_problem_functions_client_.call(srv))
   {
     return {};
   }
 
-  auto result = *future_result.get();
-
-  if (result.success) {
-    return plansys2::convertVector<plansys2::Function, plansys2_msgs::msg::Node>(
-      result.states);
+  if (srv.response.success) {
+    return plansys2::convertVector<plansys2::Function, plansys2_msgs::Node>(
+      srv.response.states);
   } else {
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      get_problem_functions_client_->get_service_name() << ": " <<
-        result.error_info);
+    ROS_ERROR_STREAM(getName() << 
+      get_problem_functions_client_.getService() << ": " <<
+        srv.response.error_info);
     return {};
   }
 }
 
-bool
-ProblemExpertClient::addFunction(const plansys2::Function & function)
+bool ProblemExpertClient::addFunction(const plansys2::Function & function)
 {
-  while (!add_problem_function_client_->wait_for_service(std::chrono::seconds(5))) {
-    if (!rclcpp::ok()) {
+  while (!add_problem_function_client_.waitForExistence(ros::Duration(1.0))) {
+    if (!ros::ok()) {
       return false;
     }
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      add_problem_function_client_->get_service_name() <<
+    ROS_ERROR_STREAM(getName() << 
+      add_problem_function_client_.getService() <<
         " service  client: waiting for service to appear...");
   }
 
-  auto request = std::make_shared<plansys2_msgs::srv::AffectNode::Request>();
-  request->node = function;
+  plansys2_msgs::AffectNode srv;
+  srv.request.node = function;
 
-  auto future_result = add_problem_function_client_->async_send_request(request);
-
-  if (rclcpp::spin_until_future_complete(
-      node_,
-      future_result,
-      std::chrono::seconds(1)) !=
-    rclcpp::FutureReturnCode::SUCCESS)
+  if (!add_problem_function_client_.call(srv))
   {
     return false;
   }
 
-  auto result = *future_result.get();
-
-  if (result.success) {
-    update_time_ = node_->now();
+  if (srv.response.success) {
+    update_time_ = ros::Time::now();
     return true;
   } else {
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      add_problem_function_client_->get_service_name() << ": " <<
-        result.error_info);
+    ROS_ERROR_STREAM(getName() << 
+      add_problem_function_client_.getService() << ": " <<
+        srv.response.error_info);
     return false;
-  }
+    }
+  
 }
 
 bool
 ProblemExpertClient::removeFunction(const plansys2::Function & function)
 {
-  while (!remove_problem_function_client_->wait_for_service(std::chrono::seconds(5))) {
-    if (!rclcpp::ok()) {
+  while (!remove_problem_function_client_.waitForExistence(ros::Duration(1.0))) {
+    if (!ros::ok()) {
       return false;
     }
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      remove_problem_function_client_->get_service_name() <<
+    ROS_ERROR_STREAM(getName() << 
+      remove_problem_function_client_.getService() <<
         " service  client: waiting for service to appear...");
   }
 
-  auto request = std::make_shared<plansys2_msgs::srv::AffectNode::Request>();
-  request->node = function;
+  plansys2_msgs::AffectNode srv;
+  srv.request.node = function;
 
-  auto future_result = remove_problem_function_client_->async_send_request(request);
-
-  if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::FutureReturnCode::SUCCESS)
+  if (!remove_problem_function_client_.call(srv))
   {
     return false;
   }
 
-  auto result = *future_result.get();
-
-  if (result.success) {
-    update_time_ = node_->now();
+  if (srv.response.success) {
+    update_time_ = ros::Time::now();
     return true;
   } else {
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      remove_problem_function_client_->get_service_name() << ": " <<
-        result.error_info);
+    ROS_ERROR_STREAM(getName() << 
+      remove_problem_function_client_.getService() << ": " <<
+        srv.response.error_info);
     return false;
-  }
+    }
+  
 }
 
 bool
 ProblemExpertClient::existFunction(const plansys2::Function & function)
 {
-  while (!exist_problem_function_client_->wait_for_service(std::chrono::seconds(5))) {
-    if (!rclcpp::ok()) {
+  while (!exist_problem_function_client_.waitForExistence(ros::Duration(1.0))) {
+    if (!ros::ok()) {
       return false;
     }
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      exist_problem_function_client_->get_service_name() <<
+    ROS_ERROR_STREAM(getName() << 
+      exist_problem_function_client_.getService() <<
         " service  client: waiting for service to appear...");
   }
 
-  auto request = std::make_shared<plansys2_msgs::srv::ExistNode::Request>();
-  request->node = function;
+  plansys2_msgs::ExistNode srv;
+  srv.request.node = function;
 
-  auto future_result = exist_problem_function_client_->async_send_request(request);
-
-  if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::FutureReturnCode::SUCCESS)
+  if (!exist_problem_function_client_.call(srv))
   {
     return false;
   }
 
-  auto result = *future_result.get();
-
-  return result.exist;
+  return srv.response.exist;
 }
 
 bool ProblemExpertClient::updateFunction(const plansys2::Function & function)
 {
-  while (!update_problem_function_client_->wait_for_service(std::chrono::seconds(5))) {
-    if (!rclcpp::ok()) {
+  while (!update_problem_function_client_.waitForExistence(ros::Duration(1.0))) {
+    if (!ros::ok()) {
       return false;
     }
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      update_problem_function_client_->get_service_name() <<
+    ROS_ERROR_STREAM(getName() << 
+      update_problem_function_client_.getService() <<
         " service  client: waiting for service to appear...");
   }
 
-  auto request = std::make_shared<plansys2_msgs::srv::AffectNode::Request>();
-  request->node = function;
+  plansys2_msgs::AffectNode srv;
+  srv.request.node = function;
 
-  auto future_result = update_problem_function_client_->async_send_request(request);
+  
 
-  if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::FutureReturnCode::SUCCESS)
+  if (!update_problem_function_client_.call(srv))
   {
     return false;
   }
 
-  auto result = *future_result.get();
-
-  if (result.success) {
-    update_time_ = node_->now();
+  if (srv.response.success) {
+    update_time_ = ros::Time::now();
     return true;
   } else {
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      update_problem_function_client_->get_service_name() << ": " <<
-        result.error_info);
+    ROS_ERROR_STREAM(getName() << 
+		     update_problem_function_client_.getService() << ": " <<
+		     srv.response.error_info);
     return false;
   }
+  
 }
 
 std::optional<plansys2::Function>
 ProblemExpertClient::getFunction(const std::string & function)
 {
-  while (!get_problem_function_details_client_->wait_for_service(std::chrono::seconds(5))) {
-    if (!rclcpp::ok()) {
+  while (!get_problem_function_details_client_.waitForExistence(ros::Duration(1.0))) {
+    if (!ros::ok()) {
       return {};
     }
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      get_problem_function_details_client_->get_service_name() <<
+    ROS_ERROR_STREAM(getName() << 
+      get_problem_function_details_client_.getService() <<
         " service  client: waiting for service to appear...");
   }
 
-  auto request = std::make_shared<plansys2_msgs::srv::GetNodeDetails::Request>();
+  plansys2_msgs::GetNodeDetails srv;
+  srv.request.expression = function;
 
-  request->expression = function;
-
-  auto future_result = get_problem_function_details_client_->async_send_request(request);
-
-  if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::FutureReturnCode::SUCCESS)
+  if (!get_problem_function_details_client_.call(srv))
   {
     return {};
   }
 
-  auto result = *future_result.get();
-
-  if (result.success) {
-    return result.node;
+  if (srv.response.success) {
+    return srv.response.node;
   } else {
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      get_problem_function_details_client_->get_service_name() << ": " <<
-        result.error_info);
+    ROS_ERROR_STREAM(getName() << 
+		     get_problem_function_details_client_.getService() << ": " <<
+		     srv.response.error_info);
     return {};
   }
+
 }
 
 
 plansys2::Goal
 ProblemExpertClient::getGoal()
 {
-  plansys2_msgs::msg::Tree ret;
-
-  while (!get_problem_goal_client_->wait_for_service(std::chrono::seconds(5))) {
-    if (!rclcpp::ok()) {
+  plansys2_msgs::Tree ret;
+  
+  while (!get_problem_goal_client_.waitForExistence(ros::Duration(1.0))) {
+    if (!ros::ok()) {
       return ret;
     }
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      get_problem_goal_client_->get_service_name() <<
+    ROS_ERROR_STREAM(getName() << 
+      get_problem_goal_client_.getService() <<
         " service  client: waiting for service to appear...");
   }
 
-  auto request = std::make_shared<plansys2_msgs::srv::GetProblemGoal::Request>();
+  plansys2_msgs::GetProblemGoal srv;
 
-  auto future_result = get_problem_goal_client_->async_send_request(request);
-
-  if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::FutureReturnCode::SUCCESS)
+  if (!get_problem_goal_client_.call(srv))
   {
     return ret;
   }
 
-  auto result = *future_result.get();
-
-  if (result.success) {
-    return result.tree;
+  if (srv.response.success) {
+    return srv.response.tree;
   } else {
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      get_problem_goal_client_->get_service_name() << ": " <<
-        result.error_info);
+    ROS_ERROR_STREAM(getName() << 
+		     get_problem_goal_client_.getService() << ": " <<
+		     srv.response.error_info);
   }
-
+  
   return ret;
 }
 
 bool
 ProblemExpertClient::setGoal(const plansys2::Goal & goal)
 {
-  while (!add_problem_goal_client_->wait_for_service(std::chrono::seconds(5))) {
-    if (!rclcpp::ok()) {
+  while (!add_problem_goal_client_.waitForExistence(ros::Duration(1.0))) {
+    if (!ros::ok()) {
       return false;
     }
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      add_problem_goal_client_->get_service_name() <<
+    ROS_ERROR_STREAM(getName() << 
+      add_problem_goal_client_.getService() <<
         " service  client: waiting for service to appear...");
   }
 
-  auto request = std::make_shared<plansys2_msgs::srv::AddProblemGoal::Request>();
-  request->tree = goal;
+  plansys2_msgs::AddProblemGoal srv;
+  srv.request.tree = goal;
 
-  auto future_result = add_problem_goal_client_->async_send_request(request);
+  
 
-  if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::FutureReturnCode::SUCCESS)
+  if (!add_problem_goal_client_.call(srv))
   {
     return false;
   }
 
-  auto result = *future_result.get();
-
-  if (result.success) {
-    update_time_ = node_->now();
+  if (srv.response.success) {
+    update_time_ = ros::Time::now();
     return true;
   } else {
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      add_problem_goal_client_->get_service_name() << ": " <<
-        result.error_info);
+    ROS_ERROR_STREAM(getName() << 
+		     add_problem_goal_client_.getService() << ": " <<
+		     srv.response.error_info);
     return false;
   }
+  return true;
 }
 
 bool
 ProblemExpertClient::isGoalSatisfied(const plansys2::Goal & goal)
 {
-  while (!is_problem_goal_satisfied_client_->wait_for_service(std::chrono::seconds(5))) {
-    if (!rclcpp::ok()) {
+  while (!is_problem_goal_satisfied_client_.waitForExistence(ros::Duration(1.0))) {
+    if (!ros::ok()) {
       return false;
     }
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      is_problem_goal_satisfied_client_->get_service_name() <<
+    ROS_ERROR_STREAM(getName() << 
+      is_problem_goal_satisfied_client_.getService() <<
         " service  client: waiting for service to appear...");
   }
 
-  auto request = std::make_shared<plansys2_msgs::srv::IsProblemGoalSatisfied::Request>();
-  request->tree = goal;
+  plansys2_msgs::IsProblemGoalSatisfied srv;
+  srv.request.tree = goal;
 
-  auto future_result = is_problem_goal_satisfied_client_->async_send_request(request);
-
-  if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::FutureReturnCode::SUCCESS)
+  if (!is_problem_goal_satisfied_client_.call(srv))
   {
     return false;
   }
 
-  auto result = *future_result.get();
-
-  if (result.success) {
-    return result.satisfied;
+  if (srv.response.success) {
+    return srv.response.satisfied;
   } else {
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      is_problem_goal_satisfied_client_->get_service_name() << ": " <<
-        result.error_info);
+    ROS_ERROR_STREAM(getName() << 
+		     is_problem_goal_satisfied_client_.getService() << ": " <<
+		     srv.response.error_info);
     return false;
   }
+
 }
 
 bool
 ProblemExpertClient::clearGoal()
 {
-  while (!remove_problem_goal_client_->wait_for_service(std::chrono::seconds(5))) {
-    if (!rclcpp::ok()) {
+  while (!remove_problem_goal_client_.waitForExistence(ros::Duration(1.0))) {
+    if (!ros::ok()) {
       return false;
     }
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      remove_problem_goal_client_->get_service_name() <<
+    ROS_ERROR_STREAM(getName() << 
+      remove_problem_goal_client_.getService() <<
         " service  client: waiting for service to appear...");
   }
 
-  auto request = std::make_shared<plansys2_msgs::srv::RemoveProblemGoal::Request>();
+  plansys2_msgs::RemoveProblemGoal srv;
 
-  auto future_result = remove_problem_goal_client_->async_send_request(request);
-
-  if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::FutureReturnCode::SUCCESS)
+  if (!remove_problem_goal_client_.call(srv))
   {
     return false;
   }
 
-  auto result = *future_result.get();
-
-  if (result.success) {
-    update_time_ = node_->now();
+  if (srv.response.success) {
+    update_time_ = ros::Time::now();
     return true;
   } else {
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      remove_problem_goal_client_->get_service_name() << ": " <<
-        result.error_info);
+    ROS_ERROR_STREAM(getName() << 
+		     remove_problem_goal_client_.getService() << ": " <<
+		     srv.response.error_info);
     return false;
   }
+  
 }
 
 bool
 ProblemExpertClient::clearKnowledge()
 {
-  while (!clear_problem_knowledge_client_->wait_for_service(std::chrono::seconds(5))) {
-    if (!rclcpp::ok()) {
+  while (!clear_problem_knowledge_client_.waitForExistence(ros::Duration(1.0))) {
+    if (!ros::ok()) {
       return false;
     }
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      clear_problem_knowledge_client_->get_service_name() <<
+    ROS_ERROR_STREAM(getName() << 
+      clear_problem_knowledge_client_.getService() <<
         " service  client: waiting for service to appear...");
   }
 
-  auto request = std::make_shared<plansys2_msgs::srv::ClearProblemKnowledge::Request>();
+  plansys2_msgs::ClearProblemKnowledge srv;
 
-  auto future_result = clear_problem_knowledge_client_->async_send_request(request);
-
-  if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::FutureReturnCode::SUCCESS)
+  if (!clear_problem_knowledge_client_.call(srv))
   {
     return false;
   }
 
-  auto result = *future_result.get();
-
-  if (result.success) {
-    update_time_ = node_->now();
+  if (srv.response.success) {
+    update_time_ = ros::Time::now();
     return true;
   } else {
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      clear_problem_knowledge_client_->get_service_name() << ": " <<
-        result.error_info);
+    ROS_ERROR_STREAM(getName() << 
+		     clear_problem_knowledge_client_.getService() << ": " <<
+		     srv.response.error_info);
     return false;
   }
 }
@@ -831,73 +669,60 @@ ProblemExpertClient::clearKnowledge()
 std::string
 ProblemExpertClient::getProblem()
 {
-  while (!get_problem_client_->wait_for_service(std::chrono::seconds(5))) {
-    if (!rclcpp::ok()) {
+  while (!get_problem_client_.waitForExistence(ros::Duration(1.0))) {
+    if (!ros::ok()) {
       return {};
     }
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      get_problem_client_->get_service_name() <<
-        " service  client: waiting for service to appear...");
+    ROS_ERROR_STREAM(getName() << 
+		     get_problem_client_.getService() <<
+		     " service  client: waiting for service to appear...");
   }
+  
+  plansys2_msgs::GetProblem srv;
 
-  auto request = std::make_shared<plansys2_msgs::srv::GetProblem::Request>();
-
-  auto future_result = get_problem_client_->async_send_request(request);
-
-  if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::FutureReturnCode::SUCCESS)
+  if (!get_problem_client_.call(srv))
   {
     return {};
   }
 
-  auto result = *future_result.get();
-
-  if (result.success) {
-    return result.problem;
+  if (srv.response.success) {
+    return srv.response.problem;
   } else {
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      get_problem_client_->get_service_name() << ": " <<
-        result.error_info);
+    ROS_ERROR_STREAM(getName() << 
+		     get_problem_client_.getService() << ": " <<
+		     srv.response.error_info);
     return {};
-  }
+    }
 }
 
 bool
 ProblemExpertClient::addProblem(const std::string & problem_str)
 {
-  while (!add_problem_client_->wait_for_service(std::chrono::seconds(5))) {
-    if (!rclcpp::ok()) {
+  while (!add_problem_client_.waitForExistence(ros::Duration(1.0))) {
+    if (!ros::ok()) {
       return false;
     }
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      add_problem_client_->get_service_name() <<
-        " service  client: waiting for service to appear...");
+    
+    ROS_ERROR_STREAM(getName() << 
+		     add_problem_client_.getService() <<
+		     " service  client: waiting for service to appear...");
   }
 
-  auto request = std::make_shared<plansys2_msgs::srv::AddProblem::Request>();
-  request->problem = problem_str;
+  plansys2_msgs::AddProblem srv;
+  srv.request.problem = problem_str;
 
-  auto future_result = add_problem_client_->async_send_request(request);
-
-  if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::FutureReturnCode::SUCCESS)
+  if (!add_problem_client_.call(srv))
   {
     return false;
   }
 
-  auto result = *future_result.get();
-
-  if (result.success) {
-    update_time_ = node_->now();
+  if (srv.response.success) {
+    update_time_ = ros::Time::now();
     return true;
   } else {
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      add_problem_client_->get_service_name() << ": " <<
-        result.error_info);
+    ROS_ERROR_STREAM(getName() << 
+		     add_problem_client_.getService() << ": " <<
+		     srv.response.error_info);
     return false;
   }
 }

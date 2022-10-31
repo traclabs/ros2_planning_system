@@ -20,14 +20,14 @@
 #include <map>
 #include <utility>
 
-#include "plansys2_problem_expert/Utils.hpp"
-#include "plansys2_pddl_parser/Utils.h"
+#include <plansys2_problem_expert/Utils.hpp>
+#include <plansys2_pddl_parser/Utils.h>
 
 namespace plansys2
 {
 
 std::tuple<bool, bool, double> evaluate(
-  const plansys2_msgs::msg::Tree & tree,
+  const plansys2_msgs::Tree & tree,
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client,
   std::vector<plansys2::Predicate> & predicates,
   std::vector<plansys2::Function> & functions,
@@ -41,7 +41,7 @@ std::tuple<bool, bool, double> evaluate(
   }
 
   switch (tree.nodes[node_id].node_type) {
-    case plansys2_msgs::msg::Node::AND: {
+    case plansys2_msgs::Node::AND: {
         bool success = true;
         bool truth_value = true;
 
@@ -56,7 +56,7 @@ std::tuple<bool, bool, double> evaluate(
         return std::make_tuple(success, truth_value, 0);
       }
 
-    case plansys2_msgs::msg::Node::OR: {
+    case plansys2_msgs::Node::OR: {
         bool success = true;
         bool truth_value = false;
 
@@ -71,14 +71,14 @@ std::tuple<bool, bool, double> evaluate(
         return std::make_tuple(success, truth_value, 0);
       }
 
-    case plansys2_msgs::msg::Node::NOT: {
+    case plansys2_msgs::Node::NOT: {
         return evaluate(
           tree, problem_client, predicates, functions, apply, use_state,
           tree.nodes[node_id].children[0],
           !negate);
       }
 
-    case plansys2_msgs::msg::Node::PREDICATE: {
+    case plansys2_msgs::Node::PREDICATE: {
         bool success = true;
         bool value = true;
 
@@ -129,7 +129,7 @@ std::tuple<bool, bool, double> evaluate(
         return std::make_tuple(success, value, 0);
       }
 
-    case plansys2_msgs::msg::Node::FUNCTION: {
+    case plansys2_msgs::Node::FUNCTION: {
         bool success = true;
         double value = 0;
 
@@ -146,7 +146,7 @@ std::tuple<bool, bool, double> evaluate(
             success = false;
           }
         } else {
-          std::optional<plansys2_msgs::msg::Node> func =
+          std::optional<plansys2_msgs::Node> func =
             problem_client->getFunction(parser::pddl::toString(tree, node_id));
 
           if (func.has_value()) {
@@ -159,7 +159,7 @@ std::tuple<bool, bool, double> evaluate(
         return std::make_tuple(success, false, value);
       }
 
-    case plansys2_msgs::msg::Node::EXPRESSION: {
+    case plansys2_msgs::Node::EXPRESSION: {
         std::tuple<bool, bool, double> left = evaluate(
           tree, problem_client, predicates,
           functions, apply, use_state, tree.nodes[node_id].children[0], negate);
@@ -172,35 +172,35 @@ std::tuple<bool, bool, double> evaluate(
         }
 
         switch (tree.nodes[node_id].expression_type) {
-          case plansys2_msgs::msg::Node::COMP_GE:
+          case plansys2_msgs::Node::COMP_GE:
             if (std::get<2>(left) >= std::get<2>(right)) {
               return std::make_tuple(true, true, 0);
             } else {
               return std::make_tuple(true, false, 0);
             }
             break;
-          case plansys2_msgs::msg::Node::COMP_GT:
+          case plansys2_msgs::Node::COMP_GT:
             if (std::get<2>(left) > std::get<2>(right)) {
               return std::make_tuple(true, true, 0);
             } else {
               return std::make_tuple(true, false, 0);
             }
             break;
-          case plansys2_msgs::msg::Node::COMP_LE:
+          case plansys2_msgs::Node::COMP_LE:
             if (std::get<2>(left) <= std::get<2>(right)) {
               return std::make_tuple(true, true, 0);
             } else {
               return std::make_tuple(true, false, 0);
             }
             break;
-          case plansys2_msgs::msg::Node::COMP_LT:
+          case plansys2_msgs::Node::COMP_LT:
             if (std::get<2>(left) < std::get<2>(right)) {
               return std::make_tuple(true, true, 0);
             } else {
               return std::make_tuple(true, false, 0);
             }
             break;
-          case plansys2_msgs::msg::Node::COMP_EQ:
+          case plansys2_msgs::Node::COMP_EQ:
             if (std::get<2>(left) == std::get<2>(right)) {
               return std::make_tuple(true, true, 0);
             } else {
@@ -208,10 +208,10 @@ std::tuple<bool, bool, double> evaluate(
             }
             break;
 
-          case plansys2_msgs::msg::Node::ARITH_MULT:
+          case plansys2_msgs::Node::ARITH_MULT:
             return std::make_tuple(true, false, std::get<2>(left) * std::get<2>(right));
             break;
-          case plansys2_msgs::msg::Node::ARITH_DIV:
+          case plansys2_msgs::Node::ARITH_DIV:
             if (std::abs(std::get<2>(right)) > 1e-5) {
               return std::make_tuple(true, false, std::get<2>(left) / std::get<2>(right));
             } else {
@@ -219,10 +219,10 @@ std::tuple<bool, bool, double> evaluate(
               return std::make_tuple(false, false, 0);
             }
             break;
-          case plansys2_msgs::msg::Node::ARITH_ADD:
+          case plansys2_msgs::Node::ARITH_ADD:
             return std::make_tuple(true, false, std::get<2>(left) + std::get<2>(right));
             break;
-          case plansys2_msgs::msg::Node::ARITH_SUB:
+          case plansys2_msgs::Node::ARITH_SUB:
             return std::make_tuple(true, false, std::get<2>(left) - std::get<2>(right));
             break;
           default:
@@ -232,7 +232,7 @@ std::tuple<bool, bool, double> evaluate(
         return std::make_tuple(false, false, 0);
       }
 
-    case plansys2_msgs::msg::Node::FUNCTION_MODIFIER: {
+    case plansys2_msgs::Node::FUNCTION_MODIFIER: {
         std::tuple<bool, bool, double> left = evaluate(
           tree, problem_client, predicates,
           functions, apply, use_state, tree.nodes[node_id].children[0], negate);
@@ -249,19 +249,19 @@ std::tuple<bool, bool, double> evaluate(
         double value = 0;
 
         switch (tree.nodes[node_id].modifier_type) {
-          case plansys2_msgs::msg::Node::ASSIGN:
+          case plansys2_msgs::Node::ASSIGN:
             value = std::get<2>(right);
             break;
-          case plansys2_msgs::msg::Node::INCREASE:
+          case plansys2_msgs::Node::INCREASE:
             value = std::get<2>(left) + std::get<2>(right);
             break;
-          case plansys2_msgs::msg::Node::DECREASE:
+          case plansys2_msgs::Node::DECREASE:
             value = std::get<2>(left) - std::get<2>(right);
             break;
-          case plansys2_msgs::msg::Node::SCALE_UP:
+          case plansys2_msgs::Node::SCALE_UP:
             value = std::get<2>(left) * std::get<2>(right);
             break;
-          case plansys2_msgs::msg::Node::SCALE_DOWN:
+          case plansys2_msgs::Node::SCALE_DOWN:
             // Division by zero not allowed.
             if (std::abs(std::get<2>(right)) > 1e-5) {
               value = std::get<2>(left) / std::get<2>(right);
@@ -298,7 +298,7 @@ std::tuple<bool, bool, double> evaluate(
         return std::make_tuple(success, false, value);
       }
 
-    case plansys2_msgs::msg::Node::NUMBER: {
+    case plansys2_msgs::Node::NUMBER: {
         return std::make_tuple(true, true, tree.nodes[node_id].value);
       }
 
@@ -311,7 +311,7 @@ std::tuple<bool, bool, double> evaluate(
 }
 
 std::tuple<bool, bool, double> evaluate(
-  const plansys2_msgs::msg::Tree & tree,
+  const plansys2_msgs::Tree & tree,
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client,
   bool apply,
   uint32_t node_id)
@@ -322,7 +322,7 @@ std::tuple<bool, bool, double> evaluate(
 }
 
 std::tuple<bool, bool, double> evaluate(
-  const plansys2_msgs::msg::Tree & tree,
+  const plansys2_msgs::Tree & tree,
   std::vector<plansys2::Predicate> & predicates,
   std::vector<plansys2::Function> & functions,
   bool apply,
@@ -333,7 +333,7 @@ std::tuple<bool, bool, double> evaluate(
 }
 
 bool check(
-  const plansys2_msgs::msg::Tree & tree,
+  const plansys2_msgs::Tree & tree,
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client,
   uint32_t node_id)
 {
@@ -343,7 +343,7 @@ bool check(
 }
 
 bool check(
-  const plansys2_msgs::msg::Tree & tree,
+  const plansys2_msgs::Tree & tree,
   std::vector<plansys2::Predicate> & predicates,
   std::vector<plansys2::Function> & functions,
   uint32_t node_id)
@@ -354,7 +354,7 @@ bool check(
 }
 
 bool apply(
-  const plansys2_msgs::msg::Tree & tree,
+  const plansys2_msgs::Tree & tree,
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client,
   uint32_t node_id)
 {
@@ -364,7 +364,7 @@ bool apply(
 }
 
 bool apply(
-  const plansys2_msgs::msg::Tree & tree,
+  const plansys2_msgs::Tree & tree,
   std::vector<plansys2::Predicate> & predicates,
   std::vector<plansys2::Function> & functions,
   uint32_t node_id)
