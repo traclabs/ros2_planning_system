@@ -19,11 +19,11 @@
 #include <string>
 #include <vector>
 
-#include "plansys2_msgs/msg/action.hpp"
-#include "plansys2_msgs/msg/durative_action.hpp"
-#include "plansys2_msgs/msg/node.hpp"
+#include <plansys2_msgs/Action.h>
+#include <plansys2_msgs/DurativeAction.h>
+#include <plansys2_msgs/Node.h>
 
-#include "plansys2_core/Types.hpp"
+#include <plansys2_core/Types.hpp>
 
 namespace plansys2
 {
@@ -98,7 +98,7 @@ public:
    * \return An Action object containing the action name, parameters, requirements and effects.
    *    If the action does not exist, the value returned has not value.
    */
-  virtual plansys2_msgs::msg::Action::SharedPtr getAction(
+  virtual plansys2_msgs::ActionSharedPtr getAction(
     const std::string & action, const std::vector<std::string> & params) =
   0;
 
@@ -114,7 +114,7 @@ public:
    * \return A Durative Action object containing the action name, parameters, requirements and
    *    effects. If the action does not exist, the value returned has not value.
    */
-  virtual plansys2_msgs::msg::DurativeAction::SharedPtr getDurativeAction(
+  virtual plansys2_msgs::DurativeActionSharedPtr getDurativeAction(
     const std::string & durative_action, const std::vector<std::string> & params) =
   0;
 

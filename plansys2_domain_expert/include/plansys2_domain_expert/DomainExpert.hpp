@@ -11,6 +11,11 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+// Modifications by TRACLabs
+// Copyright 2022
+// Modification explanations: Backport  to ROS1
+//
 
 #ifndef PLANSYS2_DOMAIN_EXPERT__DOMAINEXPERT_HPP_
 #define PLANSYS2_DOMAIN_EXPERT__DOMAINEXPERT_HPP_
@@ -20,14 +25,14 @@
 #include <vector>
 #include <memory>
 
-#include "plansys2_msgs/msg/action.hpp"
-#include "plansys2_msgs/msg/durative_action.hpp"
-#include "plansys2_msgs/msg/node.hpp"
+#include <plansys2_msgs/Action.h>
+#include <plansys2_msgs/DurativeAction.h>
+#include <plansys2_msgs/Node.h>
 
-#include "plansys2_pddl_parser/Domain.h"
+#include <plansys2_pddl_parser/Domain.h>
 
-#include "plansys2_domain_expert/DomainExpertInterface.hpp"
-#include "plansys2_domain_expert/DomainReader.hpp"
+#include <plansys2_domain_expert/DomainExpertInterface.hpp>
+#include <plansys2_domain_expert/DomainReader.hpp>
 
 namespace plansys2
 {
@@ -107,7 +112,7 @@ public:
    * \return An Action object containing the action name, parameters, requirements and effects.
    *    If the action does not exist, the value returned has not value.
    */
-  plansys2_msgs::msg::Action::SharedPtr getAction(
+  plansys2_msgs::ActionSharedPtr getAction(
     const std::string & action,
     const std::vector<std::string> & params = {});
 
@@ -123,7 +128,7 @@ public:
    * \return A Durative Action object containing the action name, parameters, requirements and
    *    effects. If the action does not exist, the value returned has not value.
    */
-  plansys2_msgs::msg::DurativeAction::SharedPtr getDurativeAction(
+  plansys2_msgs::DurativeActionSharedPtr getDurativeAction(
     const std::string & action,
     const std::vector<std::string> & params = {});
 

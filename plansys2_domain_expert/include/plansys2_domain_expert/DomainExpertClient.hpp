@@ -20,24 +20,24 @@
 #include <vector>
 #include <memory>
 
-#include "plansys2_core/Types.hpp"
-#include "plansys2_domain_expert/DomainExpertInterface.hpp"
+#include <plansys2_core/Types.hpp>
+#include <plansys2_domain_expert/DomainExpertInterface.hpp>
 
-#include "plansys2_msgs/msg/action.hpp"
-#include "plansys2_msgs/msg/durative_action.hpp"
-#include "plansys2_msgs/msg/node.hpp"
+#include <plansys2_msgs/Action.h>
+#include <plansys2_msgs/DurativeAction.h>
+#include <plansys2_msgs/Node.h>
 
-#include "plansys2_msgs/srv/get_domain.hpp"
-#include "plansys2_msgs/srv/get_domain_name.hpp"
-#include "plansys2_msgs/srv/get_domain_types.hpp"
-#include "plansys2_msgs/srv/get_domain_constants.hpp"
-#include "plansys2_msgs/srv/get_domain_actions.hpp"
-#include "plansys2_msgs/srv/get_domain_action_details.hpp"
-#include "plansys2_msgs/srv/get_domain_durative_action_details.hpp"
-#include "plansys2_msgs/srv/get_node_details.hpp"
-#include "plansys2_msgs/srv/get_states.hpp"
+#include <plansys2_msgs/GetDomain.h>
+#include <plansys2_msgs/GetDomainName.h>
+#include <plansys2_msgs/GetDomainTypes.h>
+#include <plansys2_msgs/GetDomainConstants.h>
+#include <plansys2_msgs/GetDomainActions.h>
+#include <plansys2_msgs/GetDomainActionDetails.h>
+#include <plansys2_msgs/GetDomainDurativeActionDetails.h>
+#include <plansys2_msgs/GetNodeDetails.h>
+#include <plansys2_msgs/GetStates.h>
 
-#include "rclcpp/rclcpp.hpp"
+#include <ros/ros.h>
 
 namespace plansys2
 {
@@ -54,6 +54,8 @@ public:
   /// Create a new DomainExpertClient.
   DomainExpertClient();
 
+  std::string getNodeName();
+  
   /// Get the domain name.
   /**
    * \return A string containing the domain name.
@@ -140,21 +142,20 @@ public:
   std::string getDomain();
 
 private:
-  rclcpp::Node::SharedPtr node_;
+  ros::NodeHandle node_;
 
-  rclcpp::Client<plansys2_msgs::srv::GetDomain>::SharedPtr get_domain_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetDomainName>::SharedPtr get_name_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetDomainTypes>::SharedPtr get_types_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetDomainConstants>::SharedPtr get_constants_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetStates>::SharedPtr get_predicates_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetStates>::SharedPtr get_functions_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetDomainActions>::SharedPtr get_actions_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetDomainActions>::SharedPtr get_durative_actions_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetNodeDetails>::SharedPtr get_predicate_details_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetNodeDetails>::SharedPtr get_function_details_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetDomainActionDetails>::SharedPtr get_action_details_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetDomainDurativeActionDetails>::SharedPtr
-    get_durative_action_details_client_;
+  ros::ServiceClient get_domain_client_;
+  ros::ServiceClient get_name_client_;
+  ros::ServiceClient get_types_client_;
+  ros::ServiceClient get_constants_client_;
+  ros::ServiceClient get_predicates_client_;
+  ros::ServiceClient get_functions_client_;
+  ros::ServiceClient get_actions_client_;
+  ros::ServiceClient get_durative_actions_client_;
+  ros::ServiceClient get_predicate_details_client_;
+  ros::ServiceClient get_function_details_client_;
+  ros::ServiceClient get_action_details_client_;
+  ros::ServiceClient get_durative_action_details_client_;
 };
 
 }  // namespace plansys2

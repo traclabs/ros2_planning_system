@@ -11,7 +11,11 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
+//
+// Modifications by TRACLabs
+// Copyright 2022
+// Modification explanations: Backport  to ROS1
+//
 #ifndef PLANSYS2_DOMAIN_EXPERT__DOMAINREADER_HPP_
 #define PLANSYS2_DOMAIN_EXPERT__DOMAINREADER_HPP_
 

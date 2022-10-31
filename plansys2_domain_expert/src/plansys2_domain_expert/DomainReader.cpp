@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "plansys2_domain_expert/DomainReader.hpp"
+#include <plansys2_domain_expert/DomainReader.hpp>
 
 #include <string>
 #include <sstream>
@@ -21,7 +21,7 @@
 #include <iostream>
 #include <set>
 
-#include "plansys2_core/Utils.hpp"
+#include <plansys2_core/Utils.hpp>
 
 
 namespace plansys2

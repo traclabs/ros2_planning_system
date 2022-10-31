@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "plansys2_domain_expert/DomainExpertClient.hpp"
+#include <plansys2_domain_expert/DomainExpertClient.hpp>
 
 #include <optional>
 #include <algorithm>
@@ -25,279 +25,143 @@ namespace plansys2
 
 DomainExpertClient::DomainExpertClient()
 {
-  node_ = rclcpp::Node::make_shared("domain_expert_client");
+  node_ = ros::NodeHandle("domain_expert_client");
 
-  get_domain_client_ = node_->create_client<plansys2_msgs::srv::GetDomain>(
-    "domain_expert/get_domain");
-  get_name_client_ = node_->create_client<plansys2_msgs::srv::GetDomainName>(
-    "domain_expert/get_domain_name");
-  get_types_client_ = node_->create_client<plansys2_msgs::srv::GetDomainTypes>(
-    "domain_expert/get_domain_types");
-  get_constants_client_ = node_->create_client<plansys2_msgs::srv::GetDomainConstants>(
-    "domain_expert/get_domain_constants");
-  get_predicates_client_ = node_->create_client<plansys2_msgs::srv::GetStates>(
-    "domain_expert/get_domain_predicates");
-  get_functions_client_ = node_->create_client<plansys2_msgs::srv::GetStates>(
-    "domain_expert/get_domain_functions");
-  get_actions_client_ = node_->create_client<plansys2_msgs::srv::GetDomainActions>(
-    "domain_expert/get_domain_actions");
-  get_durative_actions_client_ = node_->create_client<plansys2_msgs::srv::GetDomainActions>(
-    "domain_expert/get_domain_durative_actions");
-  get_predicate_details_client_ =
-    node_->create_client<plansys2_msgs::srv::GetNodeDetails>(
-    "domain_expert/get_domain_predicate_details");
-  get_function_details_client_ =
-    node_->create_client<plansys2_msgs::srv::GetNodeDetails>(
-    "domain_expert/get_domain_function_details");
-  get_action_details_client_ = node_->create_client<plansys2_msgs::srv::GetDomainActionDetails>(
-    "domain_expert/get_domain_action_details");
-  get_durative_action_details_client_ =
-    node_->create_client<plansys2_msgs::srv::GetDomainDurativeActionDetails>(
-    "domain_expert/get_domain_durative_action_details");
+  get_domain_client_ = node_.serviceClient<plansys2_msgs::GetDomain>("domain_expert/get_domain");
+  get_name_client_ = node_.serviceClient<plansys2_msgs::GetDomainName>("domain_expert/get_domain_name");
+  get_types_client_ = node_.serviceClient<plansys2_msgs::GetDomainTypes>("domain_expert/get_domain_types");
+  get_constants_client_ = node_.serviceClient<plansys2_msgs::GetDomainConstants>("domain_expert/get_domain_constants");
+  get_predicates_client_ = node_.serviceClient<plansys2_msgs::GetStates>("domain_expert/get_domain_predicates");
+  get_functions_client_ = node_.serviceClient<plansys2_msgs::GetStates>("domain_expert/get_domain_functions");
+  get_actions_client_ = node_.serviceClient<plansys2_msgs::GetDomainActions>("domain_expert/get_domain_actions");
+  get_durative_actions_client_ = node_.serviceClient<plansys2_msgs::GetDomainActions>("domain_expert/get_domain_durative_actions");
+  get_predicate_details_client_ = node_.serviceClient<plansys2_msgs::GetNodeDetails>("domain_expert/get_domain_predicate_details");
+  get_function_details_client_ = node_.serviceClient<plansys2_msgs::GetNodeDetails>("domain_expert/get_domain_function_details");
+  get_action_details_client_ = node_.serviceClient<plansys2_msgs::GetDomainActionDetails>("domain_expert/get_domain_action_details");
+  get_durative_action_details_client_ = node_.serviceClient<plansys2_msgs::GetDomainDurativeActionDetails>("domain_expert/get_domain_durative_action_details");
 }
 
-std::string
-DomainExpertClient::getName()
+std::string DomainExpertClient::getNodeName()
 {
-  std::string ret;
-
-  while (!get_name_client_->wait_for_service(std::chrono::seconds(1))) {
-    if (!rclcpp::ok()) {
-      return ret;
-    }
-    RCLCPP_INFO_STREAM(
-      node_->get_logger(),
-      get_name_client_->get_service_name() <<
-        " service client: waiting for service to appear...");
-  }
-
-  auto request = std::make_shared<plansys2_msgs::srv::GetDomainName::Request>();
-
-  auto future_result = get_name_client_->async_send_request(request);
-
-  if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::FutureReturnCode::SUCCESS)
-  {
-    return ret;
-  }
-
-  auto result = *future_result.get();
-
-  ret = result.name;
-
-  return ret;
+  return std::string("domain_expert_client");
 }
 
-std::vector<std::string>
-DomainExpertClient::getTypes()
+std::string DomainExpertClient::getName()
 {
-  std::vector<std::string> ret;
+  while (!get_name_client_.waitForExistence(ros::Duration(1.0)))
+    ROS_INFO_STREAM(getNodeName() << " Waiting for service " << get_name_client_.getService() << " to appear");    
 
-  while (!get_types_client_->wait_for_service(std::chrono::seconds(1))) {
-    if (!rclcpp::ok()) {
-      return ret;
-    }
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      get_types_client_->get_service_name() <<
-        " service client: waiting for service to appear...");
-  }
+  plansys2_msgs::GetDomainName srv;
+  get_name_client_.call(srv);
 
-  auto request = std::make_shared<plansys2_msgs::srv::GetDomainTypes::Request>();
-
-  auto future_result = get_types_client_->async_send_request(request);
-
-  if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::FutureReturnCode::SUCCESS)
-  {
-    return ret;
-  }
-
-  auto result = *future_result.get();
-
-  ret = result.types;
-
-  return ret;
+  return srv.result.name;
 }
 
-std::vector<std::string>
-DomainExpertClient::getConstants(const std::string & type)
+std::vector<std::string> DomainExpertClient::getTypes()
 {
-  std::vector<std::string> ret;
+  while (!get_types_client_.waitForExistence(ros::Duration(1.0)))
+    ROS_INFO_STREAM(getNodeName() << " Waiting for service " << get_types_client_.getService() << " to appear");    
 
-  while (!get_constants_client_->wait_for_service(std::chrono::seconds(1))) {
-    if (!rclcpp::ok()) {
-      return ret;
-    }
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      get_constants_client_->get_service_name() <<
-        " service client: waiting for service to appear...");
-  }
+  
+  plansys2_msgs::GetDomainTypes srv;
+  get_types_client_.call(srv);
 
-  auto request = std::make_shared<plansys2_msgs::srv::GetDomainConstants::Request>();
-
-  auto future_result = get_constants_client_->async_send_request(request);
-
-  if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::FutureReturnCode::SUCCESS)
-  {
-    return ret;
-  }
-
-  auto result = *future_result.get();
-
-  ret = result.constants;
-
-  return ret;
+  return srv.result.types;
 }
 
-std::vector<plansys2::Predicate>
-DomainExpertClient::getPredicates()
+std::vector<std::string> DomainExpertClient::getConstants(const std::string & type)
+{
+  while (!get_constants_client_.waitForExistence(ros::Duration(1.0)))
+    ROS_INFO_STREAM(getNodeName() << " Waiting for service " << get_constants_client_.getService() << " to appear");    
+
+  plansys2_msgs::GetDomainConstants srv;
+  get_constants_client_.call(srv);
+  
+  return srv.result.constants;
+
+}
+
+std::vector<plansys2::Predicate> DomainExpertClient::getPredicates()
 {
   std::vector<plansys2::Predicate> ret;
 
-  while (!get_predicates_client_->wait_for_service(std::chrono::seconds(1))) {
-    if (!rclcpp::ok()) {
-      return ret;
-    }
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      get_predicates_client_->get_service_name() <<
-        " service client: waiting for service to appear...");
-  }
+  while (!get_predicates_client_.waitForExistence(ros::Duration(1.0)))
+    ROS_INFO_STREAM(getNodeName() << " Waiting for service " << get_predicates_client_.getService() << " to appear");    
 
-  auto request = std::make_shared<plansys2_msgs::srv::GetStates::Request>();
+  plansys2_msgs::GetStates srv;
+  get_predicates_client_.call(srv);
 
-  auto future_result = get_predicates_client_->async_send_request(request);
-
-  if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::FutureReturnCode::SUCCESS)
-  {
-    return ret;
-  }
-
-  auto result = *future_result.get();
-
-  ret = plansys2::convertVector<plansys2::Predicate, plansys2_msgs::msg::Node>(
-    result.states);
+  ret = plansys2::convertVector<plansys2::Predicate, plansys2_msgs::msg::Node>(srv.result.states);
 
   return ret;
 }
 
-std::optional<plansys2::Predicate>
-DomainExpertClient::getPredicate(const std::string & predicate)
+std::optional<plansys2::Predicate> DomainExpertClient::getPredicate(const std::string & predicate)
 {
-  while (!get_predicate_details_client_->wait_for_service(std::chrono::seconds(1))) {
-    if (!rclcpp::ok()) {
-      return {};
-    }
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      get_predicate_details_client_->get_service_name() <<
-        " service client: waiting for service to appear...");
-  }
+  while (!get_predicate_details_client_.waitForExistence(ros::Duration(1.0)))
+    ROS_INFO_STREAM(getNodeName() << " Waiting for service " << get_predicate_details_client_.getService() << " to appear");    
 
-  auto request = std::make_shared<plansys2_msgs::srv::GetNodeDetails::Request>();
+  plansys2_msgs::GetNodeDetails srv;
 
-  request->expression = predicate;
+  srv.request.expression = predicate;
 
-  auto future_result = get_predicate_details_client_->async_send_request(request);
-
-  if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::FutureReturnCode::SUCCESS)
-  {
+  if(!get_predicate_details_client_.call(srv))
     return {};
-  }
 
-  auto result = *future_result.get();
-
-  if (result.success) {
-    return result.node;
+  if (srv.result.success) {
+    return srv.result.node;
   } else {
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      get_predicate_details_client_->get_service_name() << ": " <<
-        result.error_info);
+    ROS_ERROR_STREAM(getNodeName() << " " <<
+		     get_predicate_details_client_.getService() << ": " <<
+		     srv.result.error_info);
     return {};
   }
+  
   return {};
 }
 
-std::vector<plansys2::Function>
-DomainExpertClient::getFunctions()
-{
+std::vector<plansys2::Function> DomainExpertClient::getFunctions()
+{  
   std::vector<plansys2::Function> ret;
 
-  while (!get_functions_client_->wait_for_service(std::chrono::seconds(1))) {
-    if (!rclcpp::ok()) {
-      return ret;
-    }
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      get_functions_client_->get_service_name() <<
-        " service client: waiting for service to appear...");
-  }
-
-  auto request = std::make_shared<plansys2_msgs::srv::GetStates::Request>();
-
-  auto future_result = get_functions_client_->async_send_request(request);
-
-  if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::FutureReturnCode::SUCCESS)
-  {
-    return ret;
-  }
-
-  auto result = *future_result.get();
+  while (!get_functions_client_.waitForExistence(ros::Duration(1.0)))
+    ROS_INFO_STREAM(getNodeName() << " Waiting for service " << get_functions_client_.getService() << " to appear");    
+ 
+  plansys2_msgs::GetStates srv;
+  get_functions_client_.call(srv);
 
   ret = plansys2::convertVector<plansys2::Function, plansys2_msgs::msg::Node>(
-    result.states);
+    srv.result.states);
 
   return ret;
 }
 
-std::optional<plansys2::Function>
-DomainExpertClient::getFunction(const std::string & function)
+std::optional<plansys2::Function> DomainExpertClient::getFunction(const std::string & function)
 {
-  while (!get_function_details_client_->wait_for_service(std::chrono::seconds(1))) {
-    if (!rclcpp::ok()) {
-      return {};
-    }
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      get_function_details_client_->get_service_name() <<
-        " service client: waiting for service to appear...");
-  }
+  while (!get_function_details_client_.waitForExistence(ros::Duration(1.0)))
+    ROS_INFO_STREAM(getNodeName() << " Waiting for service " << get_function_details_client_.getService() << " to appear");    
 
-  auto request = std::make_shared<plansys2_msgs::srv::GetNodeDetails::Request>();
+  
+  plansys2_msgs::GetNodeDetails srv;
+  srv.request.expression = function;
 
-  request->expression = function;
-
-  auto future_result = get_function_details_client_->async_send_request(request);
-
-  if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::FutureReturnCode::SUCCESS)
+  if(!get_function_details_client_.call(srv))
   {
     return {};
   }
 
-  auto result = *future_result.get();
-
-  if (result.success) {
-    return result.node;
+  if (srv.result.success) {
+    return srv.result.node;
   } else {
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      get_function_details_client_->get_service_name() << ": " <<
-        result.error_info);
+    ROS_ERROR_STREAM(getNodeName() << " " <<
+		     get_function_details_client_.getService() << ": " <<
+		     srv.result.error_info);
     return {};
   }
   return {};
 }
 
-std::vector<std::string>
-DomainExpertClient::getActions()
+std::vector<std::string> DomainExpertClient::getActions()
 {
   std::vector<std::string> ret;
 
@@ -311,7 +175,7 @@ DomainExpertClient::getActions()
         " service client: waiting for service to appear...");
   }
 
-  auto request = std::make_shared<plansys2_msgs::srv::GetDomainActions::Request>();
+  auto request = std::make_shared<plansys2_msgs::GetDomainActions::Request>();
 
   auto future_result = get_actions_client_->async_send_request(request);
 
@@ -345,7 +209,7 @@ DomainExpertClient::getAction(
         " service client: waiting for service to appear...");
   }
 
-  auto request = std::make_shared<plansys2_msgs::srv::GetDomainActionDetails::Request>();
+  auto request = std::make_shared<plansys2_msgs::GetDomainActionDetails::Request>();
 
   request->action = action;
   request->parameters = params;
@@ -387,7 +251,7 @@ DomainExpertClient::getDurativeActions()
         " service client: waiting for service to appear...");
   }
 
-  auto request = std::make_shared<plansys2_msgs::srv::GetDomainActions::Request>();
+  auto request = std::make_shared<plansys2_msgs::GetDomainActions::Request>();
 
   auto future_result = get_durative_actions_client_->async_send_request(request);
 
@@ -421,7 +285,7 @@ DomainExpertClient::getDurativeAction(
         " service client: waiting for service to appear...");
   }
 
-  auto request = std::make_shared<plansys2_msgs::srv::GetDomainDurativeActionDetails::Request>();
+  auto request = std::make_shared<plansys2_msgs::GetDomainDurativeActionDetails::Request>();
 
   request->durative_action = action;
   request->parameters = params;
@@ -463,7 +327,7 @@ DomainExpertClient::getDomain()
         " service client: waiting for service to appear...");
   }
 
-  auto request = std::make_shared<plansys2_msgs::srv::GetDomain::Request>();
+  auto request = std::make_shared<plansys2_msgs::GetDomain::Request>();
 
   auto future_result = get_domain_client_->async_send_request(request);
 

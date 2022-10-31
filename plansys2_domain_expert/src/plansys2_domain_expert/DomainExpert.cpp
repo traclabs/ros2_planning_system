@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "plansys2_domain_expert/DomainExpert.hpp"
+#include <plansys2_domain_expert/DomainExpert.hpp>
 
 #include <optional>
 #include <algorithm>
@@ -75,8 +75,8 @@ DomainExpert::getPredicates()
 {
   std::vector<plansys2::Predicate> ret;
   for (unsigned i = 0; i < domain_->preds.size(); i++) {
-    plansys2_msgs::msg::Node pred;
-    pred.node_type = plansys2_msgs::msg::Node::PREDICATE;
+    plansys2_msgs::Node pred;
+    pred.node_type = plansys2_msgs::Node::PREDICATE;
     pred.name = domain_->preds[i]->name;
     ret.push_back(pred);
   }
@@ -91,7 +91,7 @@ DomainExpert::getPredicate(const std::string & predicate)
     predicate_search.begin(), predicate_search.end(),
     predicate_search.begin(), ::tolower);
 
-  plansys2_msgs::msg::Node ret;
+  plansys2_msgs::Node ret;
   bool found = false;
   unsigned i = 0;
 
@@ -100,7 +100,7 @@ DomainExpert::getPredicate(const std::string & predicate)
       found = true;
       ret.name = predicate_search;
       for (unsigned j = 0; j < domain_->preds[i]->params.size(); j++) {
-        plansys2_msgs::msg::Param param;
+        plansys2_msgs::Param param;
         param.name = "?" + domain_->types[domain_->preds[i]->params[j]]->getName() +
           std::to_string(j);
         param.type = domain_->types[domain_->preds[i]->params[j]]->name;
@@ -123,8 +123,8 @@ DomainExpert::getFunctions()
 {
   std::vector<plansys2::Function> ret;
   for (unsigned i = 0; i < domain_->funcs.size(); i++) {
-    plansys2_msgs::msg::Node func;
-    func.node_type = plansys2_msgs::msg::Node::FUNCTION;
+    plansys2_msgs::Node func;
+    func.node_type = plansys2_msgs::Node::FUNCTION;
     func.name = domain_->funcs[i]->name;
     ret.push_back(func);
   }
@@ -148,7 +148,7 @@ DomainExpert::getFunction(const std::string & function)
       found = true;
       ret.name = function_search;
       for (unsigned j = 0; j < domain_->funcs[i]->params.size(); j++) {
-        plansys2_msgs::msg::Param param;
+        plansys2_msgs::Param param;
         param.name = "?" + domain_->types[domain_->funcs[i]->params[j]]->getName() +
           std::to_string(j);
         param.type = domain_->types[domain_->funcs[i]->params[j]]->name;
@@ -180,7 +180,7 @@ DomainExpert::getActions()
   return ret;
 }
 
-plansys2_msgs::msg::Action::SharedPtr
+plansys2_msgs::ActionSharedPtr
 DomainExpert::getAction(const std::string & action, const std::vector<std::string> & params)
 {
   std::string action_search = action;
@@ -188,7 +188,7 @@ DomainExpert::getAction(const std::string & action, const std::vector<std::strin
     action_search.begin(), action_search.end(),
     action_search.begin(), ::tolower);
 
-  auto ret = std::make_shared<plansys2_msgs::msg::Action>();
+  auto ret = std::make_shared<plansys2_msgs::Action>();
   bool found = false;
   unsigned i = 0;
 
@@ -202,7 +202,7 @@ DomainExpert::getAction(const std::string & action, const std::vector<std::strin
 
       // Parameters
       for (unsigned j = 0; j < action_obj->params.size(); j++) {
-        plansys2_msgs::msg::Param param;
+        plansys2_msgs::Param param;
         if (j < params.size()) {
           param.name = params[j];
         } else {
@@ -249,7 +249,7 @@ DomainExpert::getDurativeActions()
   return ret;
 }
 
-plansys2_msgs::msg::DurativeAction::SharedPtr
+plansys2_msgs::DurativeActionSharedPtr
 DomainExpert::getDurativeAction(const std::string & action, const std::vector<std::string> & params)
 {
   std::string action_search = action;
@@ -257,7 +257,7 @@ DomainExpert::getDurativeAction(const std::string & action, const std::vector<st
     action_search.begin(), action_search.end(),
     action_search.begin(), ::tolower);
 
-  auto ret = std::make_shared<plansys2_msgs::msg::DurativeAction>();
+  auto ret = std::make_shared<plansys2_msgs::DurativeAction>();
   bool found = false;
   unsigned i = 0;
 
@@ -273,7 +273,7 @@ DomainExpert::getDurativeAction(const std::string & action, const std::vector<st
 
       // Parameters
       for (unsigned j = 0; j < action_obj->params.size(); j++) {
-        plansys2_msgs::msg::Param param;
+        plansys2_msgs::Param param;
         if (j < params.size()) {
           param.name = params[j];
         } else {
