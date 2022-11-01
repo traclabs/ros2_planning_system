@@ -14,17 +14,16 @@
 
 #include <memory>
 
-#include "plansys2_planner/PlannerNode.hpp"
-#include "rclcpp/rclcpp.hpp"
+#include <plansys2_planner/PlannerNode.hpp>
+#include <ros/ros.h>
 
 int main(int argc, char ** argv)
 {
-  rclcpp::init(argc, argv);
-  auto node = std::make_shared<plansys2::PlannerNode>();
+  ros::init(argc, argv, "planner");
+  ros::NodeHandle nh("planner");
+  plansys2::PlannerNode pn(nh);
 
-  rclcpp::spin(node->get_node_base_interface());
-
-  rclcpp::shutdown();
+  ros::spin();
 
   return 0;
 }

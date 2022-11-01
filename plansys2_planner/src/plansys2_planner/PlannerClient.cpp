@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "plansys2_planner/PlannerClient.hpp"
+#include <plansys2_planner/PlannerClient.hpp>
 
 #include <optional>
 #include <algorithm>
@@ -25,47 +25,43 @@ namespace plansys2
 
 PlannerClient::PlannerClient()
 {
-  node_ = rclcpp::Node::make_shared("planner_client");
+  node_ = ros::NodeHandle("planner_client");
 
-  get_plan_client_ = node_->create_client<plansys2_msgs::srv::GetPlan>("planner/get_plan");
+  get_plan_client_ = node_.serviceClient<plansys2_msgs::GetPlan>("planner/get_plan");
 }
 
-std::optional<plansys2_msgs::msg::Plan>
-PlannerClient::getPlan(
-  const std::string & domain, const std::string & problem,
-  const std::string & node_namespace)
+std::string PlannerClient::getName()
+{ return std::string("planner_client"); }
+  
+std::optional<plansys2_msgs::Plan>
+PlannerClient::getPlan(const std::string & domain,
+		       const std::string & problem,
+		       const std::string & node_namespace)
 {
-  while (!get_plan_client_->wait_for_service(std::chrono::seconds(30))) {
-    if (!rclcpp::ok()) {
+  while (!get_plan_client_.waitForExistence(ros::Duration(30.0))) {
+    if (!ros::ok()) {
       return {};
     }
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      get_plan_client_->get_service_name() <<
-        " service  client: waiting for service to appear...");
+    ROS_ERROR_STREAM(getName() <<
+		     get_plan_client_.getService() <<
+		     " service  client: waiting for service to appear...");
   }
 
-  auto request = std::make_shared<plansys2_msgs::srv::GetPlan::Request>();
-  request->domain = domain;
-  request->problem = problem;
+  plansys2_msgs::GetPlan srv;
+  srv.request.domain = domain;
+  srv.request.problem = problem;  
 
-  auto future_result = get_plan_client_->async_send_request(request);
-
-  if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(15)) !=
-    rclcpp::FutureReturnCode::SUCCESS)
+  if (!get_plan_client_.call(srv))
   {
     return {};
   }
 
-  auto result = *future_result.get();
-
-  if (result.success) {
-    return result.plan;
+  if (srv.response.success) {
+    return srv.response.plan;
   } else {
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      get_plan_client_->get_service_name() << ": " <<
-        result.error_info);
+    ROS_ERROR_STREAM(getName() <<
+		     get_plan_client_.getService() << ": " <<
+		     srv.response.error_info);
     return {};
   }
 }

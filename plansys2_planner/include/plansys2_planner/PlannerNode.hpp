@@ -20,46 +20,41 @@
 #include <string>
 #include <vector>
 
-#include "plansys2_domain_expert/DomainExpertClient.hpp"
-#include "plansys2_problem_expert/ProblemExpertClient.hpp"
+#include <plansys2_domain_expert/DomainExpertClient.hpp>
+#include <plansys2_problem_expert/ProblemExpertClient.hpp>
 
-#include "plansys2_core/PlanSolverBase.hpp"
+#include <plansys2_core/PlanSolverBase.hpp>
 
-#include "std_msgs/msg/empty.hpp"
-#include "lifecycle_msgs/msg/state.hpp"
-#include "lifecycle_msgs/msg/transition.hpp"
-#include "plansys2_msgs/srv/get_plan.hpp"
+#include <std_msgs/Empty.h>
+//#include <lifecycle_msgs/msg/state.h>
+//#include <lifecycle_msgs/msg/transition.h>
+#include <plansys2_msgs/GetPlan.h>
 
-#include "rclcpp/rclcpp.hpp"
-#include "rclcpp_lifecycle/lifecycle_node.hpp"
+#include <ros/ros.h>
+#include <lifecycle/managed_node.h>
 
-#include "pluginlib/class_loader.hpp"
-#include "pluginlib/class_list_macros.hpp"
+#include <pluginlib/class_loader.hpp>
+#include <pluginlib/class_list_macros.hpp>
 
 namespace plansys2
 {
 
-class PlannerNode : public rclcpp_lifecycle::LifecycleNode
+class PlannerNode : public ros::lifecycle::ManagedNode
 {
 public:
-  PlannerNode();
-
-  using CallbackReturnT =
-    rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
+  PlannerNode(ros::NodeHandle _nh);
 
   using SolverMap = std::unordered_map<std::string, plansys2::PlanSolverBase::Ptr>;
 
-  CallbackReturnT on_configure(const rclcpp_lifecycle::State & state);
-  CallbackReturnT on_activate(const rclcpp_lifecycle::State & state);
-  CallbackReturnT on_deactivate(const rclcpp_lifecycle::State & state);
-  CallbackReturnT on_cleanup(const rclcpp_lifecycle::State & state);
-  CallbackReturnT on_shutdown(const rclcpp_lifecycle::State & state);
-  CallbackReturnT on_error(const rclcpp_lifecycle::State & state);
+  bool onConfigure();
+  bool onActivate();
+  bool onDeactivate();
+  bool onCleanup();
+  bool onShutdown();
+  bool onError(const std::exception &);
 
-  void get_plan_service_callback(
-    const std::shared_ptr<rmw_request_id_t> request_header,
-    const std::shared_ptr<plansys2_msgs::srv::GetPlan::Request> request,
-    const std::shared_ptr<plansys2_msgs::srv::GetPlan::Response> response);
+  bool get_plan_service_callback(plansys2_msgs::GetPlan::Request &request,
+				 plansys2_msgs::GetPlan::Response &response);
 
 private:
   pluginlib::ClassLoader<plansys2::PlanSolverBase> lp_loader_;
@@ -69,23 +64,24 @@ private:
   std::vector<std::string> solver_ids_;
   std::vector<std::string> solver_types_;
 
-  rclcpp::Service<plansys2_msgs::srv::GetPlan>::SharedPtr
-    get_plan_service_;
+  ros::ServiceServer get_plan_service_;
 };
 
+  /*
 template<typename NodeT>
 void declare_parameter_if_not_declared(
-  NodeT node,
-  const std::string & param_name,
-  const rclcpp::ParameterValue & default_value = rclcpp::ParameterValue(),
-  const rcl_interfaces::msg::ParameterDescriptor & parameter_descriptor =
-  rcl_interfaces::msg::ParameterDescriptor())
+				       NodeT node,
+				       const std::string & param_name,
+				       const rclcpp::ParameterValue & default_value = rclcpp::ParameterValue(),
+				       const rcl_interfaces::msg::ParameterDescriptor & parameter_descriptor =
+				       rcl_interfaces::msg::ParameterDescriptor())
 {
   if (!node->has_parameter(param_name)) {
     node->declare_parameter(param_name, default_value, parameter_descriptor);
   }
-}
+  }*/
 
+   /*
 template<typename NodeT>
 std::string get_plugin_type_param(
   NodeT node,
@@ -98,7 +94,7 @@ std::string get_plugin_type_param(
     exit(-1);
   }
   return plugin_type;
-}
+  }*/
 
 }  // namespace plansys2
 

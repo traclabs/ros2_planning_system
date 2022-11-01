@@ -19,11 +19,11 @@
 #include <string>
 #include <vector>
 
-#include "plansys2_planner/PlannerInterface.hpp"
+#include <plansys2_planner/PlannerInterface.hpp>
 
-#include "plansys2_msgs/srv/get_plan.hpp"
+#include <plansys2_msgs/GetPlan.h>
 
-#include "rclcpp/rclcpp.hpp"
+#include <ros/ros.h>
 
 namespace plansys2
 {
@@ -33,15 +33,15 @@ class PlannerClient : public PlannerInterface
 public:
   PlannerClient();
 
-  std::optional<plansys2_msgs::msg::Plan> getPlan(
+  std::optional<plansys2_msgs::Plan> getPlan(
     const std::string & domain, const std::string & problem,
     const std::string & node_namespace = "");
 
+  std::string getName();
 private:
-  rclcpp::Client<plansys2_msgs::srv::GetPlan>::SharedPtr
-    get_plan_client_;
+  ros::ServiceClient get_plan_client_;
 
-  rclcpp::Node::SharedPtr node_;
+  ros::NodeHandle node_;
 };
 
 }  // namespace plansys2

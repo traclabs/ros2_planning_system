@@ -18,7 +18,7 @@
 #include <optional>
 #include <string>
 
-#include "plansys2_msgs/msg/plan.hpp"
+#include <plansys2_msgs/Plan.h>
 
 namespace plansys2
 {
@@ -28,7 +28,7 @@ class PlannerInterface
 public:
   PlannerInterface() {}
 
-  virtual std::optional<plansys2_msgs::msg::Plan> getPlan(
+  virtual std::optional<plansys2_msgs::Plan> getPlan(
     const std::string & domain, const std::string & problem,
     const std::string & node_namespace) = 0;
 };

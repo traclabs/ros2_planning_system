@@ -1,31 +1,15 @@
 project(plansys2_planner)
 
-cmake_minimum_required(VERSION 3.5)
-
-find_package(ament_cmake REQUIRED)
-find_package(rclcpp REQUIRED)
-find_package(rclcpp_action REQUIRED)
-find_package(rclcpp_lifecycle REQUIRED)
-find_package(ament_index_cpp REQUIRED)
-find_package(plansys2_core REQUIRED)
-find_package(plansys2_pddl_parser REQUIRED)
-find_package(plansys2_msgs REQUIRED)
-find_package(plansys2_domain_expert REQUIRED)
-find_package(plansys2_problem_expert REQUIRED)
-find_package(plansys2_popf_plan_solver REQUIRED)
-find_package(pluginlib REQUIRED)
-find_package(std_msgs REQUIRED)
-find_package(lifecycle_msgs REQUIRED)
-
 set(CMAKE_CXX_STANDARD 17)
 
-set(dependencies
-  rclcpp
-  rclcpp_action
-  rclcpp_lifecycle
+cmake_minimum_required(VERSION 3.5)
+
+set(DEPS
+  roscpp
+#  rclcpp_action
+  lifecycle
   plansys2_core
   plansys2_pddl_parser
-  ament_index_cpp
   plansys2_msgs
   plansys2_domain_expert
   plansys2_problem_expert
@@ -35,7 +19,22 @@ set(dependencies
   lifecycle_msgs
 )
 
-include_directories(include)
+
+find_package(catkin REQUIRED COMPONENTS
+  ${DEPS}
+)  
+
+catkin_package(
+  INCLUDE_DIRS include
+  LIBRARIES ${PROJECT_NAME}
+  CATKIN_DEPENDS ${DEPS}
+  DEPENDS
+)
+
+include_directories(
+  include
+  ${catkin_INCLUDE_DIRS}
+)
 
 set(PLANNER_SOURCES
   src/plansys2_planner/PlannerClient.cpp
@@ -43,40 +42,41 @@ set(PLANNER_SOURCES
 )
 
 add_library(${PROJECT_NAME} SHARED ${PLANNER_SOURCES})
-ament_target_dependencies(${PROJECT_NAME} ${dependencies})
-target_compile_definitions(${PROJECT_NAME} PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
+target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
 
-add_executable(planner_node
-  src/planner_node.cpp
-)
-ament_target_dependencies(planner_node ${dependencies})
+add_executable(planner_node src/planner_node.cpp)
 target_compile_definitions(planner_node PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
 target_link_libraries(planner_node ${PROJECT_NAME})
 
-install(DIRECTORY include/
-  DESTINATION include/
+install(DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp"
 )
 
-install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
+foreach( dir launch)
+   install( DIRECTORY ${dir}/
+         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/${dir} )
+endforeach(dir)
 
 install(TARGETS
   ${PROJECT_NAME}
   planner_node
-  ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib
-  RUNTIME DESTINATION lib/${PROJECT_NAME}
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
-if(BUILD_TESTING)
-  find_package(ament_lint_auto REQUIRED)
-  ament_lint_auto_find_test_dependencies()
 
-  find_package(ament_cmake_gtest REQUIRED)
-  add_subdirectory(test)
-endif()
+#if(BUILD_TESTING)
+#  find_package(ament_lint_auto REQUIRED)
+#  ament_lint_auto_find_test_dependencies()
 
-ament_export_include_directories(include)
-ament_export_libraries(${PROJECT_NAME})
-ament_export_dependencies(${dependencies})
+#  find_package(ament_cmake_gtest REQUIRED)
+#  add_subdirectory(test)
+#endif()
 
-ament_package()
+#ament_export_include_directories(include)
+#ament_export_libraries(${PROJECT_NAME})
+#ament_export_dependencies(${dependencies})
+
+#ament_package()
