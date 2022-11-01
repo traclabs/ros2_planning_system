@@ -18,8 +18,8 @@
 #include <vector>
 #include <memory>
 
-#include "plansys2_executor/ExecutorClient.hpp"
-#include "plansys2_msgs/msg/action_execution_info.hpp"
+#include <plansys2_executor/ExecutorClient.hpp>
+#include <plansys2_msgs/ActionExecutionInfo.h>
 
 namespace plansys2
 {
@@ -27,42 +27,42 @@ namespace plansys2
 using namespace std::chrono_literals;
 using namespace std::placeholders;
 
-using ExecutePlan = plansys2_msgs::action::ExecutePlan;
 
 ExecutorClient::ExecutorClient()
 {
-  node_ = rclcpp::Node::make_shared("executor_client");
+  node_ = std::make_shared<ros::NodeHandle>(ros::NodeHandle("executor_client"));
 
   createActionClient();
 
-  get_ordered_sub_goals_client_ = node_->create_client<plansys2_msgs::srv::GetOrderedSubGoals>(
+  get_ordered_sub_goals_client_ = node_->serviceClient<plansys2_msgs::GetOrderedSubGoals>(
     "executor/get_ordered_sub_goals");
-  get_plan_client_ = node_->create_client<plansys2_msgs::srv::GetPlan>("executor/get_plan");
+  get_plan_client_ = node_->serviceClient<plansys2_msgs::GetPlan>("executor/get_plan");
 }
 
 ExecutorClient::ExecutorClient(const std::string & node_name)
 {
-  node_ = rclcpp::Node::make_shared(node_name);
+  node_ = std::make_shared<ros::NodeHandle>(ros::NodeHandle(node_name));
 
   createActionClient();
 
-  get_ordered_sub_goals_client_ = node_->create_client<plansys2_msgs::srv::GetOrderedSubGoals>(
+  get_ordered_sub_goals_client_ = node_->serviceClient<plansys2_msgs::GetOrderedSubGoals>(
     "executor/get_ordered_sub_goals");
-  get_plan_client_ = node_->create_client<plansys2_msgs::srv::GetPlan>("executor/get_plan");
+  get_plan_client_ = node_->serviceClient<plansys2_msgs::GetPlan>("executor/get_plan");
 }
 
 void
 ExecutorClient::createActionClient()
 {
-  action_client_ = rclcpp_action::create_client<ExecutePlan>(node_, "execute_plan");
+  action_client_.reset( new actionlib::SimpleActionClient<plansys2_msgs::ExecutePlanAction>("execute_plan", true));
 
-  if (!this->action_client_->wait_for_action_server(3s)) {
-    RCLCPP_ERROR(node_->get_logger(), "Action server not available after waiting");
+  if (!this->action_client_->waitForServer(ros::Duration(3.0))) {
+    ROS_ERROR("%s -- Action server not available after waiting",
+	      getName().c_str());
   }
 }
 
 bool
-ExecutorClient::start_plan_execution(const plansys2_msgs::msg::Plan & plan)
+ExecutorClient::start_plan_execution(const plansys2_msgs::Plan & plan)
 {
   if (!executing_plan_) {
     createActionClient();
@@ -73,7 +73,7 @@ ExecutorClient::start_plan_execution(const plansys2_msgs::msg::Plan & plan)
       return true;
     }
   } else {
-    RCLCPP_INFO(node_->get_logger(), "Already executing a plan");
+    ROS_INFO("%s -- Already executing a plan", getName().c_str());
   }
 
   return false;
@@ -82,26 +82,28 @@ ExecutorClient::start_plan_execution(const plansys2_msgs::msg::Plan & plan)
 bool
 ExecutorClient::execute_and_check_plan()
 {
-  if (rclcpp::ok() && !goal_result_available_) {
-    rclcpp::spin_some(node_);
+  if (ros::ok() && !goal_result_available_) {
+    ros::spinOnce();
 
     if (!goal_result_available_) {
       return true;  // Plan not finished
     }
   }
 
-  switch (result_.code) {
-    case rclcpp_action::ResultCode::SUCCEEDED:
-      if (result_.result == nullptr) {
-        RCLCPP_WARN(
-          node_->get_logger(), "Plan failed due to a nullptr in the result");
-      } else if (result_.result->success) {
+  switch ( action_client_->getState().state_ ) {
+  case actionlib::SimpleClientGoalState::SUCCEEDED:
+    if (result_ == nullptr) {
+        ROS_WARN("%s -- Plan failed due to a nullptr in the result", getName().c_str());
+    }
+    else
+      ROS_WARN("%s -- Plan  seems to have succeeded", getName().c_str());
+    /*else if (result_.result->success) {
         RCLCPP_INFO(node_->get_logger(), "Plan Succeeded");
       } else {
         RCLCPP_ERROR(node_->get_logger(), "Plan Failed");
         for (auto msg : result_.result->action_execution_status) {
           switch (msg.status) {
-            case plansys2_msgs::msg::ActionExecutionInfo::SUCCEEDED:
+            case plansys2_msgs::ActionExecutionInfo::SUCCEEDED:
               RCLCPP_WARN_STREAM(
                 node_->get_logger(),
                 "Action: " <<
@@ -109,7 +111,7 @@ ExecutorClient::execute_and_check_plan()
                   " succeeded with message_status: " <<
                   msg.message_status);
               break;
-            case plansys2_msgs::msg::ActionExecutionInfo::FAILED:
+            case plansys2_msgs::ActionExecutionInfo::FAILED:
               RCLCPP_ERROR_STREAM(
                 node_->get_logger(),
                 "Action: " <<
@@ -117,21 +119,21 @@ ExecutorClient::execute_and_check_plan()
                   " failed with message_status: " <<
                   msg.message_status);
               break;
-            case plansys2_msgs::msg::ActionExecutionInfo::NOT_EXECUTED:
+            case plansys2_msgs::ActionExecutionInfo::NOT_EXECUTED:
               RCLCPP_WARN_STREAM(
                 node_->get_logger(),
                 "Action: " <<
                   msg.action_full_name <<
                   " was not executed");
               break;
-            case plansys2_msgs::msg::ActionExecutionInfo::CANCELLED:
+            case plansys2_msgs::ActionExecutionInfo::CANCELLED:
               RCLCPP_WARN_STREAM(
                 node_->get_logger(),
                 "Action: " <<
                   msg.action_full_name <<
                   " was cancelled");
               break;
-            case plansys2_msgs::msg::ActionExecutionInfo::EXECUTING:
+            case plansys2_msgs::ActionExecutionInfo::EXECUTING:
               RCLCPP_WARN_STREAM(
                 node_->get_logger(),
                 "Action: " <<
@@ -139,15 +141,15 @@ ExecutorClient::execute_and_check_plan()
                   " was executing");
           }
         }
-      }
+	}*/
       break;
 
-    case rclcpp_action::ResultCode::ABORTED:
-      RCLCPP_WARN(node_->get_logger(), "Plan Aborted");
+    case actionlib::SimpleClientGoalState::ABORTED:
+      ROS_WARN("%s -- Plan Aborted", getName().c_str());
       break;
 
-    case rclcpp_action::ResultCode::CANCELED:
-      RCLCPP_INFO(node_->get_logger(), "Plan Cancelled");
+    case actionlib::SimpleClientGoalState::PREEMPTED:
+      ROS_INFO("%s -- Plan Preempted", getName().c_str());
       break;
 
     default:
@@ -162,34 +164,20 @@ ExecutorClient::execute_and_check_plan()
 
 
 bool
-ExecutorClient::on_new_goal_received(const plansys2_msgs::msg::Plan & plan)
+ExecutorClient::on_new_goal_received(const plansys2_msgs::Plan & plan)
 {
-  auto goal = ExecutePlan::Goal();
+  auto goal = plansys2_msgs::ExecutePlanGoal();
   goal.plan = plan;
 
-  auto send_goal_options = rclcpp_action::Client<ExecutePlan>::SendGoalOptions();
-
-  send_goal_options.feedback_callback =
-    std::bind(&ExecutorClient::feedback_callback, this, _1, _2);
-
-  send_goal_options.result_callback =
-    std::bind(&ExecutorClient::result_callback, this, _1);
-
-  auto future_goal_handle = action_client_->async_send_goal(goal, send_goal_options);
-
-  if (rclcpp::spin_until_future_complete(
-      node_->get_node_base_interface(), future_goal_handle, 3s) !=
-    rclcpp::FutureReturnCode::SUCCESS)
+  if(!action_client_->sendGoal(goal,
+			       std::bind(&ExecutorClient::result_callback, this, _1, _2),
+			       actionlib::SimpleActionClient::SimpleActiveCallback,
+			       std::bind(&ExecutorClient::feedback_callback, this, _1)) )			   
   {
-    RCLCPP_ERROR(node_->get_logger(), "send_goal failed");
+    ROS_ERROR("%s -- send_goal failed", getName().c_str());
     return false;
   }
 
-  goal_handle_ = future_goal_handle.get();
-  if (!goal_handle_) {
-    RCLCPP_ERROR(node_->get_logger(), "Goal was rejected by the action server");
-    return false;
-  }
 
   return true;
 }
@@ -201,18 +189,19 @@ ExecutorClient::should_cancel_goal()
     return false;
   }
 
-  rclcpp::spin_some(node_);
-  auto status = goal_handle_->get_status();
+  ros::spinOnce();
+  auto status = action_client_->getState();
 
-  return status == action_msgs::msg::GoalStatus::STATUS_ACCEPTED ||
-         status == action_msgs::msg::GoalStatus::STATUS_EXECUTING;
+  return status == actionlib::SimpleClientGoalState::PENDING ||
+    status == actionlib::SimpleClientGoalState::ACTIVE;
 }
 
 void
 ExecutorClient::cancel_plan_execution()
 {
   if (should_cancel_goal()) {
-    auto future_cancel = action_client_->async_cancel_goal(goal_handle_);
+    action_client_->cancelGoal();
+    /*
     if (rclcpp::spin_until_future_complete(
         node_->get_node_base_interface(), future_cancel, 3s) !=
       rclcpp::FutureReturnCode::SUCCESS)
@@ -220,110 +209,95 @@ ExecutorClient::cancel_plan_execution()
       RCLCPP_ERROR(
         node_->get_logger(),
         "Failed to cancel action server for execute_plan");
-    }
+	}*/
   }
 
   executing_plan_ = false;
   goal_result_available_ = false;
 }
 
-std::vector<plansys2_msgs::msg::Tree> ExecutorClient::getOrderedSubGoals()
+std::vector<plansys2_msgs::Tree> ExecutorClient::getOrderedSubGoals()
 {
-  std::vector<plansys2_msgs::msg::Tree> ret;
+  std::vector<plansys2_msgs::Tree> ret;
 
-  while (!get_ordered_sub_goals_client_->wait_for_service(std::chrono::seconds(5))) {
-    if (!rclcpp::ok()) {
+  while (!get_ordered_sub_goals_client_.waitForExistence(ros::Duration(5.0))) {
+    if (!ros::ok()) {
       return ret;
     }
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      get_ordered_sub_goals_client_->get_service_name() <<
-        " service  client: waiting for service to appear...");
+    ROS_ERROR_STREAM(getName() <<
+		     get_ordered_sub_goals_client_.getService() <<
+		     " service  client: waiting for service to appear...");
   }
 
-  auto request = std::make_shared<plansys2_msgs::srv::GetOrderedSubGoals::Request>();
+  plansys2_msgs::GetOrderedSubGoals srv;
 
-  auto future_result = get_ordered_sub_goals_client_->async_send_request(request);
-
-  if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::FutureReturnCode::SUCCESS)
+  if (!get_ordered_sub_goals_client_.call(srv))
   {
     return ret;
   }
 
-  auto result = *future_result.get();
-
-  if (result.success) {
-    ret = result.sub_goals;
+  if (srv.response.success) {
+    ret = srv.response.sub_goals;
   } else {
-    RCLCPP_INFO_STREAM(
-      node_->get_logger(),
-      get_ordered_sub_goals_client_->get_service_name() << ": " <<
-        result.error_info);
+    ROS_INFO_STREAM(getName() <<
+		    get_ordered_sub_goals_client_.getService() << ": " <<
+		    srv.response.error_info);
   }
 
   return ret;
 }
 
-std::optional<plansys2_msgs::msg::Plan> ExecutorClient::getPlan()
+std::optional<plansys2_msgs::Plan> ExecutorClient::getPlan()
 {
-  while (!get_plan_client_->wait_for_service(std::chrono::seconds(5))) {
-    if (!rclcpp::ok()) {
+  while (!get_plan_client_.waitForExistence(ros::Duration(5.0))) {
+    if (!ros::ok()) {
       return {};
     }
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      get_plan_client_->get_service_name() <<
-        " service  client: waiting for service to appear...");
+    ROS_ERROR_STREAM(getName() <<
+		     get_plan_client_.getService() <<
+		     " service  client: waiting for service to appear...");
   }
 
-  auto request = std::make_shared<plansys2_msgs::srv::GetPlan::Request>();
+  plansys2_msgs::GetPlan srv;
 
-  auto future_result = get_plan_client_->async_send_request(request);
-
-  if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::FutureReturnCode::SUCCESS)
+  if (!get_plan_client_.call(srv))
   {
     return {};
   }
 
-  auto result = *future_result.get();
-
-  if (result.success) {
-    return result.plan;
+  if (srv.response.success) {
+    return srv.response.plan;
   } else {
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      get_plan_client_->get_service_name() << ": " <<
-        result.error_info);
+    ROS_ERROR_STREAM(getName() <<
+		     get_plan_client_.getService() << ": " <<
+		     srv.response.error_info);
     return {};
   }
 }
 
 void
-ExecutorClient::feedback_callback(
-  GoalHandleExecutePlan::SharedPtr goal_handle,
-  const std::shared_ptr<const ExecutePlan::Feedback> feedback)
+ExecutorClient::feedback_callback( const plansys2_msgs::ExecutePlanFeedbackConstPtr& feedback)
 {
   feedback_ = *feedback;
 }
 
 void
-ExecutorClient::result_callback(const GoalHandleExecutePlan::WrappedResult & result)
+ExecutorClient::result_callback(const actionlib::SimpleClientGoalState& state,
+				const plansys2_msgs::ExecutePlanResultConstPtr& result)
 {
   goal_result_available_ = true;
   result_ = result;
-  feedback_ = ExecutePlan::Feedback();
+  feedback_ = plansys2_msgs::ExecutePlanFeedback();
 }
 
-std::optional<ExecutePlan::Result>
+  std::optional<plansys2_msgs::ExecutePlanResult>
 ExecutorClient::getResult()
 {
-  if (result_.result != nullptr) {
-    return *result_.result;
-  } else {
+  if(result_)
+    return *result_;
+  else
     return {};
-  }
+
 }
 
 }  // namespace plansys2

@@ -16,7 +16,7 @@
 #include <map>
 #include <memory>
 
-#include "plansys2_executor/behavior_tree/execute_action_node.hpp"
+#include <plansys2_executor/behavior_tree/execute_action_node.hpp>
 
 namespace plansys2
 {
@@ -29,7 +29,7 @@ ExecuteAction::ExecuteAction(
   action_map_ =
     config().blackboard->get<std::shared_ptr<std::map<std::string, ActionExecutionInfo>>>(
     "action_map");
-  node_ = config().blackboard->get<rclcpp_lifecycle::LifecycleNode::SharedPtr>("node");
+  node_ = config().blackboard->get<std::shared_ptr<ros::lifecycle::ManagedNode> >("node");
 }
 
 void
@@ -64,9 +64,8 @@ ExecuteAction::tick()
   if (retval == BT::NodeStatus::FAILURE) {
     (*action_map_)[action].execution_error_info = "Error executing the action";
 
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      "[" << action << "]" << (*action_map_)[action].execution_error_info);
+    ROS_ERROR_STREAM(node_->get_name() <<
+		     "[" << action << "]" << (*action_map_)[action].execution_error_info);
   }
 
   return retval;

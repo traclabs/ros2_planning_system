@@ -24,18 +24,18 @@
 #include <utility>
 #include <tuple>
 
-#include "std_msgs/msg/empty.hpp"
+#include <std_msgs/Empty.h>
 
-#include "plansys2_domain_expert/DomainExpertClient.hpp"
-#include "plansys2_problem_expert/ProblemExpertClient.hpp"
-#include "plansys2_executor/ActionExecutor.hpp"
-#include "plansys2_executor/BTBuilder.hpp"
-#include "plansys2_core/Types.hpp"
-#include "plansys2_msgs/msg/durative_action.hpp"
-#include "plansys2_msgs/msg/plan.hpp"
+#include <plansys2_domain_expert/DomainExpertClient.hpp>
+#include <plansys2_problem_expert/ProblemExpertClient.hpp>
+#include <plansys2_executor/ActionExecutor.hpp>
+#include <plansys2_executor/BTBuilder.hpp>
+#include <plansys2_core/Types.hpp>
+#include <plansys2_msgs/DurativeAction.h>
+#include <plansys2_msgs/Plan.h>
 
-#include "rclcpp/rclcpp.hpp"
-#include "rclcpp_action/rclcpp_action.hpp"
+#include <ros/ros.h>
+//#include "rclcpp_action/rclcpp_action.hpp"
 
 namespace plansys2
 {
@@ -74,7 +74,7 @@ public:
     const std::string & bt_action_2 = "",
     int precision = 3);
 
-  std::string get_tree(const plansys2_msgs::msg::Plan & current_plan);
+  std::string get_tree(const plansys2_msgs::Plan & current_plan);
   std::string get_dotgraph(
     std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map,
     bool enable_legend = false,
@@ -88,9 +88,9 @@ protected:
   std::string bt_;
   std::string bt_action_;
 
-  Graph::Ptr get_graph(const plansys2_msgs::msg::Plan & current_plan);
+  Graph::Ptr get_graph(const plansys2_msgs::Plan & current_plan);
 
-  std::vector<ActionStamped> get_plan_actions(const plansys2_msgs::msg::Plan & plan);
+  std::vector<ActionStamped> get_plan_actions(const plansys2_msgs::Plan & plan);
   void prune_backwards(GraphNode::Ptr new_node, GraphNode::Ptr node_satisfy);
   void prune_forward(GraphNode::Ptr current, std::list<GraphNode::Ptr> & used_nodes);
   void get_state(
@@ -109,11 +109,11 @@ protected:
     std::vector<plansys2::Function> & functions,
     int & node_counter);
   GraphNode::Ptr get_node_satisfy(
-    const plansys2_msgs::msg::Tree & requirement,
+    const plansys2_msgs::Tree & requirement,
     const Graph::Ptr & graph,
     const GraphNode::Ptr & current);
   GraphNode::Ptr get_node_satisfy(
-    const plansys2_msgs::msg::Tree & requirement,
+    const plansys2_msgs::Tree & requirement,
     const GraphNode::Ptr & node,
     const GraphNode::Ptr & current);
   std::list<GraphNode::Ptr> get_node_contradict(
@@ -124,7 +124,7 @@ protected:
     const GraphNode::Ptr & current,
     std::list<GraphNode::Ptr> & parents);
   void remove_existing_requirements(
-    std::vector<plansys2_msgs::msg::Tree> & requirements,
+    std::vector<plansys2_msgs::Tree> & requirements,
     std::vector<plansys2::Predicate> & predicates,
     std::vector<plansys2::Function> & functions) const;
   bool is_parallelizable(

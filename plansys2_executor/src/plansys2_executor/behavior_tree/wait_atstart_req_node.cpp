@@ -17,7 +17,7 @@
 #include <memory>
 #include <tuple>
 
-#include "plansys2_executor/behavior_tree/wait_atstart_req_node.hpp"
+#include <plansys2_executor/behavior_tree/wait_atstart_req_node.hpp>
 
 namespace plansys2
 {
@@ -42,7 +42,7 @@ WaitAtStartReq::tick()
   std::string action;
   getInput("action", action);
 
-  auto node = config().blackboard->get<rclcpp_lifecycle::LifecycleNode::SharedPtr>("node");
+  auto node = config().blackboard->get<std::shared_ptr<ros::lifecycle::ManagedNode> >("node");
 
   auto reqs_as = (*action_map_)[action].durative_action_info->at_start_requirements;
   auto reqs_oa = (*action_map_)[action].durative_action_info->over_all_requirements;
@@ -51,8 +51,8 @@ WaitAtStartReq::tick()
   if (!check_as) {
     (*action_map_)[action].execution_error_info = "Error checking at start reqs";
 
-    RCLCPP_ERROR_STREAM(
-      node->get_logger(),
+    ROS_ERROR_STREAM(
+		     node->get_name() <<
       "[" << action << "]" << (*action_map_)[action].execution_error_info << ": " <<
         parser::pddl::toString((*action_map_)[action].durative_action_info->at_start_requirements));
 
@@ -63,10 +63,10 @@ WaitAtStartReq::tick()
   if (!check_oa) {
     (*action_map_)[action].execution_error_info = "Error checking over all reqs";
 
-    RCLCPP_ERROR_STREAM(
-      node->get_logger(),
-      "[" << action << "]" << (*action_map_)[action].execution_error_info << ": " <<
-        parser::pddl::toString((*action_map_)[action].durative_action_info->over_all_requirements));
+    ROS_ERROR_STREAM(
+		     node->get_name() <<
+		     "[" << action << "]" << (*action_map_)[action].execution_error_info << ": " <<
+		     parser::pddl::toString((*action_map_)[action].durative_action_info->over_all_requirements));
 
     return BT::NodeStatus::RUNNING;
   }

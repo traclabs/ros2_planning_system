@@ -20,12 +20,12 @@
 #include <memory>
 #include <random>
 
-#include "behaviortree_cpp_v3/action_node.h"
+#include <behaviortree_cpp_v3/action_node.h>
 
-#include "plansys2_executor/ActionExecutor.hpp"
+#include <plansys2_executor/ActionExecutor.hpp>
 
-#include "rclcpp/rclcpp.hpp"
-#include "rclcpp_lifecycle/lifecycle_node.hpp"
+#include <ros/ros.h>
+#include <lifecycle/managed_node.h>
 
 namespace plansys2
 {
@@ -50,7 +50,7 @@ public:
 
 private:
   std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map_;
-  rclcpp_lifecycle::LifecycleNode::SharedPtr node_;
+  std::shared_ptr<ros::lifecycle::ManagedNode> node_;
 };
 
 }  // namespace plansys2

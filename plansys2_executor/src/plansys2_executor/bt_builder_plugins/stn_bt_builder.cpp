@@ -23,8 +23,8 @@
 #include <utility>
 #include <vector>
 
-#include "plansys2_executor/bt_builder_plugins/stn_bt_builder.hpp"
-#include "plansys2_problem_expert/Utils.hpp"
+#include <plansys2_executor/bt_builder_plugins/stn_bt_builder.hpp>
+#include <plansys2_problem_expert/Utils.hpp>
 
 namespace plansys2
 {
@@ -73,7 +73,7 @@ CHECK_PREV_ACTIONS
 }
 
 std::string
-STNBTBuilder::get_tree(const plansys2_msgs::msg::Plan & plan)
+STNBTBuilder::get_tree(const plansys2_msgs::Plan & plan)
 {
   stn_ = build_stn(plan);
   auto bt = build_bt(stn_);
@@ -165,7 +165,7 @@ STNBTBuilder::get_dotgraph(
 }
 
 Graph::Ptr
-STNBTBuilder::build_stn(const plansys2_msgs::msg::Plan & plan) const
+STNBTBuilder::build_stn(const plansys2_msgs::Plan & plan) const
 {
   auto stn = init_graph(plan);
   auto happenings = get_happenings(plan);
@@ -216,7 +216,7 @@ STNBTBuilder::build_bt(const Graph::Ptr stn) const
 }
 
 Graph::Ptr
-STNBTBuilder::init_graph(const plansys2_msgs::msg::Plan & plan) const
+STNBTBuilder::init_graph(const plansys2_msgs::Plan & plan) const
 {
   auto graph = Graph::make_shared();
   auto action_sequence = get_plan_actions(plan);
@@ -227,7 +227,7 @@ STNBTBuilder::init_graph(const plansys2_msgs::msg::Plan & plan) const
 
   int node_cnt = 0;
   auto init_node = GraphNode::make_shared(node_cnt++);
-  init_node->action.action = std::make_shared<plansys2_msgs::msg::DurativeAction>();
+  init_node->action.action = std::make_shared<plansys2_msgs::DurativeAction>();
   init_node->action.action->at_end_effects = from_state(predicates, functions);
   init_node->action.type = ActionType::INIT;
   graph->nodes.push_back(init_node);
@@ -251,10 +251,10 @@ STNBTBuilder::init_graph(const plansys2_msgs::msg::Plan & plan) const
 
   // Add a node to represent the goal
   auto goal = problem_client_->getGoal();
-  plansys2_msgs::msg::Tree * goal_tree = &goal;
+  plansys2_msgs::Tree * goal_tree = &goal;
 
   auto goal_node = GraphNode::make_shared(node_cnt++);
-  goal_node->action.action = std::make_shared<plansys2_msgs::msg::DurativeAction>();
+  goal_node->action.action = std::make_shared<plansys2_msgs::DurativeAction>();
   goal_node->action.action->at_start_requirements = *goal_tree;
   goal_node->action.type = ActionType::GOAL;
   graph->nodes.push_back(goal_node);
@@ -263,7 +263,7 @@ STNBTBuilder::init_graph(const plansys2_msgs::msg::Plan & plan) const
 }
 
 std::vector<ActionStamped>
-STNBTBuilder::get_plan_actions(const plansys2_msgs::msg::Plan & plan) const
+STNBTBuilder::get_plan_actions(const plansys2_msgs::Plan & plan) const
 {
   std::vector<ActionStamped> ret;
 
@@ -284,7 +284,7 @@ STNBTBuilder::get_plan_actions(const plansys2_msgs::msg::Plan & plan) const
 }
 
 std::set<int>
-STNBTBuilder::get_happenings(const plansys2_msgs::msg::Plan & plan) const
+STNBTBuilder::get_happenings(const plansys2_msgs::Plan & plan) const
 {
   std::set<int> happenings;
   happenings.insert(-1);
@@ -337,7 +337,7 @@ STNBTBuilder::get_previous(int time, const std::set<int> & happenings) const
 }
 
 std::multimap<int, ActionStamped>
-STNBTBuilder::get_simple_plan(const plansys2_msgs::msg::Plan & plan) const
+STNBTBuilder::get_simple_plan(const plansys2_msgs::Plan & plan) const
 {
   std::multimap<int, ActionStamped> simple_plan;
   auto action_sequence = get_plan_actions(plan);
@@ -347,7 +347,7 @@ STNBTBuilder::get_simple_plan(const plansys2_msgs::msg::Plan & plan) const
   auto functions = problem_client_->getFunctions();
 
   ActionStamped init_action;
-  init_action.action = std::make_shared<plansys2_msgs::msg::DurativeAction>();
+  init_action.action = std::make_shared<plansys2_msgs::DurativeAction>();
   init_action.action->at_end_effects = from_state(predicates, functions);
   init_action.type = ActionType::INIT;
   simple_plan.insert(std::make_pair(-1, init_action));
@@ -435,27 +435,27 @@ STNBTBuilder::get_states(
   return states;
 }
 
-plansys2_msgs::msg::Tree
+plansys2_msgs::Tree
 STNBTBuilder::from_state(
   const std::vector<plansys2::Predicate> & preds,
   const std::vector<plansys2::Function> & funcs) const
 {
-  plansys2_msgs::msg::Tree tree;
-  plansys2_msgs::msg::Node node;
-  node.node_type = plansys2_msgs::msg::Node::AND;
+  plansys2_msgs::Tree tree;
+  plansys2_msgs::Node node;
+  node.node_type = plansys2_msgs::Node::AND;
   node.node_id = 0;
   node.negate = false;
   tree.nodes.push_back(node);
 
   for (const auto & pred : preds) {
-    const plansys2_msgs::msg::Node * child = &pred;
+    const plansys2_msgs::Node * child = &pred;
     tree.nodes.push_back(*child);
     tree.nodes.back().node_id = tree.nodes.size() - 1;
     tree.nodes[0].children.push_back(tree.nodes.size() - 1);
   }
 
   for (const auto & func : funcs) {
-    const plansys2_msgs::msg::Node * child = &func;
+    const plansys2_msgs::Node * child = &func;
     tree.nodes.push_back(*child);
     tree.nodes.back().node_id = tree.nodes.size() - 1;
     tree.nodes[0].children.push_back(tree.nodes.size() - 1);
@@ -860,7 +860,7 @@ STNBTBuilder::get_intersection(
   return ret;
 }
 
-plansys2_msgs::msg::Tree
+plansys2_msgs::Tree
 STNBTBuilder::get_conditions(const ActionStamped & action) const
 {
   if (action.type == ActionType::START) {
@@ -871,10 +871,10 @@ STNBTBuilder::get_conditions(const ActionStamped & action) const
     return action.action->at_end_requirements;
   }
 
-  return plansys2_msgs::msg::Tree();
+  return plansys2_msgs::Tree();
 }
 
-plansys2_msgs::msg::Tree
+plansys2_msgs::Tree
 STNBTBuilder::get_effects(const ActionStamped & action) const
 {
   if (action.type == ActionType::START) {
@@ -883,7 +883,7 @@ STNBTBuilder::get_effects(const ActionStamped & action) const
     return action.action->at_end_effects;
   }
 
-  return plansys2_msgs::msg::Tree();
+  return plansys2_msgs::Tree();
 }
 
 void

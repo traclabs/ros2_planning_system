@@ -16,9 +16,9 @@
 #include <memory>
 #include <vector>
 
-#include "plansys2_pddl_parser/Utils.h"
+#include <plansys2_pddl_parser/Utils.h>
 
-#include "plansys2_executor/ActionExecutor.hpp"
+#include <plansys2_executor/ActionExecutor.hpp>
 
 namespace plansys2
 {
@@ -28,51 +28,53 @@ using namespace std::chrono_literals;
 
 ActionExecutor::ActionExecutor(
   const std::string & action,
-  rclcpp_lifecycle::LifecycleNode::SharedPtr node)
+  std::shared_ptr<ros::lifecycle::ManagedNode> node)
 : node_(node), state_(IDLE), completion_(0.0)
 {
-  action_hub_pub_ = node_->create_publisher<plansys2_msgs::msg::ActionExecution>(
-    "actions_hub", rclcpp::QoS(100).reliable());
-  action_hub_sub_ = node_->create_subscription<plansys2_msgs::msg::ActionExecution>(
-    "actions_hub", rclcpp::QoS(100).reliable(),
-    std::bind(&ActionExecutor::action_hub_callback, this, _1));
 
-  state_time_ = node_->now();
+  action_hub_pub_.reset(new ros::lifecycle::LifecyclePublisher<plansys2_msgs::ActionExecution>(node_,
+											       "actions_hub"));
+  action_hub_sub_.reset(new ros::lifecycle::LifecycleSubscriber_<plansys2_msgs::ActionExecution>(node_,
+												 "actions_hub",
+												 &ActionExecutor::action_hub_callback,
+												 this));
+
+  state_time_ = ros::Time::now();
 
   action_ = action;
   action_name_ = get_name(action);
-  action_params_ = get_params(action);
-  start_execution_ = node_->now();
+  node_->getBaseNode().getParam(action, action_params_);
+
+  start_execution_ = ros::Time::now();
   state_time_ = start_execution_;
 }
 
-void
-ActionExecutor::action_hub_callback(const plansys2_msgs::msg::ActionExecution::SharedPtr msg)
+void ActionExecutor::action_hub_callback(const plansys2_msgs::ActionExecution::ConstPtr &msg)
 {
   last_msg = *msg;
 
   switch (msg->type) {
-    case plansys2_msgs::msg::ActionExecution::REQUEST:
-    case plansys2_msgs::msg::ActionExecution::CONFIRM:
-    case plansys2_msgs::msg::ActionExecution::REJECT:
-    case plansys2_msgs::msg::ActionExecution::CANCEL:
+    case plansys2_msgs::ActionExecution::REQUEST:
+    case plansys2_msgs::ActionExecution::CONFIRM:
+    case plansys2_msgs::ActionExecution::REJECT:
+    case plansys2_msgs::ActionExecution::CANCEL:
       // These cases have no meaning requester
       break;
-    case plansys2_msgs::msg::ActionExecution::RESPONSE:
+    case plansys2_msgs::ActionExecution::RESPONSE:
       if (msg->arguments == action_params_ && msg->action == action_name_) {
         if (state_ == DEALING) {
           confirm_performer(msg->node_id);
           current_performer_id_ = msg->node_id;
           state_ = RUNNING;
           waiting_timer_ = nullptr;
-          start_execution_ = node_->now();
-          state_time_ = node_->now();
+          start_execution_ = ros::Time::now();
+          state_time_ = ros::Time::now();
         } else {
           reject_performer(msg->node_id);
         }
       }
       break;
-    case plansys2_msgs::msg::ActionExecution::FEEDBACK:
+    case plansys2_msgs::ActionExecution::FEEDBACK:
       if (state_ != RUNNING || msg->arguments != action_params_ || msg->action != action_name_ ||
         msg->node_id != current_performer_id_)
       {
@@ -80,10 +82,10 @@ ActionExecutor::action_hub_callback(const plansys2_msgs::msg::ActionExecution::S
       }
       feedback_ = msg->status;
       completion_ = msg->completion;
-      state_time_ = node_->now();
+      state_time_ = ros::Time::now();
 
       break;
-    case plansys2_msgs::msg::ActionExecution::FINISH:
+    case plansys2_msgs::ActionExecution::FINISH:
       if (msg->arguments == action_params_ &&
         msg->action == action_name_ && msg->node_id == current_performer_id_)
       {
@@ -96,17 +98,17 @@ ActionExecutor::action_hub_callback(const plansys2_msgs::msg::ActionExecution::S
         feedback_ = msg->status;
         completion_ = msg->completion;
 
-        state_time_ = node_->now();
+        state_time_ = ros::Time::now();
 
         action_hub_pub_->on_deactivate();
         action_hub_pub_ = nullptr;
-        action_hub_sub_ = nullptr;
+	action_hub_sub_ = nullptr;
       }
       break;
     default:
-      RCLCPP_ERROR(
-        node_->get_logger(), "Msg %d type not recognized in %s executor requester",
-        msg->type, action_.c_str());
+      ROS_ERROR("%s -- Msg %d type not recognized in %s executor requester",
+		getName().c_str(),
+		msg->type, action_.c_str());
       break;
   }
 }
@@ -114,8 +116,8 @@ ActionExecutor::action_hub_callback(const plansys2_msgs::msg::ActionExecution::S
 void
 ActionExecutor::confirm_performer(const std::string & node_id)
 {
-  plansys2_msgs::msg::ActionExecution msg;
-  msg.type = plansys2_msgs::msg::ActionExecution::CONFIRM;
+  plansys2_msgs::ActionExecution msg;
+  msg.type = plansys2_msgs::ActionExecution::CONFIRM;
   msg.node_id = node_id;
   msg.action = action_name_;
   msg.arguments = action_params_;
@@ -126,8 +128,8 @@ ActionExecutor::confirm_performer(const std::string & node_id)
 void
 ActionExecutor::reject_performer(const std::string & node_id)
 {
-  plansys2_msgs::msg::ActionExecution msg;
-  msg.type = plansys2_msgs::msg::ActionExecution::REJECT;
+  plansys2_msgs::ActionExecution msg;
+  msg.type = plansys2_msgs::ActionExecution::REJECT;
   msg.node_id = node_id;
   msg.action = action_name_;
   msg.arguments = action_params_;
@@ -138,8 +140,8 @@ ActionExecutor::reject_performer(const std::string & node_id)
 void
 ActionExecutor::request_for_performers()
 {
-  plansys2_msgs::msg::ActionExecution msg;
-  msg.type = plansys2_msgs::msg::ActionExecution::REQUEST;
+  plansys2_msgs::ActionExecution msg;
+  msg.type = plansys2_msgs::ActionExecution::REQUEST;
   msg.node_id = node_->get_name();
   msg.action = action_name_;
   msg.arguments = action_params_;
@@ -177,12 +179,12 @@ ActionExecutor::is_finished()
 }
 
 BT::NodeStatus
-ActionExecutor::tick(const rclcpp::Time & now)
+ActionExecutor::tick(const ros::Time & now)
 {
   switch (state_) {
     case IDLE:
       state_ = DEALING;
-      state_time_ = node_->now();
+      state_time_ = ros::Time::now();
 
       action_hub_pub_->on_activate();
 
@@ -190,16 +192,16 @@ ActionExecutor::tick(const rclcpp::Time & now)
       feedback_ = "";
 
       request_for_performers();
-      waiting_timer_ = node_->create_wall_timer(
-        1s, std::bind(&ActionExecutor::wait_timeout, this));
+      waiting_timer_ = std::make_shared<ros::WallTimer>(node_->getBaseNode().createWallTimer(ros::WallDuration(1.0),
+											     &ActionExecutor::wait_timeout, this));
       break;
     case DEALING:
       {
-        auto time_since_dealing = (node_->now() - state_time_).seconds();
+        auto time_since_dealing = (ros::Time::now() - state_time_).toSec();
         if (time_since_dealing > 30.0) {
-          RCLCPP_ERROR(
-            node_->get_logger(),
-            "Aborting %s. Timeout after requesting for 30 seconds", action_.c_str());
+          ROS_ERROR("%s -- Aborting %s. Timeout after requesting for 30 seconds",
+		    getName().c_str(),
+		    action_.c_str());
           state_ = FAILURE;
         }
       }
@@ -222,8 +224,8 @@ void
 ActionExecutor::cancel()
 {
   state_ = CANCELLED;
-  plansys2_msgs::msg::ActionExecution msg;
-  msg.type = plansys2_msgs::msg::ActionExecution::CANCEL;
+  plansys2_msgs::ActionExecution msg;
+  msg.type = plansys2_msgs::ActionExecution::CANCEL;
   msg.node_id = current_performer_id_;
   msg.action = action_name_;
   msg.arguments = action_params_;
@@ -269,9 +271,9 @@ ActionExecutor::get_params(const std::string & action_expr)
 }
 
 void
-ActionExecutor::wait_timeout()
+ActionExecutor::wait_timeout(const ros::WallTimerEvent &event)
 {
-  RCLCPP_WARN(node_->get_logger(), "No action performer for %s. retrying", action_.c_str());
+  ROS_WARN("%s -- No action performer for %s. retrying", getName().c_str(), action_.c_str());
   request_for_performers();
 }
 

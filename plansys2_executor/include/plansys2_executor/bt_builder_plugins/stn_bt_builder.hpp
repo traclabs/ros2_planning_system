@@ -24,11 +24,11 @@
 #include <utility>
 #include <vector>
 
-#include "plansys2_domain_expert/DomainExpertClient.hpp"
-#include "plansys2_executor/ActionExecutor.hpp"
-#include "plansys2_executor/BTBuilder.hpp"
-#include "plansys2_msgs/msg/plan.hpp"
-#include "plansys2_problem_expert/ProblemExpertClient.hpp"
+#include <plansys2_domain_expert/DomainExpertClient.hpp>
+#include <plansys2_executor/ActionExecutor.hpp>
+#include <plansys2_executor/BTBuilder.hpp>
+#include <plansys2_msgs/Plan.h>
+#include <plansys2_problem_expert/ProblemExpertClient.hpp>
 
 namespace plansys2
 {
@@ -72,29 +72,29 @@ public:
     const std::string & bt_action_2 = "",
     int precision = 3);
 
-  std::string get_tree(const plansys2_msgs::msg::Plan & current_plan);
+  std::string get_tree(const plansys2_msgs::Plan & current_plan);
   std::string get_dotgraph(
     std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map,
     bool enable_legend = false,
     bool enable_print_graph = false);
 
 protected:
-  Graph::Ptr build_stn(const plansys2_msgs::msg::Plan & plan) const;
+  Graph::Ptr build_stn(const plansys2_msgs::Plan & plan) const;
   std::string build_bt(const Graph::Ptr stn) const;
 
-  Graph::Ptr init_graph(const plansys2_msgs::msg::Plan & plan) const;
-  std::vector<ActionStamped> get_plan_actions(const plansys2_msgs::msg::Plan & plan) const;
+  Graph::Ptr init_graph(const plansys2_msgs::Plan & plan) const;
+  std::vector<ActionStamped> get_plan_actions(const plansys2_msgs::Plan & plan) const;
 
-  std::set<int> get_happenings(const plansys2_msgs::msg::Plan & plan) const;
+  std::set<int> get_happenings(const plansys2_msgs::Plan & plan) const;
   std::set<int>::iterator get_happening(int time, const std::set<int> & happenings) const;
   std::set<int>::iterator get_previous(int time, const std::set<int> & happenings) const;
 
-  std::multimap<int, ActionStamped> get_simple_plan(const plansys2_msgs::msg::Plan & plan) const;
+  std::multimap<int, ActionStamped> get_simple_plan(const plansys2_msgs::Plan & plan) const;
 
   std::map<int, StateVec> get_states(
     const std::set<int> & happenings,
     const std::multimap<int, ActionStamped> & plan) const;
-  plansys2_msgs::msg::Tree from_state(
+  plansys2_msgs::Tree from_state(
     const std::vector<plansys2::Predicate> & preds,
     const std::vector<plansys2::Function> & funcs) const;
 
@@ -133,8 +133,8 @@ protected:
   StateVec get_diff(const StateVec & X_1, const StateVec & X_2) const;
   StateVec get_intersection(const StateVec & X_1, const StateVec & X_2) const;
 
-  plansys2_msgs::msg::Tree get_conditions(const ActionStamped & action) const;
-  plansys2_msgs::msg::Tree get_effects(const ActionStamped & action) const;
+  plansys2_msgs::Tree get_conditions(const ActionStamped & action) const;
+  plansys2_msgs::Tree get_effects(const ActionStamped & action) const;
 
   void prune_paths(GraphNode::Ptr current, GraphNode::Ptr previous) const;
   bool check_paths(GraphNode::Ptr current, GraphNode::Ptr previous) const;

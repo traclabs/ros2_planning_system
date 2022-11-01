@@ -16,7 +16,7 @@
 #include <map>
 #include <memory>
 
-#include "plansys2_executor/behavior_tree/check_action_node.hpp"
+#include <plansys2_executor/behavior_tree/check_action_node.hpp>
 
 namespace plansys2
 {

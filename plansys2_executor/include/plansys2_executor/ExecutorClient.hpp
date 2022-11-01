@@ -20,14 +20,15 @@
 #include <memory>
 #include <vector>
 
-#include "plansys2_msgs/action/execute_plan.hpp"
-#include "plansys2_msgs/srv/get_ordered_sub_goals.hpp"
-#include "plansys2_msgs/srv/get_plan.hpp"
-#include "plansys2_msgs/msg/plan.hpp"
-#include "plansys2_msgs/msg/tree.hpp"
+#include <plansys2_msgs/ExecutePlanAction.h>
+#include <plansys2_msgs/GetOrderedSubGoals.h>
+#include <plansys2_msgs/GetPlan.h>
+#include <plansys2_msgs/Plan.h>
+#include <plansys2_msgs/Tree.h>
+#include <actionlib/client/simple_action_client.h>
 
-#include "rclcpp/rclcpp.hpp"
-#include "rclcpp_action/rclcpp_action.hpp"
+#include <ros/ros.h>
+//#include "rclcpp_action/rclcpp_action.hpp"
 
 namespace plansys2
 {
@@ -35,43 +36,40 @@ namespace plansys2
 class ExecutorClient
 {
 public:
-  using ExecutePlan = plansys2_msgs::action::ExecutePlan;
-  using GoalHandleExecutePlan = rclcpp_action::ClientGoalHandle<ExecutePlan>;
 
   ExecutorClient();
   explicit ExecutorClient(const std::string & node_name);
 
-  bool start_plan_execution(const plansys2_msgs::msg::Plan & plan);
+  bool start_plan_execution(const plansys2_msgs::Plan & plan);
   bool execute_and_check_plan();
   void cancel_plan_execution();
-  std::vector<plansys2_msgs::msg::Tree> getOrderedSubGoals();
-  std::optional<plansys2_msgs::msg::Plan> getPlan();
+  std::vector<plansys2_msgs::Tree> getOrderedSubGoals();
+  std::optional<plansys2_msgs::Plan> getPlan();
 
-  ExecutePlan::Feedback getFeedBack() {return feedback_;}
-  std::optional<ExecutePlan::Result> getResult();
+  plansys2_msgs::ExecutePlanFeedback getFeedBack() {return feedback_;}
+  std::optional<plansys2_msgs::ExecutePlanResult> getResult();
 
+  std::string getName() { return std::string("ExecutorClient"); }
+  
 private:
-  rclcpp::Node::SharedPtr node_;
+  std::shared_ptr<ros::NodeHandle> node_;
 
-  rclcpp_action::Client<ExecutePlan>::SharedPtr action_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetOrderedSubGoals>::SharedPtr
-    get_ordered_sub_goals_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetPlan>::SharedPtr get_plan_client_;
+  std::shared_ptr<actionlib::SimpleActionClient<plansys2_msgs::ExecutePlanAction> > action_client_;
+  ros::ServiceClient get_ordered_sub_goals_client_;
+  ros::ServiceClient get_plan_client_;
 
-  ExecutePlan::Feedback feedback_;
-  rclcpp_action::ClientGoalHandle<ExecutePlan>::SharedPtr goal_handle_;
-  rclcpp_action::ClientGoalHandle<ExecutePlan>::WrappedResult result_;
+  plansys2_msgs::ExecutePlanFeedback feedback_;
+  plansys2_msgs::ExecutePlanResultConstPtr result_;
 
   bool goal_result_available_{false};
 
   bool executing_plan_{false};
 
-  void result_callback(const GoalHandleExecutePlan::WrappedResult & result);
-  void feedback_callback(
-    GoalHandleExecutePlan::SharedPtr goal_handle,
-    const std::shared_ptr<const ExecutePlan::Feedback> feedback);
+  void result_callback(const actionlib::SimpleClientGoalState& state,
+		       const plansys2_msgs::ExecutePlanResultConstPtr& result);
+  void feedback_callback(const plansys2_msgs::ExecutePlanFeedbackConstPtr& feedback);
 
-  bool on_new_goal_received(const plansys2_msgs::msg::Plan & plan);
+  bool on_new_goal_received(const plansys2_msgs::Plan & plan);
   bool should_cancel_goal();
   void createActionClient();
 };

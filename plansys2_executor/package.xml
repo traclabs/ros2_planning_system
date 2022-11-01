@@ -10,14 +10,13 @@
  
   <license>Apache License, Version 2.0</license>
 
-  <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>catkin</buildtool_depend>
 
-  <depend>rclcpp</depend>
-  <depend>rclcpp_action</depend>
-  <depend>rclcpp_lifecycle</depend>
+  <depend>roscpp</depend>
+  <depend>actionlib</depend>
+  <depend>lifecycle</depend>
   <depend>lifecycle_msgs</depend>
-  <depend>rclcpp_cascade_lifecycle</depend>
-  <depend>ament_index_cpp</depend>
+<!--  <depend>rclcpp_cascade_lifecycle</depend>-->
   <depend>plansys2_core</depend>
   <depend>plansys2_pddl_parser</depend>
   <depend>plansys2_msgs</depend>
@@ -31,12 +30,12 @@
 
   <exec_depend>popf</exec_depend>
 
-  <test_depend>ament_lint_common</test_depend>
+<!--  <test_depend>ament_lint_common</test_depend>
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_cmake_gtest</test_depend>
-
+-->
   <export>
-    <build_type>ament_cmake</build_type>
     <plansys2_executor plugin="${prefix}/plugins.xml" />
   </export>
+
 </package>

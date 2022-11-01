@@ -19,7 +19,7 @@
 #include <memory>
 #include <tuple>
 
-#include "plansys2_executor/behavior_tree/check_timeout_node.hpp"
+#include <plansys2_executor/behavior_tree/check_timeout_node.hpp>
 
 namespace plansys2
 {

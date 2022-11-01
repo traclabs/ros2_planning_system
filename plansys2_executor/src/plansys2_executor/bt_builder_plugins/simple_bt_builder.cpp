@@ -22,12 +22,12 @@
 #include <map>
 #include <utility>
 
-#include "plansys2_executor/bt_builder_plugins/simple_bt_builder.hpp"
+#include <plansys2_executor/bt_builder_plugins/simple_bt_builder.hpp>
 
-#include "plansys2_problem_expert/Utils.hpp"
-#include "plansys2_pddl_parser/Utils.h"
+#include <plansys2_problem_expert/Utils.hpp>
+#include <plansys2_pddl_parser/Utils.h>
 
-#include "rclcpp/rclcpp.hpp"
+#include <ros/ros.h>
 
 namespace plansys2
 {
@@ -74,7 +74,7 @@ SimpleBTBuilder::is_action_executable(
 
 GraphNode::Ptr
 SimpleBTBuilder::get_node_satisfy(
-  const plansys2_msgs::msg::Tree & requirement,
+  const plansys2_msgs::Tree & requirement,
   const GraphNode::Ptr & node,
   const GraphNode::Ptr & current)
 {
@@ -182,7 +182,7 @@ SimpleBTBuilder::is_parallelizable(
 
 GraphNode::Ptr
 SimpleBTBuilder::get_node_satisfy(
-  const plansys2_msgs::msg::Tree & requirement,
+  const plansys2_msgs::Tree & requirement,
   const Graph::Ptr & graph,
   const GraphNode::Ptr & current)
 {
@@ -245,7 +245,7 @@ SimpleBTBuilder::get_roots(
 
 void
 SimpleBTBuilder::remove_existing_requirements(
-  std::vector<plansys2_msgs::msg::Tree> & requirements,
+  std::vector<plansys2_msgs::Tree> & requirements,
   std::vector<plansys2::Predicate> & predicates,
   std::vector<plansys2::Function> & functions) const
 {
@@ -313,7 +313,7 @@ SimpleBTBuilder::get_state(
 }
 
 Graph::Ptr
-SimpleBTBuilder::get_graph(const plansys2_msgs::msg::Plan & current_plan)
+SimpleBTBuilder::get_graph(const plansys2_msgs::Plan & current_plan)
 {
   int node_counter = 0;
   int level_counter = 0;
@@ -344,14 +344,14 @@ SimpleBTBuilder::get_graph(const plansys2_msgs::msg::Plan & current_plan)
     }
     new_node->level_num = level_counter;
 
-    std::vector<plansys2_msgs::msg::Tree> at_start_requirements =
+    std::vector<plansys2_msgs::Tree> at_start_requirements =
       parser::pddl::getSubtrees(new_node->action.action->at_start_requirements);
-    std::vector<plansys2_msgs::msg::Tree> over_all_requirements =
+    std::vector<plansys2_msgs::Tree> over_all_requirements =
       parser::pddl::getSubtrees(new_node->action.action->over_all_requirements);
-    std::vector<plansys2_msgs::msg::Tree> at_end_requirements =
+    std::vector<plansys2_msgs::Tree> at_end_requirements =
       parser::pddl::getSubtrees(new_node->action.action->at_end_requirements);
 
-    std::vector<plansys2_msgs::msg::Tree> requirements;
+    std::vector<plansys2_msgs::Tree> requirements;
     requirements.insert(
       std::end(requirements), std::begin(at_start_requirements),
       std::end(at_start_requirements));
@@ -432,7 +432,7 @@ SimpleBTBuilder::get_graph(const plansys2_msgs::msg::Plan & current_plan)
 }
 
 std::string
-SimpleBTBuilder::get_tree(const plansys2_msgs::msg::Plan & current_plan)
+SimpleBTBuilder::get_tree(const plansys2_msgs::Plan & current_plan)
 {
   graph_ = get_graph(current_plan);
 
@@ -785,7 +785,7 @@ SimpleBTBuilder::execution_block(const GraphNode::Ptr & node, int l)
 }
 
 std::vector<ActionStamped>
-SimpleBTBuilder::get_plan_actions(const plansys2_msgs::msg::Plan & plan)
+SimpleBTBuilder::get_plan_actions(const plansys2_msgs::Plan & plan)
 {
   std::vector<ActionStamped> ret;
 
