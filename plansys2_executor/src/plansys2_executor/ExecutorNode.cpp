@@ -27,13 +27,13 @@
 #include <plansys2_executor/ActionExecutor.hpp>
 #include <plansys2_executor/BTBuilder.hpp>
 #include <plansys2_problem_expert/Utils.hpp>
-#include <plansys2_pddl_parser/Utils.h"
+#include <plansys2_pddl_parser/Utils.h>
 
 //#include <lifecycle_msgs/state.hpp>
 #include <plansys2_msgs/ActionExecutionInfo.h>
 #include <plansys2_msgs/Plan.h>
 
-#include "ament_index_cpp/get_package_share_directory.hpp>
+#include <ros/package.h>
 
 #include <behaviortree_cpp_v3/behavior_tree.h>
 #include <behaviortree_cpp_v3/bt_factory.h>
@@ -63,7 +63,8 @@ using namespace std::chrono_literals;
   : ros::lifecycle::ManagedNode(_nh),
   bt_builder_loader_("plansys2_executor", "plansys2::BTBuilder")
 {
-  using namespace std::placeholders;
+
+  // In ROS1 we don't have to declareparameters
   /*
   this->declare_parameter<std::string>("default_action_bt_xml_filename", "");
   this->declare_parameter<std::string>("default_start_action_bt_xml_filename", "");
@@ -88,25 +89,19 @@ using namespace std::chrono_literals;
   this->declare_parameter<int>("max_msgs_per_second", 25);
 #endif
   */
-  execute_plan_action_server_.reset( new actionlib::SimpleActionServer<plansys2_msgs::ExecutePlanAction>(nh,
-													 "execute_plan",
-													 boost::bind(&ExecutorNode::handle_goal, this, _1, _2),
-													 boost::bind(&ExecutorNode::handle_cancel, this, _1),
-													 boost::bind(&ExecutorNode::handle_accepted, this, _1));
+  execute_plan_action_server_.reset( new actionlib::SimpleActionServer<plansys2_msgs::ExecutePlanAction>(getBaseNode(),"execute_plan", false));
+  
+  execute_plan_action_server_->registerGoalCallback(boost::bind(&ExecutorNode::handle_accepted, this));
+  execute_plan_action_server_->registerPreemptCallback(boost::bind(&ExecutorNode::handle_cancel, this));
+													
 
-  get_ordered_sub_goals_service_ = create_service<plansys2_msgs::GetOrderedSubGoals>(
-    "executor/get_ordered_sub_goals",
-    std::bind(
-      &ExecutorNode::get_ordered_sub_goals_service_callback,
-      this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
+  get_ordered_sub_goals_service_ = getBaseNode().advertiseService("executor/get_ordered_sub_goals",
+								  &ExecutorNode::get_ordered_sub_goals_service_callback,
+								  this);
 
-  get_plan_service_ = create_service<plansys2_msgs::GetPlan>(
-    "executor/get_plan",
-    std::bind(
-      &ExecutorNode::get_plan_service_callback,
-      this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
+  get_plan_service_ = getBaseNode().advertiseService("executor/get_plan",
+						     &ExecutorNode::get_plan_service_callback,
+						     this);
 }
 
 
@@ -115,8 +110,9 @@ ExecutorNode::onConfigure()
 {
   ROS_INFO("[%s] Configuring...", get_name());
 
-  auto default_action_bt_xml_filename =
-    this->get_parameter("default_action_bt_xml_filename").as_string();
+  std::string default_action_bt_xml_filename;
+  getBaseNode().getParam("default_action_bt_xml_filename", default_action_bt_xml_filename);
+  
   if (default_action_bt_xml_filename.empty()) {
     default_action_bt_xml_filename =
       ros::package::getPath("plansys2_executor") +
@@ -125,67 +121,65 @@ ExecutorNode::onConfigure()
 
   std::ifstream action_bt_ifs(default_action_bt_xml_filename);
   if (!action_bt_ifs) {
-    RCLCPP_ERROR_STREAM(get_logger(), "Error openning [" << default_action_bt_xml_filename << "]");
+    ROS_ERROR_STREAM(get_name() << " Error openning [" << default_action_bt_xml_filename << "]");
     return false;
   }
 
   action_bt_xml_.assign(
     std::istreambuf_iterator<char>(action_bt_ifs), std::istreambuf_iterator<char>());
 
-  auto default_start_action_bt_xml_filename =
-    this->get_parameter("default_start_action_bt_xml_filename").as_string();
+  std::string default_start_action_bt_xml_filename;
+  getBaseNode().getParam("default_start_action_bt_xml_filename", default_start_action_bt_xml_filename);
+  
   if (default_start_action_bt_xml_filename.empty()) {
     default_start_action_bt_xml_filename =
-      ament_index_cpp::get_package_share_directory("plansys2_executor") +
+      ros::package::getPath("plansys2_executor") +
       "/behavior_trees/plansys2_start_action_bt.xml";
   }
 
   std::ifstream start_action_bt_ifs(default_start_action_bt_xml_filename);
   if (!start_action_bt_ifs) {
-    RCLCPP_ERROR_STREAM(
-      get_logger(), "Error openning [" << default_start_action_bt_xml_filename << "]");
-    return bool::FAILURE;
+    ROS_ERROR_STREAM(get_name() <<
+		     "Error openning [" << default_start_action_bt_xml_filename << "]");
+    return false;
   }
 
   start_action_bt_xml_.assign(
     std::istreambuf_iterator<char>(start_action_bt_ifs), std::istreambuf_iterator<char>());
 
-  auto default_end_action_bt_xml_filename =
-    this->get_parameter("default_end_action_bt_xml_filename").as_string();
+  std::string default_end_action_bt_xml_filename;
+  getBaseNode().getParam("default_end_action_bt_xml_filename", default_end_action_bt_xml_filename);
   if (default_end_action_bt_xml_filename.empty()) {
     default_end_action_bt_xml_filename =
-      ament_index_cpp::get_package_share_directory("plansys2_executor") +
+      ros::package::getPath("plansys2_executor") +
       "/behavior_trees/plansys2_end_action_bt.xml";
   }
 
   std::ifstream end_action_bt_ifs(default_end_action_bt_xml_filename);
   if (!end_action_bt_ifs) {
-    RCLCPP_ERROR_STREAM(
-      get_logger(), "Error openning [" << default_end_action_bt_xml_filename << "]");
-    return bool::FAILURE;
+    ROS_ERROR_STREAM(get_name() <<
+		     "Error openning [" << default_end_action_bt_xml_filename << "]");
+    return false;
   }
 
-  end_action_bt_xml_.assign(
-    std::istreambuf_iterator<char>(end_action_bt_ifs), std::istreambuf_iterator<char>());
+  end_action_bt_xml_.assign(std::istreambuf_iterator<char>(end_action_bt_ifs), std::istreambuf_iterator<char>());
 
-  dotgraph_pub_ = this->create_publisher<std_msgs::String>("dot_graph", 1);
-  execution_info_pub_ = create_publisher<plansys2_msgs::ActionExecutionInfo>(
-    "action_execution_info", 100);
-  executing_plan_pub_ = create_publisher<plansys2_msgs::Plan>(
-    "executing_plan", rclcpp::QoS(100).transient_local());
+  dotgraph_pub_.reset( new ros::lifecycle::LifecyclePublisher<std_msgs::String>(shared_from_this(), "dot_graph"));
+  execution_info_pub_.reset( new ros::lifecycle::LifecyclePublisher<plansys2_msgs::ActionExecutionInfo>(shared_from_this(), "action_execution_info"));
+  executing_plan_pub_.reset( new ros::lifecycle::LifecyclePublisher<plansys2_msgs::Plan>(shared_from_this(), "executing_plan"));
 
   domain_client_ = std::make_shared<plansys2::DomainExpertClient>();
   problem_client_ = std::make_shared<plansys2::ProblemExpertClient>();
   planner_client_ = std::make_shared<plansys2::PlannerClient>();
 
-  RCLCPP_INFO("[%s] Configured", get_name());
+  ROS_INFO("[%s] Configured", get_name());
   return true;
 }
 
 bool
 ExecutorNode::onActivate()
 {
-  ROS_INFO(g"[%s] Activating...", get_name());
+  ROS_INFO("[%s] Activating...", get_name());
   dotgraph_pub_->on_activate();
   execution_info_pub_->on_activate();
   executing_plan_pub_->on_activate();
@@ -228,14 +222,14 @@ ExecutorNode::onShutdown()
 }
 
 bool
-ExecutorNode::on_error(std::exception &)
+ExecutorNode::onError(std::exception &)
 {
   ROS_ERROR("[%s] Error transition", get_name());
 
   return true;
 }
 
-void
+bool
 ExecutorNode::get_ordered_sub_goals_service_callback(plansys2_msgs::GetOrderedSubGoals::Request &request,
 						     plansys2_msgs::GetOrderedSubGoals::Response &response)
 {
@@ -246,6 +240,8 @@ ExecutorNode::get_ordered_sub_goals_service_callback(plansys2_msgs::GetOrderedSu
     response.success = false;
     response.error_info = "No current plan.";
   }
+
+  return true;
 }
 
 std::optional<std::vector<plansys2_msgs::Tree>>
@@ -296,7 +292,7 @@ ExecutorNode::getOrderedSubGoals()
   return ordered_goals;
 }
 
-void
+bool
 ExecutorNode::get_plan_service_callback(plansys2_msgs::GetPlan::Request &request,
 					plansys2_msgs::GetPlan::Response &response)
 {
@@ -307,46 +303,44 @@ ExecutorNode::get_plan_service_callback(plansys2_msgs::GetPlan::Request &request
     response.success = false;
     response.error_info = "Plan not available";
   }
+
+  return true;
 }
 
-rclcpp_action::GoalResponse
-ExecutorNode::handle_goal(
-  const rclcpp_action::GoalUUID & uuid,
-  std::shared_ptr<const ExecutePlan::Goal> goal)
+
+void ExecutorNode::handle_goal()
 {
-  ROS_DEBUG(this->get_logger(), "Received goal request with order");
+  ROS_DEBUG("[%s] Received goal request with order", get_name());
 
   current_plan_ = {};
   ordered_sub_goals_ = {};
 
-  return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
-}
-
-rclcpp_action::CancelResponse
-ExecutorNode::handle_cancel(
-  const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
-{
-  ROS_DEBUG(this->get_logger(), "Received request to cancel goal");
-
-  cancel_plan_requested_ = true;
-
-  return rclcpp_action::CancelResponse::ACCEPT;
+  return;
 }
 
 void
-ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
+ExecutorNode::handle_cancel()
 {
-  auto feedback = std::make_shared<ExecutePlan::Feedback>();
-  auto result = std::make_shared<ExecutePlan::Result>();
+  ROS_DEBUG("%s -- Received request to cancel goal", get_name());
+
+  cancel_plan_requested_ = true;
+
+  return;
+}
+
+void ExecutorNode::execute(plansys2_msgs::ExecutePlanGoalConstPtr _goal)
+{
+  plansys2_msgs::ExecutePlanFeedback feedback;
+  plansys2_msgs::ExecutePlanResult result;
 
   cancel_plan_requested_ = false;
 
-  current_plan_ = goal_handle->get_goal()->plan;
+  current_plan_ = _goal->plan;
 
   if (!current_plan_.has_value()) {
-    ROS_ERROR(get_logger(), "No plan found");
-    result->success = false;
-    goal_handle->succeed(result);
+    ROS_ERROR("%s -- No plan found", get_name());
+    result.success = false;
+    execute_plan_action_server_->setSucceeded(result);
 
     // Publish void plan
     executing_plan_pub_->publish(plansys2_msgs::Plan());
@@ -356,7 +350,9 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
   executing_plan_pub_->publish(current_plan_.value());
 
   auto action_map = std::make_shared<std::map<std::string, ActionExecutionInfo>>();
-  auto action_timeout_actions = this->get_parameter("action_timeouts.actions").as_string_array();
+  std::vector<std::string> action_timeouts_actions;
+
+  getBaseNode().getParam("action_timeouts.actions", action_timeouts_actions);
 
   for (const auto & plan_item : current_plan_.value().items) {
     auto index = BTBuilder::to_action_id(plan_item, 3);
@@ -370,37 +366,43 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
 
     (*action_map)[index].duration = plan_item.duration;
     std::string action_name = (*action_map)[index].durative_action_info->name;
+    double dop;
     if (std::find(
-        action_timeout_actions.begin(), action_timeout_actions.end(),
-        action_name) != action_timeout_actions.end() &&
-      this->has_parameter("action_timeouts." + action_name + ".duration_overrun_percentage"))
+        action_timeouts_actions.begin(), action_timeouts_actions.end(),
+        action_name) != action_timeouts_actions.end() &&
+	getBaseNode().getParam("action_timeouts." + action_name + ".duration_overrun_percentage", dop) )
     {
-      (*action_map)[index].duration_overrun_percentage = this->get_parameter(
-        "action_timeouts." + action_name + ".duration_overrun_percentage").as_double();
+      (*action_map)[index].duration_overrun_percentage = dop;
     }
-    ROS_INFO(
-      get_logger(), "Action %s timeout percentage %f", action_name.c_str(),
+    ROS_INFO("%s -- Action %s timeout percentage %f",
+	     get_name(),
+	     action_name.c_str(),
       (*action_map)[index].duration_overrun_percentage);
   }
 
   ordered_sub_goals_ = getOrderedSubGoals();
 
-  auto bt_builder_plugin = this->get_parameter("bt_builder_plugin").as_string();
+  std::string bt_builder_plugin;
+  getBaseNode().getParam("bt_builder_plugin", bt_builder_plugin);
   if (bt_builder_plugin.empty()) {
     bt_builder_plugin = "SimpleBTBuilder";
   }
 
-  std::shared_ptr<plansys2::BTBuilder> bt_builder;
+  //std::shared_ptr<plansys2::BTBuilder> bt_builder;
+  boost::shared_ptr<plansys2::BTBuilder> bt_builder;
   try {
-    bt_builder = bt_builder_loader_.createSharedInstance("plansys2::" + bt_builder_plugin);
+    //bt_builder = bt_builder_loader_.createSharedInstance("plansys2::" + bt_builder_plugin);
+    bt_builder = bt_builder_loader_.createInstance("plansys2::" + bt_builder_plugin);
+
   } catch (pluginlib::PluginlibException & ex) {
-    ROS_ERROR(get_logger(), "pluginlib error: %s", ex.what());
+    ROS_ERROR("%s -- pluginlib error: %s", get_name(), ex.what());
   }
 
   if (bt_builder_plugin == "SimpleBTBuilder") {
     bt_builder->initialize(action_bt_xml_);
   } else if (bt_builder_plugin == "STNBTBuilder") {
-    auto precision = this->get_parameter("action_time_precision").as_int();
+    int precision;
+    getBaseNode().getParam("action_time_precision", precision);
     bt_builder->initialize(start_action_bt_xml_, end_action_bt_xml_, precision);
   }
   auto blackboard = BT::Blackboard::create();
@@ -423,9 +425,12 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
 
   auto bt_xml_tree = bt_builder->get_tree(current_plan_.value());
   std_msgs::String dotgraph_msg;
+  bool enable_dot = false;
+  getBaseNode().getParam("enable_dotgraph_legend", enable_dot);
+  bool print_graph = false;
+  getBaseNode().getParam("print_graph", print_graph);
   dotgraph_msg.data = bt_builder->get_dotgraph(
-    action_map, this->get_parameter("enable_dotgraph_legend").as_bool(),
-    this->get_parameter("print_graph").as_bool());
+    action_map, enable_dot, print_graph);
   dotgraph_pub_->publish(dotgraph_msg);
 
   std::filesystem::path tp = std::filesystem::temp_directory_path();
@@ -436,12 +441,14 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
   auto tree = factory.createTreeFromText(bt_xml_tree, blackboard);
 
 #ifdef ZMQ_FOUND
-  unsigned int publisher_port = this->get_parameter("publisher_port").as_int();
-  unsigned int server_port = this->get_parameter("server_port").as_int();
-  unsigned int max_msgs_per_second = this->get_parameter("max_msgs_per_second").as_int();
+  /*
+// ANA HACK -- FIRST LET'S CHECK STUFF WORKS WITHOUT ZMQ
+  unsigned int publisher_port = getBaseNode().getParam("publisher_port").as_int();
+  unsigned int server_port = getBaseNode().getParam("server_port").as_int();
+  unsigned int max_msgs_per_second = getBaseNode().getParam("max_msgs_per_second").as_int();
 
   std::unique_ptr<BT::PublisherZMQ> publisher_zmq;
-  if (this->get_parameter("enable_groot_monitoring").as_bool()) {
+  if (getBaseNode().getParam("enable_groot_monitoring").as_bool()) {
     ROS_DEBUG(
       get_logger(),
       "[%s] Groot monitoring: Publisher port: %d, Server port: %d, Max msgs per second: %d",
@@ -454,18 +461,18 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
     } catch (const BT::LogicError & exc) {
       ROS_ERROR(get_logger(), "ZMQ error: %s", exc.what());
     }
-  }
+    }*/
 #endif
 
-  auto info_pub = create_wall_timer(
-    1s, [this, &action_map]() {
-      auto msgs = get_feedback_info(action_map);
-      for (const auto & msg : msgs) {
-        execution_info_pub_->publish(msg);
-      }
-    });
+  auto info_pub = getBaseNode().createWallTimer(ros::WallDuration(1.0),						
+						[this, &action_map](const ros::WallTimerEvent &event) {
+						  auto msgs = get_feedback_info(action_map);
+						  for (const auto & msg : msgs) {
+						    execution_info_pub_->publish(msg);
+						  }
+						});
 
-  rclcpp::Rate rate(10);
+  ros::Rate rate(10);
   auto status = BT::NodeStatus::RUNNING;
 
   while (status == BT::NodeStatus::RUNNING && !cancel_plan_requested_) {
@@ -476,11 +483,10 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
       status == BT::NodeStatus::FAILURE;
     }
 
-    feedback->action_execution_status = get_feedback_info(action_map);
-    goal_handle->publish_feedback(feedback);
-
-    dotgraph_msg.data = bt_builder->get_dotgraph(
-      action_map, this->get_parameter("enable_dotgraph_legend").as_bool());
+    feedback.action_execution_status = get_feedback_info(action_map);
+    execute_plan_action_server_->publishFeedback(feedback);
+    
+    dotgraph_msg.data = bt_builder->get_dotgraph(action_map, enable_dot);
     dotgraph_pub_->publish(dotgraph_msg);
 
     rate.sleep();
@@ -492,41 +498,45 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
 
   if (status == BT::NodeStatus::FAILURE) {
     tree.haltTree();
-    ROS_ERROR(get_logger(), "Executor BT finished with FAILURE state");
+    ROS_ERROR("%s -- Executor BT finished with FAILURE state",
+	      get_name());
   }
 
-  dotgraph_msg.data = bt_builder->get_dotgraph(
-    action_map, this->get_parameter("enable_dotgraph_legend").as_bool());
+  dotgraph_msg.data = bt_builder->get_dotgraph(action_map, enable_dot);
   dotgraph_pub_->publish(dotgraph_msg);
 
-  result->success = status == BT::NodeStatus::SUCCESS;
-  result->action_execution_status = get_feedback_info(action_map);
+  result.success = status == BT::NodeStatus::SUCCESS;
+  result.action_execution_status = get_feedback_info(action_map);
 
   size_t i = 0;
-  while (i < result->action_execution_status.size() && result->success) {
-    if (result->action_execution_status[i].status !=
+  while (i < result.action_execution_status.size() && result.success) {
+    if (result.action_execution_status[i].status !=
       plansys2_msgs::ActionExecutionInfo::SUCCEEDED)
     {
-      result->success = false;
+      result.success = false;
     }
     i++;
   }
 
-  if (rclcpp::ok()) {
-    goal_handle->succeed(result);
-    if (result->success) {
-      ROS_INFO(this->get_logger(), "Plan Succeeded");
+  if (ros::ok()) {
+    execute_plan_action_server_->setSucceeded(result);
+    if (result.success) {
+      ROS_INFO("%s -- Plan Succeeded", get_name());
     } else {
-      ROS_INFO(this->get_logger(), "Plan Failed");
+      ROS_INFO("%s -- Plan Failed", get_name());
     }
   }
 }
 
-void
-ExecutorNode::handle_accepted(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
+void ExecutorNode::handle_accepted()
 {
+  handle_goal();
+  // if (not busy?)
+  goal_ = execute_plan_action_server_->acceptNewGoal();
+  
   using namespace std::placeholders;
-  std::thread{std::bind(&ExecutorNode::execute, this, _1), goal_handle}.detach();
+  std::thread th( &ExecutorNode::execute, this, goal_ );
+  th.detach();
 }
 
 std::vector<plansys2_msgs::ActionExecutionInfo>
@@ -542,7 +552,8 @@ ExecutorNode::get_feedback_info(
 
   for (const auto & action : *action_map) {
     if (!action.second.action_executor) {
-      ROS_WARN(get_logger(), "Action executor does not exist for %s. Skipping", action.first);
+      ROS_WARN("%s -- Action executor does not exist for %s. Skipping", get_name(),
+	       action.first.c_str());
       continue;
     }
 
@@ -573,7 +584,7 @@ ExecutorNode::get_feedback_info(
     info.action = action.second.action_executor->get_action_name();
 
     info.arguments = action.second.action_executor->get_action_params();
-    info.duration = rclcpp::Duration::from_seconds(action.second.duration);
+    info.duration = ros::Duration(action.second.duration);
     info.completion = action.second.action_executor->get_completion();
     info.message_status = action.second.action_executor->get_feedback();
 

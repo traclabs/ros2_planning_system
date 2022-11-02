@@ -54,7 +54,7 @@ include_directories(
 set(EXECUTOR_SOURCES
   src/plansys2_executor/ExecutorClient.cpp
   src/plansys2_executor/ActionExecutor.cpp
-#  src/plansys2_executor/ActionExecutorClient.cpp
+  src/plansys2_executor/ActionExecutorClient.cpp
   src/plansys2_executor/ExecutorNode.cpp
   src/plansys2_executor/behavior_tree/execute_action_node.cpp
   src/plansys2_executor/behavior_tree/wait_action_node.cpp
@@ -71,8 +71,8 @@ set(EXECUTOR_SOURCES
 add_library(${PROJECT_NAME} SHARED ${EXECUTOR_SOURCES})
 target_link_libraries(${PROJECT_NAME} ${ZMQ_LIBRARIES})
 
-#add_executable(executor_node src/executor_node.cpp)
-#target_link_libraries(executor_node ${PROJECT_NAME})
+add_executable(executor_node src/executor_node.cpp)
+target_link_libraries(executor_node ${PROJECT_NAME} ${catkin_LIBRARIES})
 
 install(DIRECTORY include/${PROJECT_NAME}/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}

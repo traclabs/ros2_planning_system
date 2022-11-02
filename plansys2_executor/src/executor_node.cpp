@@ -15,13 +15,13 @@
 #include <memory>
 
 #include "plansys2_executor/ExecutorNode.hpp"
-#include "rclcpp/rclcpp.hpp"
+#include <ros/ros.h>
 
 int main(int argc, char ** argv)
 {
   ros::init(argc, argv, "executor");
   ros::NodeHandle nh("executor");
-  plansys2::ExecutorNode> en(nh);
+  plansys2::ExecutorNode en(nh);
 
   ros::spin();
 

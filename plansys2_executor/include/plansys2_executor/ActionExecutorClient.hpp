@@ -19,20 +19,21 @@
 #include <memory>
 #include <vector>
 
-#include "plansys2_msgs/msg/action_execution.hpp"
-#include "plansys2_msgs/msg/action_performer_status.hpp"
+#include <plansys2_msgs/ActionExecution.h>
+#include <plansys2_msgs/ActionPerformerStatus.h>
 
-#include "plansys2_domain_expert/DomainExpertClient.hpp"
-#include "plansys2_problem_expert/ProblemExpertClient.hpp"
+#include <plansys2_domain_expert/DomainExpertClient.hpp>
+#include <plansys2_problem_expert/ProblemExpertClient.hpp>
 
-#include "rclcpp/rclcpp.hpp"
-#include "rclcpp_cascade_lifecycle/rclcpp_cascade_lifecycle.hpp"
-#include "rclcpp_action/rclcpp_action.hpp"
+#include <ros/ros.h>
+#include <lifecycle/cascade_lifecycle_node.h>
+#include <lifecycle/lifecycle_publisher.h>
+#include <lifecycle/lifecycle_subscriber.h>
 
 namespace plansys2
 {
 
-class ActionExecutorClient : public rclcpp_cascade_lifecycle::CascadeLifecycleNode
+class ActionExecutorClient : public ros::lifecycle::CascadeLifecycleNode
 {
 public:
   using Ptr = std::shared_ptr<ActionExecutorClient>;
@@ -45,7 +46,7 @@ public:
     const std::string & node_name,
     const std::chrono::nanoseconds & rate);
 
-  plansys2_msgs::msg::ActionPerformerStatus get_internal_status() const {return status_;}
+  plansys2_msgs::ActionPerformerStatus get_internal_status() const {return status_;}
 
 protected:
   virtual void do_work() {}
@@ -53,16 +54,14 @@ protected:
   const std::vector<std::string> & get_arguments() const {return current_arguments_;}
   const std::string get_action_name() const {return action_managed_;}
 
-  using CallbackReturnT =
-    rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
 
-  virtual CallbackReturnT on_configure(const rclcpp_lifecycle::State & state);
-  virtual CallbackReturnT on_activate(const rclcpp_lifecycle::State & state);
-  virtual CallbackReturnT on_deactivate(const rclcpp_lifecycle::State & state);
-  void action_hub_callback(const plansys2_msgs::msg::ActionExecution::SharedPtr msg);
+  virtual bool onConfigure();
+  virtual bool onActivate();
+  virtual bool onDeactivate();
+  void action_hub_callback(const plansys2_msgs::ActionExecution::ConstPtr &msg);
 
   bool should_execute(const std::string & action, const std::vector<std::string> & args);
-  void send_response(const plansys2_msgs::msg::ActionExecution::SharedPtr msg);
+  void send_response(const plansys2_msgs::ActionExecution::ConstPtr &msg);
   void send_feedback(float completion, const std::string & status = "");
   void finish(bool success, float completion, const std::string & status = "");
 
@@ -73,15 +72,15 @@ protected:
   std::vector<std::string> current_arguments_;
   std::vector<std::string> specialized_arguments_;
 
-  rclcpp_lifecycle::LifecyclePublisher<plansys2_msgs::msg::ActionExecution>::SharedPtr
+  std::shared_ptr<ros::lifecycle::LifecyclePublisher<plansys2_msgs::ActionExecution> >
     action_hub_pub_;
-  rclcpp::Subscription<plansys2_msgs::msg::ActionExecution>::SharedPtr action_hub_sub_;
-  rclcpp::TimerBase::SharedPtr timer_;
+  std::shared_ptr<ros::Subscriber>  action_hub_sub_;
+  std::shared_ptr<ros::WallTimer> timer_;
 
-  rclcpp_lifecycle::LifecyclePublisher<plansys2_msgs::msg::ActionPerformerStatus>::SharedPtr
+  std::shared_ptr<ros::lifecycle::LifecyclePublisher<plansys2_msgs::ActionPerformerStatus> >
     status_pub_;
-  rclcpp::TimerBase::SharedPtr hearbeat_pub_;
-  plansys2_msgs::msg::ActionPerformerStatus status_;
+  std::shared_ptr<ros::WallTimer> hearbeat_pub_;
+  plansys2_msgs::ActionPerformerStatus status_;
 };
 
 }  // namespace plansys2

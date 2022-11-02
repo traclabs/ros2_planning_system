@@ -6,8 +6,8 @@ int8 CANCELLED=5
 
 int8 status
 
-std_msgs/Time start_stamp
-std_msgs/Time status_stamp
+time start_stamp
+time status_stamp
 
 string action_full_name
 
@@ -15,7 +15,7 @@ string action
 string[] arguments
 
 # predicted duration of the action from the planner
-std_msgs/Duration duration
+duration duration
 
 float32 completion
 string message_status

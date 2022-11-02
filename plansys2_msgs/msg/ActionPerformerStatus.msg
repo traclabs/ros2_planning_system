@@ -3,7 +3,7 @@ int8 READY=1
 int8 RUNNING=2
 int8 FAILURE=4
 
-std_msgs/Time status_stamp
+time status_stamp
 
 int8 state
 string action

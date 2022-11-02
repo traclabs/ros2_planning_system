@@ -16,12 +16,12 @@
 #include <memory>
 #include <vector>
 
-#include "lifecycle_msgs/msg/transition.hpp"
-#include "lifecycle_msgs/msg/state.hpp"
+//#include <lifecycle_msgs/transition.hpp>
+//#include <lifecycle_msgs/state.hpp>
 
-#include "plansys2_msgs/msg/action_execution_info.hpp"
+#include <plansys2_msgs/ActionExecutionInfo.h>
 
-#include "plansys2_executor/ActionExecutorClient.hpp"
+#include <plansys2_executor/ActionExecutorClient.hpp>
 
 namespace plansys2
 {
@@ -29,134 +29,133 @@ namespace plansys2
 using namespace std::chrono_literals;
 
 ActionExecutorClient::ActionExecutorClient(
-  const std::string & node_name,
-  const std::chrono::nanoseconds & rate)
-: CascadeLifecycleNode(node_name),
-  rate_(rate),
-  commited_(false)
-{
-  declare_parameter<std::string>("action_name", "");
-  declare_parameter<std::vector<std::string>>(
-    "specialized_arguments", std::vector<std::string>({}));
+					   const std::string & node_name,
+					   const std::chrono::nanoseconds & rate)
+  : CascadeLifecycleNode(node_name),
+    rate_(rate),
+    commited_(false)
+{  
+  //declare_parameter<std::string>("action_name", "");
+  //declare_parameter<std::vector<std::string>>(
+  //"specialized_arguments", std::vector<std::string>({}));
 
   double default_rate = 1.0 / std::chrono::duration<double>(rate_).count();
-  declare_parameter<double>("rate", default_rate);
-  status_.state = plansys2_msgs::msg::ActionPerformerStatus::NOT_READY;
+  //declare_parameter<double>("rate", default_rate);
+  status_.state = plansys2_msgs::ActionPerformerStatus::NOT_READY;
   status_.status_stamp = now();
   status_.node_name = get_name();
 }
 
-using CallbackReturnT =
-  rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
-using std::placeholders::_1;
 
-CallbackReturnT
-ActionExecutorClient::on_configure(const rclcpp_lifecycle::State & state)
+bool ActionExecutorClient::onConfigure()
 {
-  status_pub_ = create_publisher<plansys2_msgs::msg::ActionPerformerStatus>(
-    "performers_status", rclcpp::QoS(100).reliable());
+  status_pub_.reset(new ros::lifecycle::LifecyclePublisher<plansys2_msgs::ActionPerformerStatus>(shared_from_this(),
+												 "performers_status"));
   status_pub_->on_activate();
 
-  hearbeat_pub_ = create_wall_timer(
-    1s, [this]() {
-      status_.status_stamp = now();
-      status_pub_->publish(status_);
-    });
+  hearbeat_pub_ = std::make_shared<ros::WallTimer>(getBaseNode().createWallTimer(ros::WallDuration(1.0),
+										 [this](const ros::WallTimerEvent &event) {
+										   status_.status_stamp = now();
+										   status_pub_->publish(status_);
+										 }) );
 
-  if (!get_parameter("action_name", action_managed_)) {
-    RCLCPP_ERROR(get_logger(), "action_name parameter not set");
-    status_.state = plansys2_msgs::msg::ActionPerformerStatus::FAILURE;
+  if (!getBaseNode().getParam("action_name", action_managed_)) {
+    ROS_ERROR("%s -- action_name parameter not set", get_name());
+    status_.state = plansys2_msgs::ActionPerformerStatus::FAILURE;
     status_.status_stamp = now();
   }
-  get_parameter_or<std::vector<std::string>>(
-    "specialized_arguments", specialized_arguments_, std::vector<std::string>({}));
+ 
+  if(!getBaseNode().getParam("specialized_arguments", specialized_arguments_))
+    specialized_arguments_.clear();
 
   double rate;
-  get_parameter("rate", rate);
+  if(!getBaseNode().getParam("rate", rate))
+    rate = 1.0 / std::chrono::duration<double>(rate_).count(); // From constructor
 
   rate_ = std::chrono::duration_cast<std::chrono::steady_clock::duration>(
     std::chrono::duration<double>(1.0 / rate));
 
-  action_hub_pub_ = create_publisher<plansys2_msgs::msg::ActionExecution>(
-    "actions_hub", rclcpp::QoS(100).reliable());
-  action_hub_sub_ = create_subscription<plansys2_msgs::msg::ActionExecution>(
-    "actions_hub", rclcpp::QoS(100).reliable(),
-    std::bind(&ActionExecutorClient::action_hub_callback, this, _1));
+  action_hub_pub_.reset(new ros::lifecycle::LifecyclePublisher<plansys2_msgs::ActionExecution>(shared_from_this(),
+											       "actions_hub"));
+  action_hub_sub_ = std::make_shared<ros::Subscriber>( getBaseNode().subscribe("actions_hub", 10,
+									       &ActionExecutorClient::action_hub_callback, this));
 
   action_hub_pub_->on_activate();
 
-  status_.state = plansys2_msgs::msg::ActionPerformerStatus::READY;
+  status_.state = plansys2_msgs::ActionPerformerStatus::READY;
   status_.status_stamp = now();
   status_.action = action_managed_;
   status_.specialized_arguments = specialized_arguments_;
 
-  return CallbackReturnT::SUCCESS;
+  return true;
 }
 
-CallbackReturnT
-ActionExecutorClient::on_activate(const rclcpp_lifecycle::State & state)
+bool
+ActionExecutorClient::onActivate()
 {
-  status_.state = plansys2_msgs::msg::ActionPerformerStatus::RUNNING;
+  status_.state = plansys2_msgs::ActionPerformerStatus::RUNNING;
   status_.status_stamp = now();
-  timer_ = create_wall_timer(
-    rate_, std::bind(&ActionExecutorClient::do_work, this));
+  // nanoseconds?
+  timer_ = std::make_shared<ros::WallTimer>(getBaseNode().createWallTimer(ros::WallDuration(rate_.count()/1e9), 
+							    std::bind(&ActionExecutorClient::do_work, this)));
 
 //  do_work();
 
-  return CallbackReturnT::SUCCESS;
+  return true;
 }
 
-CallbackReturnT
-ActionExecutorClient::on_deactivate(const rclcpp_lifecycle::State & state)
+bool ActionExecutorClient::onDeactivate()
 {
-  status_.state = plansys2_msgs::msg::ActionPerformerStatus::READY;
+  status_.state = plansys2_msgs::ActionPerformerStatus::READY;
   status_.status_stamp = now();
   timer_ = nullptr;
 
-  return CallbackReturnT::SUCCESS;
+  return true;
 }
 
-void
-ActionExecutorClient::action_hub_callback(const plansys2_msgs::msg::ActionExecution::SharedPtr msg)
+void ActionExecutorClient::action_hub_callback(const plansys2_msgs::ActionExecution::ConstPtr &msg)
 {
   switch (msg->type) {
-    case plansys2_msgs::msg::ActionExecution::REQUEST:
-      if (get_current_state().id() == lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE &&
+    case plansys2_msgs::ActionExecution::REQUEST:
+      if (getCurrentState() == ros::lifecycle::INACTIVE &&
         !commited_ && should_execute(msg->action, msg->arguments))
       {
         commited_ = true;
         send_response(msg);
       }
       break;
-    case plansys2_msgs::msg::ActionExecution::CONFIRM:
-      if (get_current_state().id() == lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE &&
+    case plansys2_msgs::ActionExecution::CONFIRM:
+      if (getCurrentState() == ros::lifecycle::INACTIVE &&
         commited_ && msg->node_id == get_name())
       {
         current_arguments_ = msg->arguments;
-        trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+        //trigger_transition(lifecycle_msgs::Transition::TRANSITION_ACTIVATE);
+	onActivate();
         commited_ = false;
       }
       break;
-    case plansys2_msgs::msg::ActionExecution::REJECT:
+    case plansys2_msgs::ActionExecution::REJECT:
       if (msg->node_id == get_name()) {
         commited_ = false;
       }
       break;
-    case plansys2_msgs::msg::ActionExecution::CANCEL:
-      if (get_current_state().id() == lifecycle_msgs::msg::State::PRIMARY_STATE_ACTIVE &&
+    case plansys2_msgs::ActionExecution::CANCEL:
+      if (getCurrentState() == ros::lifecycle::ACTIVE &&
         msg->node_id == get_name())
       {
-        trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_DEACTIVATE);
+        //trigger_transition(lifecycle_msgs::Transition::TRANSITION_DEACTIVATE);
+	onDeactivate();
       }
       break;
-    case plansys2_msgs::msg::ActionExecution::RESPONSE:
-    case plansys2_msgs::msg::ActionExecution::FEEDBACK:
-    case plansys2_msgs::msg::ActionExecution::FINISH:
+    case plansys2_msgs::ActionExecution::RESPONSE:
+    case plansys2_msgs::ActionExecution::FEEDBACK:
+    case plansys2_msgs::ActionExecution::FINISH:
       break;
     default:
-      RCLCPP_ERROR(
-        get_logger(), "Msg %d type not recognized in %s executor performer",
-        msg->type, get_name());
+      ROS_ERROR(
+        "%s -- Msg %d type not recognized in %s executor performer",
+	get_name(),
+	msg->type, get_name());
       break;
   }
 }
@@ -171,9 +170,9 @@ ActionExecutorClient::should_execute(
 
   if (!specialized_arguments_.empty()) {
     if (specialized_arguments_.size() != args.size()) {
-      RCLCPP_WARN(
-        get_logger(), "current and specialized arguments length doesn't match %zu %zu",
-        args.size(), specialized_arguments_.size());
+      ROS_WARN( "%s -- current and specialized arguments length doesn't match %zu %zu",
+		get_name(),
+		args.size(), specialized_arguments_.size());
     }
 
     for (size_t i = 0; i < specialized_arguments_.size() && i < args.size(); i++) {
@@ -189,11 +188,10 @@ ActionExecutorClient::should_execute(
 }
 
 void
-ActionExecutorClient::send_response(
-  const plansys2_msgs::msg::ActionExecution::SharedPtr msg)
+ActionExecutorClient::send_response(const plansys2_msgs::ActionExecution::ConstPtr &msg)
 {
-  plansys2_msgs::msg::ActionExecution msg_resp(*msg);
-  msg_resp.type = plansys2_msgs::msg::ActionExecution::RESPONSE;
+  plansys2_msgs::ActionExecution msg_resp(*msg);
+  msg_resp.type = plansys2_msgs::ActionExecution::RESPONSE;
   msg_resp.node_id = get_name();
 
   action_hub_pub_->publish(msg_resp);
@@ -202,8 +200,8 @@ ActionExecutorClient::send_response(
 void
 ActionExecutorClient::send_feedback(float completion, const std::string & status)
 {
-  plansys2_msgs::msg::ActionExecution msg_resp;
-  msg_resp.type = plansys2_msgs::msg::ActionExecution::FEEDBACK;
+  plansys2_msgs::ActionExecution msg_resp;
+  msg_resp.type = plansys2_msgs::ActionExecution::FEEDBACK;
   msg_resp.node_id = get_name();
   msg_resp.action = action_managed_;
   msg_resp.arguments = current_arguments_;
@@ -216,12 +214,13 @@ ActionExecutorClient::send_feedback(float completion, const std::string & status
 void
 ActionExecutorClient::finish(bool success, float completion, const std::string & status)
 {
-  if (get_current_state().id() == lifecycle_msgs::msg::State::PRIMARY_STATE_ACTIVE) {
-    trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_DEACTIVATE);
+  if (getCurrentState() == ros::lifecycle::ACTIVE) {
+    //trigger_transition(lifecycle_msgs::Transition::TRANSITION_DEACTIVATE);
+    onDeactivate();
   }
 
-  plansys2_msgs::msg::ActionExecution msg_resp;
-  msg_resp.type = plansys2_msgs::msg::ActionExecution::FINISH;
+  plansys2_msgs::ActionExecution msg_resp;
+  msg_resp.type = plansys2_msgs::ActionExecution::FINISH;
   msg_resp.node_id = get_name();
   msg_resp.action = action_managed_;
   msg_resp.arguments = current_arguments_;
