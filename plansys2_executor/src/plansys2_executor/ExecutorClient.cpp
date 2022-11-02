@@ -169,14 +169,10 @@ ExecutorClient::on_new_goal_received(const plansys2_msgs::Plan & plan)
   auto goal = plansys2_msgs::ExecutePlanGoal();
   goal.plan = plan;
 
-  if(!action_client_->sendGoal(goal,
-			       std::bind(&ExecutorClient::result_callback, this, _1, _2),
-			       actionlib::SimpleActionClient::SimpleActiveCallback,
-			       std::bind(&ExecutorClient::feedback_callback, this, _1)) )			   
-  {
-    ROS_ERROR("%s -- send_goal failed", getName().c_str());
-    return false;
-  }
+  action_client_->sendGoal(goal,
+			   boost::bind(&ExecutorClient::result_callback, this, boost::placeholders::_1, boost::placeholders::_2),
+			   actionlib::SimpleActionClient<plansys2_msgs::ExecutePlanAction>::SimpleActiveCallback(),
+			   boost::bind(&ExecutorClient::feedback_callback, this, boost::placeholders::_1));
 
 
   return true;
