@@ -17,15 +17,15 @@
 #include <string>
 #include <map>
 
-#include "rclcpp/rclcpp.hpp"
+#include <ros/ros.h>
 
-#include "plansys2_lifecycle_manager/lifecycle_manager.hpp"
+#include <plansys2_lifecycle_manager/lifecycle_manager.hpp>
 
 int main(int argc, char ** argv)
 {
   setvbuf(stdout, NULL, _IONBF, BUFSIZ);
 
-  rclcpp::init(argc, argv);
+  ros::init(argc, argv, "lifecycle_manager_node");
 
   std::map<std::string, std::shared_ptr<plansys2::LifecycleServiceClient>> manager_nodes;
   manager_nodes["domain_expert"] = std::make_shared<plansys2::LifecycleServiceClient>(
@@ -37,26 +37,16 @@ int main(int argc, char ** argv)
   manager_nodes["executor"] = std::make_shared<plansys2::LifecycleServiceClient>(
     "executor_lc_mngr", "executor");
 
-  rclcpp::executors::SingleThreadedExecutor exe;
   for (auto & manager_node : manager_nodes) {
     manager_node.second->init();
-    exe.add_node(manager_node.second);
   }
 
-  std::shared_future<bool> startup_future = std::async(
-    std::launch::async,
-    std::bind(plansys2::startup_function, manager_nodes, std::chrono::seconds(5)));
-  exe.spin_until_future_complete(startup_future);
-
-  if (!startup_future.get()) {
-    RCLCPP_ERROR(
-      rclcpp::get_logger("plansys2_lifecycle_manager"),
-      "Failed to start plansys2!");
-    rclcpp::shutdown();
+  if (!plansys2::startup_function(manager_nodes, std::chrono::seconds(5)))
+  {
+    ROS_ERROR("plansys2_lifecycle_manager -- Failed to start plansys2!");
+    ros::shutdown();
     return -1;
   }
-
-  rclcpp::shutdown();
 
   return 0;
 }

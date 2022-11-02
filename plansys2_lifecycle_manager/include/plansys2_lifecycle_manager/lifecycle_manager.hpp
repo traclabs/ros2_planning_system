@@ -46,26 +46,29 @@ wait_for_result(
     auto time_left = end - now;
     if (time_left <= std::chrono::seconds(0)) {break;}
     status = future.wait_for((time_left < wait_period) ? time_left : wait_period);
-  } while (rclcpp::ok() && status != std::future_status::ready);
+  } while (ros::ok() && status != std::future_status::ready);
   return status;
 }
 
-class LifecycleServiceClient : public rclcpp::Node
+class LifecycleServiceClient 
 {
 public:
-  explicit LifecycleServiceClient(const std::string & node_name, const std::string & managed_node);
+  LifecycleServiceClient(const std::string & node_name,
+			 const std::string & managed_node);
 
   void init();
   unsigned int get_state(std::chrono::seconds time_out = std::chrono::seconds(3));
-  bool change_state(
-    std::uint8_t transition,
-    std::chrono::seconds time_out = std::chrono::seconds(3));
+  bool change_state(std::uint8_t transition,
+		    std::chrono::seconds time_out = std::chrono::seconds(3));
 
 private:
-  std::shared_ptr<rclcpp::Client<lifecycle_msgs::srv::GetState>> client_get_state_;
-  std::shared_ptr<rclcpp::Client<lifecycle_msgs::srv::ChangeState>> client_change_state_;
+  //std::shared_ptr<rclcpp::Client<lifecycle_msgs::srv::GetState>> client_get_state_;
+  //std::shared_ptr<rclcpp::Client<lifecycle_msgs::srv::ChangeState>> client_change_state_;
 
   std::string managed_node_;
+  ros::NodeHandle nh_;
+
+  std::shared_ptr<ros::lifecycle::LifecycleClient> lm_client_;
 };
 
 bool

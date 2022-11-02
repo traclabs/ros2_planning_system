@@ -17,27 +17,28 @@
 #include <string>
 #include <map>
 
-#include "lifecycle_msgs/msg/state.hpp"
-#include "lifecycle_msgs/msg/transition.hpp"
-#include "lifecycle_msgs/srv/change_state.hpp"
-#include "lifecycle_msgs/srv/get_state.hpp"
+//#include <lifecycle_msgs/State.h>
+//#include <lifecycle_msgs/Transition.h>
+//#include <lifecycle_msgs/ChangeState.h>
+//#include <lifecycle_msgs/GetState.h>
 
-#include "rclcpp/rclcpp.hpp"
-#include "rcutils/logging_macros.h"
+#include <ros/ros.h>
+//#include "rcutils/logging_macros.h"
 
-#include "plansys2_lifecycle_manager/lifecycle_manager.hpp"
+#include <plansys2_lifecycle_manager/lifecycle_manager.hpp>
 
 namespace plansys2
 {
 
 LifecycleServiceClient::LifecycleServiceClient(
   const std::string & node_name, const std::string & managed_node)
-: Node(node_name), managed_node_(managed_node)
+: nh_(node_name), managed_node_(managed_node)
 {}
 
 void
 LifecycleServiceClient::init()
 {
+  /*
   std::string get_state_service_name = managed_node_ + "/get_state";
   std::string change_state_service_name = managed_node_ + "/change_state";
   RCLCPP_INFO(get_logger(), "Creating client for service [%s]", get_state_service_name.c_str());
@@ -47,6 +48,8 @@ LifecycleServiceClient::init()
   client_get_state_ = this->create_client<lifecycle_msgs::srv::GetState>(get_state_service_name);
   client_change_state_ = this->create_client<lifecycle_msgs::srv::ChangeState>(
     change_state_service_name);
+  */
+  lm_client_.reset(new ros::lifecycle::LifecycleClient(nh_, managed_node_);
 }
 
 unsigned int
@@ -113,7 +116,7 @@ LifecycleServiceClient::change_state(std::uint8_t transition, std::chrono::secon
   // We have an answer, let's print our success.
   if (future_result.get()->success) {
     RCLCPP_INFO(
-      get_logger(), "Transition %d successfully triggered.", static_cast<int>(transition));
+goo      get_logger(), "Transition %d successfully triggered.", static_cast<int>(transition));
     return true;
   } else {
     RCLCPP_WARN(

@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<launch>
+
+  <!-- arguments -->
+  <arg name="model_file" default="$(find plum_plan)/common/pddl/inspection_domain.pddl"/>
+  <arg name="namespace" default="" />
+  <arg name="params_file" default="$(find plum_plan)/params/plansys2_params.yaml" />
+  <arg name="action_bt_file" default="$(find plansys2_executor)/behavior_trees/plansys2_action_bt.xml" />
+  <arg name="start_action_bt_file" default="$(find plansys2_executor)/behavior_trees/plansys2_start_action_bt.xml"/>
+  <arg name="end_action_bt_file" default="$(find plansys2_executor)/behavior_trees/plansys2_end_action_bt.xml" />
+  <arg name="bt_builder_plugin" default="SimpleBTBuilder"/>
+   
+  <!-- Domain Expert -->
+  <include file="$(find plansys2_domain_expert)/launch/domain_expert.launch">
+    <arg name="model_file"   value="$(arg model_file)"/>
+    <arg name="namespace"  value="$(arg namespace)"/>
+    <arg name="params_file" value="$(arg params_file)"/>
+  </include>
+  
+
+</launch>
+
