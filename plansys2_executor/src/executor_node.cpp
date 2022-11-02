@@ -19,12 +19,11 @@
 
 int main(int argc, char ** argv)
 {
-  rclcpp::init(argc, argv);
-  auto node = std::make_shared<plansys2::ExecutorNode>();
+  ros::init(argc, argv, "executor");
+  ros::NodeHandle nh("executor");
+  plansys2::ExecutorNode> en(nh);
 
-  rclcpp::spin(node->get_node_base_interface());
-
-  rclcpp::shutdown();
+  ros::spin();
 
   return 0;
 }
