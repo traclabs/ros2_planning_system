@@ -19,18 +19,18 @@
 #include <string>
 #include <vector>
 
-#include "behaviortree_cpp_v3/behavior_tree.h"
-#include "behaviortree_cpp_v3/bt_factory.h"
-#include "behaviortree_cpp_v3/xml_parsing.h"
-#include "behaviortree_cpp_v3/loggers/bt_file_logger.h"
-#include "behaviortree_cpp_v3/loggers/bt_minitrace_logger.h"
+#include <behaviortree_cpp_v3/behavior_tree.h>
+#include <behaviortree_cpp_v3/bt_factory.h>
+#include <behaviortree_cpp_v3/xml_parsing.h>
+#include <behaviortree_cpp_v3/loggers/bt_file_logger.h>
+#include <behaviortree_cpp_v3/loggers/bt_minitrace_logger.h>
 
 #ifdef ZMQ_FOUND
 #include <behaviortree_cpp_v3/loggers/bt_zmq_publisher.h>
 #endif
 
-#include "plansys2_executor/ActionExecutorClient.hpp"
-#include "rclcpp/rclcpp.hpp"
+#include <plansys2_executor/ActionExecutorClient.hpp>
+#include <ros/ros.h>
 
 namespace plansys2
 {
@@ -46,17 +46,14 @@ public:
   const std::string & getBTFile() const {return bt_xml_file_;}
 
 protected:
-  rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
-  on_configure(const rclcpp_lifecycle::State & previous_state);
 
-  rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
-  on_cleanup(const rclcpp_lifecycle::State & previous_state);
+  bool onConfigure();
 
-  rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
-  on_activate(const rclcpp_lifecycle::State & previous_state);
+  bool onCleanup();
 
-  rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
-  on_deactivate(const rclcpp_lifecycle::State & previous_state);
+  bool onActivate();
+
+  bool onDeactivate();
 
   void do_work();
 
@@ -69,7 +66,9 @@ private:
   std::string bt_xml_file_;
   std::vector<std::string> plugin_list_;
   bool finished_;
+  #ifdef ZMQ_FOUND
   std::unique_ptr<BT::PublisherZMQ> publisher_zmq_;
+  #endif
   std::unique_ptr<BT::FileLogger> bt_file_logger_;
   std::unique_ptr<BT::MinitraceLogger> bt_minitrace_logger_;
 };

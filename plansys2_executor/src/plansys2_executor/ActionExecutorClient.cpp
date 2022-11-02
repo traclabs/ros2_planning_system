@@ -129,8 +129,8 @@ void ActionExecutorClient::action_hub_callback(const plansys2_msgs::ActionExecut
         commited_ && msg->node_id == get_name())
       {
         current_arguments_ = msg->arguments;
-        //trigger_transition(lifecycle_msgs::Transition::TRANSITION_ACTIVATE);
-	onActivate();
+        trigger_transition(ros::lifecycle::ACTIVATE);
+
         commited_ = false;
       }
       break;
@@ -143,8 +143,7 @@ void ActionExecutorClient::action_hub_callback(const plansys2_msgs::ActionExecut
       if (getCurrentState() == ros::lifecycle::ACTIVE &&
         msg->node_id == get_name())
       {
-        //trigger_transition(lifecycle_msgs::Transition::TRANSITION_DEACTIVATE);
-	onDeactivate();
+        trigger_transition(ros::lifecycle::DEACTIVATE);
       }
       break;
     case plansys2_msgs::ActionExecution::RESPONSE:
@@ -215,8 +214,7 @@ void
 ActionExecutorClient::finish(bool success, float completion, const std::string & status)
 {
   if (getCurrentState() == ros::lifecycle::ACTIVE) {
-    //trigger_transition(lifecycle_msgs::Transition::TRANSITION_DEACTIVATE);
-    onDeactivate();
+    trigger_transition(ros::lifecycle::DEACTIVATE);
   }
 
   plansys2_msgs::ActionExecution msg_resp;

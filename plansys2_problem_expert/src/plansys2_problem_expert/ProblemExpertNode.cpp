@@ -587,6 +587,8 @@ bool ProblemExpertNode::exist_problem_function_service_callback(plansys2_msgs::E
   } else {
     response.exist = problem_expert_->existFunction(request.node);
   }
+
+  return true;
 }
 
 bool ProblemExpertNode::update_problem_function_service_callback(plansys2_msgs::AffectNode::Request &request,
@@ -604,6 +606,8 @@ bool ProblemExpertNode::update_problem_function_service_callback(plansys2_msgs::
       response.error_info = "Function not valid";
     }
   }
+
+  return true;
 }
 
 std::shared_ptr<plansys2_msgs::Knowledge>

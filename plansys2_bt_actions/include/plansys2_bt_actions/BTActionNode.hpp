@@ -20,7 +20,7 @@
 
 #include "behaviortree_cpp_v3/action_node.h"
 #include "rclcpp/rclcpp.hpp"
-#include "rclcpp_lifecycle/lifecycle_node.hpp"
+#include "lifecycle/managed_node.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
 
 namespace plansys2

@@ -22,8 +22,8 @@
 #include <memory>
 #include <chrono>
 
-#include "behaviortree_cpp_v3/utils/shared_library.h"
-#include "plansys2_bt_actions/BTAction.hpp"
+#include <behaviortree_cpp_v3/utils/shared_library.h>
+#include <plansys2_bt_actions/BTAction.hpp>
 
 namespace plansys2
 {
@@ -33,6 +33,7 @@ BTAction::BTAction(
   const std::chrono::nanoseconds & rate)
 : ActionExecutorClient(action, rate)
 {
+  /*
   declare_parameter<std::string>("bt_xml_file", "");
   declare_parameter<std::vector<std::string>>(
     "plugins", std::vector<std::string>({}));
@@ -43,21 +44,21 @@ BTAction::BTAction(
   declare_parameter<int>("publisher_port", -1);
   declare_parameter<int>("server_port", -1);
   declare_parameter<int>("max_msgs_per_second", 25);
-#endif
+  #endif*/
 }
 
-rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
-BTAction::on_configure(const rclcpp_lifecycle::State & previous_state)
+bool BTAction::onConfigure()
 {
-  get_parameter("action_name", action_);
-  get_parameter("bt_xml_file", bt_xml_file_);
+  getBaseNode().getParam("action_name", action_);
+  getBaseNode().getParam("bt_xml_file", bt_xml_file_);
 
-  RCLCPP_INFO_STREAM(get_logger(), "action_name: [" << action_ << "]");
-  RCLCPP_INFO_STREAM(get_logger(), "bt_xml_file: [" << bt_xml_file_ << "]");
+  ROS_INFO_STREAM(get_name() << "action_name: [" << action_ << "]");
+  ROS_INFO_STREAM(get_name() << "bt_xml_file: [" << bt_xml_file_ << "]");
 
-  auto plugin_lib_names = get_parameter("plugins").as_string_array();
+  std::vector<std::string> plugin_lib_names;
+  getBaseNode().getParam("plugins", plugin_lib_names);
   for (auto plugin : plugin_lib_names) {
-    RCLCPP_INFO_STREAM(get_logger(), "plugin: [" << plugin << "]");
+    ROS_INFO_STREAM(get_name() << "plugin: [" << plugin << "]");
   }
 
   BT::SharedLibrary loader;
@@ -66,33 +67,34 @@ BTAction::on_configure(const rclcpp_lifecycle::State & previous_state)
     factory_.registerFromPlugin(loader.getOSName(plugin));
   }
 
-  auto options = rclcpp::NodeOptions().arguments(
-    {"--ros-args", "-r", std::string("__node:=") + get_name() + "_bb_node"});
-  auto node = rclcpp::Node::make_shared("_", options);
+  //  auto options = rclcpp::NodeOptions().arguments(
+  //  {"--ros-args", "-r", std::string("__node:=") + get_name() + "_bb_node"});
+  //auto node = rclcpp::Node::make_shared("_", options);
+  auto node = std::make_shared<ros::NodeHandle>(ros::NodeHandle( std::string(get_name()) + std::string("_bb_node") ));
   blackboard_ = BT::Blackboard::create();
   blackboard_->set("node", node);
 
-  return ActionExecutorClient::on_configure(previous_state);
+  return true;
 }
 
-rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
-BTAction::on_cleanup(const rclcpp_lifecycle::State & previous_state)
+bool
+BTAction::onCleanup()
 {
+  #ifdef ZMQ_FOUND
   publisher_zmq_.reset();
-  return ActionExecutorClient::on_cleanup(previous_state);
+  #endif
+  return true;
 }
 
-rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
-BTAction::on_activate(const rclcpp_lifecycle::State & previous_state)
+bool BTAction::onActivate()
 {
   try {
     tree_ = factory_.createTreeFromFile(bt_xml_file_, blackboard_);
   } catch (const std::exception & ex) {
-    RCLCPP_ERROR_STREAM(
-      get_logger(),
-      "Failed to create BT with exception: " << ex.what());
-    RCLCPP_ERROR(get_logger(), "Transition to activate failed");
-    return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::FAILURE;
+    ROS_ERROR_STREAM(get_name() <<
+		     "Failed to create BT with exception: " << ex.what());
+    ROS_ERROR_STREAM(get_name() << "Transition to activate failed");
+    return false;
   }
 
   for (int i = 0; i < get_arguments().size(); i++) {
@@ -100,8 +102,9 @@ BTAction::on_activate(const rclcpp_lifecycle::State & previous_state)
     blackboard_->set(argname, get_arguments()[i]);
   }
 
-  if (get_parameter("bt_file_logging").as_bool() ||
-    get_parameter("bt_minitrace_logging").as_bool())
+  bool bfl = false; bool bml = false;
+  if (getBaseNode().getParam("bt_file_logging", bfl) ||
+      getBaseNode().getParam("bt_minitrace_logging", bml))
   {
     auto temp_path = std::filesystem::temp_directory_path();
     std::filesystem::path node_name_path = get_name();
@@ -113,25 +116,23 @@ BTAction::on_activate(const rclcpp_lifecycle::State & previous_state)
     filename << "/tmp/" << get_name() << "/bt_trace_";
     filename << std::put_time(std::localtime(&now_time_t), "%Y_%m_%d__%H_%M_%S");
 
-    if (get_parameter("bt_file_logging").as_bool()) {
+    if (bfl) {
       std::string filename_extension = filename.str() + ".fbl";
-      RCLCPP_INFO_STREAM(
-        get_logger(),
+      ROS_INFO_STREAM(get_name() <<
         "Logging to file: " << filename_extension);
       bt_file_logger_ =
         std::make_unique<BT::FileLogger>(tree_, filename_extension.c_str());
     }
 
-    if (get_parameter("bt_minitrace_logging").as_bool()) {
+    if (bml) {
       std::string filename_extension = filename.str() + ".json";
-      RCLCPP_INFO_STREAM(
-        get_logger(),
+      ROS_INFO_STREAM(get_name() <<
         "Logging to file: " << filename_extension);
       bt_minitrace_logger_ =
         std::make_unique<BT::MinitraceLogger>(tree_, filename_extension.c_str());
     }
   }
-
+  /*
 #ifdef ZMQ_FOUND
   int publisher_port = get_parameter("publisher_port").as_int();
   int server_port = get_parameter("server_port").as_int();
@@ -158,20 +159,23 @@ BTAction::on_activate(const rclcpp_lifecycle::State & previous_state)
     }
   }
 #endif
-
+  */
   finished_ = false;
-  return ActionExecutorClient::on_activate(previous_state);
+  return ActionExecutorClient::onActivate();
 }
 
-rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
-BTAction::on_deactivate(const rclcpp_lifecycle::State & previous_state)
+bool
+BTAction::onDeactivate()
 {
+  #ifdef ZMQ_FOUND
   publisher_zmq_.reset();
+  #endif
+
   bt_minitrace_logger_.reset();
   bt_file_logger_.reset();
   tree_.haltTree();
 
-  return ActionExecutorClient::on_deactivate(previous_state);
+  return true;
 }
 
 void
@@ -182,10 +186,10 @@ BTAction::do_work()
     try {
       result = tree_.rootNode()->executeTick();
     } catch (BT::LogicError e) {
-      RCLCPP_ERROR_STREAM(get_logger(), e.what());
+      ROS_ERROR_STREAM(get_name() << e.what());
       finish(false, 0.0, "BTAction behavior tree threw a BT::LogicError");
     } catch (BT::RuntimeError e) {
-      RCLCPP_ERROR_STREAM(get_logger(), e.what());
+      ROS_ERROR_STREAM(get_name() << e.what());
       finish(false, 0.0, "BTAction behavior tree threw a BT::RuntimeError");
     } catch (std::exception e) {
       finish(false, 0.0, "BTAction behavior tree threw an unknown exception");
