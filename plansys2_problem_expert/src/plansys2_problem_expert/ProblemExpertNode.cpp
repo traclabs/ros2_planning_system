@@ -50,105 +50,106 @@ namespace plansys2
   //declare_parameter("model_file", "");
   //declare_parameter("problem_file", "");
 
-  add_problem_service_ = getBaseNode().advertiseService("problem_expert/add_problem",
+  std::string prefix(""); //("problem_expert/");
+  add_problem_service_ = getBaseNode().advertiseService( prefix + "add_problem",
 							&ProblemExpertNode::add_problem_service_callback,
 							this);
 
-  add_problem_goal_service_ = getBaseNode().advertiseService("problem_expert/add_problem_goal",
+  add_problem_goal_service_ = getBaseNode().advertiseService( prefix + "add_problem_goal",
 							     &ProblemExpertNode::add_problem_goal_service_callback,
 							     this);
 
-  add_problem_instance_service_ = getBaseNode().advertiseService("problem_expert/add_problem_instance",
+  add_problem_instance_service_ = getBaseNode().advertiseService( prefix + "add_problem_instance",
 								 &ProblemExpertNode::add_problem_instance_service_callback,
 								 this);
 
-  add_problem_predicate_service_ = getBaseNode().advertiseService("problem_expert/add_problem_predicate",
+  add_problem_predicate_service_ = getBaseNode().advertiseService( prefix + "add_problem_predicate",
 								  &ProblemExpertNode::add_problem_predicate_service_callback,
 								  this);
 
-  add_problem_function_service_ = getBaseNode().advertiseService("problem_expert/add_problem_function",
+  add_problem_function_service_ = getBaseNode().advertiseService( prefix + "add_problem_function",
 								 &ProblemExpertNode::add_problem_function_service_callback,
 								 this);
 
-  get_problem_goal_service_ = getBaseNode().advertiseService("problem_expert/get_problem_goal",
+  get_problem_goal_service_ = getBaseNode().advertiseService( prefix + "get_problem_goal",
 							     &ProblemExpertNode::get_problem_goal_service_callback,
 							     this);
 
-  get_problem_instance_details_service_ = getBaseNode().advertiseService("problem_expert/get_problem_instance",
+  get_problem_instance_details_service_ = getBaseNode().advertiseService( prefix + "get_problem_instance",
 									 &ProblemExpertNode::get_problem_instance_details_service_callback,
 									 this);
 
-  get_problem_instances_service_ = getBaseNode().advertiseService("problem_expert/get_problem_instances",
+  get_problem_instances_service_ = getBaseNode().advertiseService( prefix + "get_problem_instances",
 								  &ProblemExpertNode::get_problem_instances_service_callback,
 								  this);
 
   get_problem_predicate_details_service_ =
-    getBaseNode().advertiseService("problem_expert/get_problem_predicate",
+    getBaseNode().advertiseService( prefix + "get_problem_predicate",
 				   &ProblemExpertNode::get_problem_predicate_details_service_callback,
 				   this);
 
-  get_problem_predicates_service_ = getBaseNode().advertiseService("problem_expert/get_problem_predicates",
+  get_problem_predicates_service_ = getBaseNode().advertiseService( prefix + "get_problem_predicates",
 								   &ProblemExpertNode::get_problem_predicates_service_callback,
 								   this);
 
-  get_problem_function_details_service_ = getBaseNode().advertiseService("problem_expert/get_problem_function",
+  get_problem_function_details_service_ = getBaseNode().advertiseService( prefix + "get_problem_function",
 									 &ProblemExpertNode::get_problem_function_details_service_callback,
 									 this);
 
-  get_problem_functions_service_ = getBaseNode().advertiseService("problem_expert/get_problem_functions",
+  get_problem_functions_service_ = getBaseNode().advertiseService( prefix + "get_problem_functions",
 								  &ProblemExpertNode::get_problem_functions_service_callback,
 								  this);
 
-  get_problem_service_ = getBaseNode().advertiseService("problem_expert/get_problem", 
+  get_problem_service_ = getBaseNode().advertiseService( prefix + "get_problem", 
 							&ProblemExpertNode::get_problem_service_callback,
 							this);
 
-  is_problem_goal_satisfied_service_ = getBaseNode().advertiseService("problem_expert/is_problem_goal_satisfied", 
+  is_problem_goal_satisfied_service_ = getBaseNode().advertiseService( prefix + "is_problem_goal_satisfied", 
 								      &ProblemExpertNode::is_problem_goal_satisfied_service_callback,
 								      this);
 
-  remove_problem_goal_service_ = getBaseNode().advertiseService("problem_expert/remove_problem_goal",
+  remove_problem_goal_service_ = getBaseNode().advertiseService( prefix + "remove_problem_goal",
 								&ProblemExpertNode::remove_problem_goal_service_callback,
 								this);
 
-  clear_problem_knowledge_service_ = getBaseNode().advertiseService("problem_expert/clear_problem_knowledge",
+  clear_problem_knowledge_service_ = getBaseNode().advertiseService( prefix + "clear_problem_knowledge",
 								    &ProblemExpertNode::clear_problem_knowledge_service_callback,
 								    this);
 
-  remove_problem_instance_service_ = getBaseNode().advertiseService("problem_expert/remove_problem_instance",
+  remove_problem_instance_service_ = getBaseNode().advertiseService( prefix + "remove_problem_instance",
 								    &ProblemExpertNode::remove_problem_instance_service_callback,
 								    this);
 
-  remove_problem_predicate_service_ = getBaseNode().advertiseService("problem_expert/remove_problem_predicate",
+  remove_problem_predicate_service_ = getBaseNode().advertiseService( prefix + "remove_problem_predicate",
 								     &ProblemExpertNode::remove_problem_predicate_service_callback,
       this);
   
-  remove_problem_function_service_ = getBaseNode().advertiseService("problem_expert/remove_problem_function",
+  remove_problem_function_service_ = getBaseNode().advertiseService( prefix + "remove_problem_function",
 								    &ProblemExpertNode::remove_problem_function_service_callback,
 								    this);
 
-  exist_problem_predicate_service_ = getBaseNode().advertiseService("problem_expert/exist_problem_predicate",
+  exist_problem_predicate_service_ = getBaseNode().advertiseService( prefix + "exist_problem_predicate",
 								    &ProblemExpertNode::exist_problem_predicate_service_callback,
 								    this);
 
-  exist_problem_function_service_ = getBaseNode().advertiseService("problem_expert/exist_problem_function",
+  exist_problem_function_service_ = getBaseNode().advertiseService( prefix + "exist_problem_function",
 								   &ProblemExpertNode::exist_problem_function_service_callback,
 								   this);
 
-  update_problem_function_service_ = getBaseNode().advertiseService("problem_expert/update_problem_function",
+  update_problem_function_service_ = getBaseNode().advertiseService( prefix + "update_problem_function",
 								    &ProblemExpertNode::update_problem_function_service_callback,
 								    this);
   /*
   update_pub_ = create_publisher<std_msgs::Empty>(
-    "problem_expert/update_notify",
+     prefix + "update_notify",
     rclcpp::QoS(100));
 
   knowledge_pub_ = create_publisher<plansys2_msgs::Knowledge>(
-    "problem_expert/knowledge",
+     prefix + "knowledge",
     rclcpp::QoS(100).transient_local());
   */
-  update_pub_ = getBaseNode().advertise<std_msgs::Empty>("problem_expert/update_notify", 10);
-  knowledge_pub_ = getBaseNode().advertise<plansys2_msgs::Knowledge>("problem_expert/knowledge", 10);
+  update_pub_ = getBaseNode().advertise<std_msgs::Empty>( prefix + "update_notify", 10);
+  knowledge_pub_ = getBaseNode().advertise<plansys2_msgs::Knowledge>( prefix + "knowledge", 10);
 }
 
 
@@ -254,6 +255,8 @@ bool ProblemExpertNode::add_problem_service_callback(plansys2_msgs::AddProblem::
       response.error_info = "Problem not valid";
     }
   }
+  
+  return true;
 }
 
 bool ProblemExpertNode::add_problem_goal_service_callback(plansys2_msgs::AddProblemGoal::Request &request,
@@ -277,6 +280,8 @@ bool ProblemExpertNode::add_problem_goal_service_callback(plansys2_msgs::AddProb
       response.error_info = "Malformed expression";
     }
   }
+  
+  return true;
 }
 
 bool ProblemExpertNode::add_problem_instance_service_callback(plansys2_msgs::AffectParam::Request &request,
@@ -295,6 +300,8 @@ bool ProblemExpertNode::add_problem_instance_service_callback(plansys2_msgs::Aff
       response.error_info = "Instance not valid";
     }
   }
+  
+  return true;
 }
 
 bool ProblemExpertNode::add_problem_predicate_service_callback(plansys2_msgs::AffectNode::Request &request,
@@ -314,6 +321,8 @@ bool ProblemExpertNode::add_problem_predicate_service_callback(plansys2_msgs::Af
         "Predicate [" + parser::pddl::toString(request.node) + "] not valid";
     }
   }
+  
+  return true;
 }
 
 bool ProblemExpertNode::add_problem_function_service_callback(plansys2_msgs::AffectNode::Request &request,
@@ -333,6 +342,8 @@ bool ProblemExpertNode::add_problem_function_service_callback(plansys2_msgs::Aff
         "Function [" + parser::pddl::toString(request.node) + "] not valid";
     }
   }
+  
+  return true;
 }
 
 bool ProblemExpertNode::get_problem_goal_service_callback(plansys2_msgs::GetProblemGoal::Request &request,
@@ -346,6 +357,8 @@ bool ProblemExpertNode::get_problem_goal_service_callback(plansys2_msgs::GetProb
     response.success = true;
     response.tree = problem_expert_->getGoal();
   }
+  
+  return true;
 }
 
 bool ProblemExpertNode::get_problem_instance_details_service_callback(plansys2_msgs::GetProblemInstanceDetails::Request &request,
@@ -365,6 +378,8 @@ bool ProblemExpertNode::get_problem_instance_details_service_callback(plansys2_m
       response.error_info = "Instance not found";
     }
   }
+  
+  return true;
 }
 
 bool ProblemExpertNode::get_problem_instances_service_callback(plansys2_msgs::GetProblemInstances::Request &request,
@@ -379,6 +394,8 @@ bool ProblemExpertNode::get_problem_instances_service_callback(plansys2_msgs::Ge
     response.instances = plansys2::convertVector<plansys2_msgs::Param, plansys2::Instance>(
       problem_expert_->getInstances());
   }
+  
+  return true;
 }
 
 bool ProblemExpertNode::get_problem_predicate_details_service_callback(plansys2_msgs::GetNodeDetails::Request &request,
@@ -398,6 +415,8 @@ bool ProblemExpertNode::get_problem_predicate_details_service_callback(plansys2_
       response.error_info = "Predicate not found";
     }
   }
+  
+  return true;
 }
 
 bool ProblemExpertNode::get_problem_predicates_service_callback(plansys2_msgs::GetStates::Request &request,
@@ -412,6 +431,8 @@ bool ProblemExpertNode::get_problem_predicates_service_callback(plansys2_msgs::G
     response.states = plansys2::convertVector<plansys2_msgs::Node, plansys2::Predicate>(
       problem_expert_->getPredicates());
   }
+  
+  return true;
 }
 
 bool ProblemExpertNode::get_problem_function_details_service_callback(plansys2_msgs::GetNodeDetails::Request &request,
@@ -431,6 +452,8 @@ bool ProblemExpertNode::get_problem_function_details_service_callback(plansys2_m
       response.error_info = "Function not found";
     }
   }
+  
+  return true;
 }
 
 bool ProblemExpertNode::get_problem_functions_service_callback(plansys2_msgs::GetStates::Request &request,
@@ -445,6 +468,8 @@ bool ProblemExpertNode::get_problem_functions_service_callback(plansys2_msgs::Ge
     response.states = plansys2::convertVector<plansys2_msgs::Node, plansys2::Function>(
       problem_expert_->getFunctions());
   }
+  
+  return true;
 }
 
 bool ProblemExpertNode::get_problem_service_callback(plansys2_msgs::GetProblem::Request &request,
@@ -458,6 +483,8 @@ bool ProblemExpertNode::get_problem_service_callback(plansys2_msgs::GetProblem::
     response.success = true;
     response.problem = problem_expert_->getProblem();
   }
+  
+  return true;
 }
 
 bool ProblemExpertNode::is_problem_goal_satisfied_service_callback(plansys2_msgs::IsProblemGoalSatisfied::Request &request,
@@ -471,6 +498,8 @@ bool ProblemExpertNode::is_problem_goal_satisfied_service_callback(plansys2_msgs
     response.success = true;
     response.satisfied = problem_expert_->isGoalSatisfied(request.tree);
   }
+  
+  return true;
 }
 
 bool ProblemExpertNode::remove_problem_goal_service_callback(plansys2_msgs::RemoveProblemGoal::Request &request,
@@ -490,6 +519,8 @@ bool ProblemExpertNode::remove_problem_goal_service_callback(plansys2_msgs::Remo
       response.error_info = "Error clearing goal";
     }
   }
+  
+  return true;
 }
 
 bool ProblemExpertNode::clear_problem_knowledge_service_callback(plansys2_msgs::ClearProblemKnowledge::Request &request,
@@ -509,6 +540,8 @@ bool ProblemExpertNode::clear_problem_knowledge_service_callback(plansys2_msgs::
       response.error_info = "Error clearing knowledge";
     }
   }
+  
+  return true;
 }
 
 
@@ -528,6 +561,8 @@ bool ProblemExpertNode::remove_problem_instance_service_callback(plansys2_msgs::
       response.error_info = "Error removing instance";
     }
   }
+  
+  return true;
 }
 
 bool
@@ -547,6 +582,8 @@ ProblemExpertNode::remove_problem_predicate_service_callback(plansys2_msgs::Affe
       response.error_info = "Error removing predicate";
     }
   }
+  
+  return true;
 }
 
 bool
@@ -565,6 +602,8 @@ ProblemExpertNode::remove_problem_function_service_callback(plansys2_msgs::Affec
       response.error_info = "Error removing function";
     }
   }
+  
+  return true;
 }
 
 bool ProblemExpertNode::exist_problem_predicate_service_callback(plansys2_msgs::ExistNode::Request &request,
@@ -576,6 +615,8 @@ bool ProblemExpertNode::exist_problem_predicate_service_callback(plansys2_msgs::
   } else {
     response.exist = problem_expert_->existPredicate(request.node);
   }
+  
+  return true;
 }
 
 bool ProblemExpertNode::exist_problem_function_service_callback(plansys2_msgs::ExistNode::Request &request,

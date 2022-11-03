@@ -29,28 +29,29 @@ ProblemExpertClient::ProblemExpertClient()
 {
   node_ = ros::NodeHandle("problem_expert_client");
   
-  add_problem_client_ = node_.serviceClient<plansys2_msgs::AddProblem>("problem_expert/add_problem");
-  add_problem_goal_client_ = node_.serviceClient<plansys2_msgs::AddProblemGoal>("problem_expert/add_problem_goal");
-  add_problem_instance_client_ = node_.serviceClient<plansys2_msgs::AffectParam>("problem_expert/add_problem_instance");
-  add_problem_predicate_client_ = node_.serviceClient<plansys2_msgs::AffectNode>("problem_expert/add_problem_predicate");
-  add_problem_function_client_ = node_.serviceClient<plansys2_msgs::AffectNode>("problem_expert/add_problem_function");
-  get_problem_goal_client_ = node_.serviceClient<plansys2_msgs::GetProblemGoal>("problem_expert/get_problem_goal");
-  get_problem_instance_details_client_ = node_.serviceClient<plansys2_msgs::GetProblemInstanceDetails>("problem_expert/get_problem_instance");
-  get_problem_instances_client_ = node_.serviceClient<plansys2_msgs::GetProblemInstances>("problem_expert/get_problem_instances");
-  get_problem_predicate_details_client_ = node_.serviceClient<plansys2_msgs::GetNodeDetails>("problem_expert/get_problem_predicate");
-  get_problem_predicates_client_ = node_.serviceClient<plansys2_msgs::GetStates>("problem_expert/get_problem_predicates");
-  get_problem_function_details_client_ = node_.serviceClient<plansys2_msgs::GetNodeDetails>("problem_expert/get_problem_function");
-  get_problem_functions_client_ = node_.serviceClient<plansys2_msgs::GetStates>("problem_expert/get_problem_functions");
-  get_problem_client_ = node_.serviceClient<plansys2_msgs::GetProblem>("problem_expert/get_problem");
-  remove_problem_goal_client_ = node_.serviceClient<plansys2_msgs::RemoveProblemGoal>("problem_expert/remove_problem_goal");
-  clear_problem_knowledge_client_ = node_.serviceClient<plansys2_msgs::ClearProblemKnowledge>("problem_expert/clear_problem_knowledge");
-  remove_problem_instance_client_ = node_.serviceClient<plansys2_msgs::AffectParam>("problem_expert/remove_problem_instance");
-  remove_problem_predicate_client_ = node_.serviceClient<plansys2_msgs::AffectNode>("problem_expert/remove_problem_predicate");
-  remove_problem_function_client_ = node_.serviceClient<plansys2_msgs::AffectNode>("problem_expert/remove_problem_function");
-  exist_problem_predicate_client_ = node_.serviceClient<plansys2_msgs::ExistNode>("problem_expert/exist_problem_predicate");
-  exist_problem_function_client_ = node_.serviceClient<plansys2_msgs::ExistNode>("problem_expert/exist_problem_function");
-  update_problem_function_client_ = node_.serviceClient<plansys2_msgs::AffectNode>( "problem_expert/update_problem_function");
-  is_problem_goal_satisfied_client_ = node_.serviceClient<plansys2_msgs::IsProblemGoalSatisfied>( "problem_expert/is_problem_goal_satisfied");
+  std::string prefix = std::string("/problem_expert/");
+  add_problem_client_ = node_.serviceClient<plansys2_msgs::AddProblem>(prefix + "add_problem");
+  add_problem_goal_client_ = node_.serviceClient<plansys2_msgs::AddProblemGoal>( prefix + "add_problem_goal");
+  add_problem_instance_client_ = node_.serviceClient<plansys2_msgs::AffectParam>( prefix + "add_problem_instance");
+  add_problem_predicate_client_ = node_.serviceClient<plansys2_msgs::AffectNode>( prefix + "add_problem_predicate");
+  add_problem_function_client_ = node_.serviceClient<plansys2_msgs::AffectNode>( prefix + "add_problem_function");
+  get_problem_goal_client_ = node_.serviceClient<plansys2_msgs::GetProblemGoal>( prefix + "get_problem_goal");
+  get_problem_instance_details_client_ = node_.serviceClient<plansys2_msgs::GetProblemInstanceDetails>( prefix + "get_problem_instance");
+  get_problem_instances_client_ = node_.serviceClient<plansys2_msgs::GetProblemInstances>( prefix + "get_problem_instances");
+  get_problem_predicate_details_client_ = node_.serviceClient<plansys2_msgs::GetNodeDetails>( prefix + "get_problem_predicate");
+  get_problem_predicates_client_ = node_.serviceClient<plansys2_msgs::GetStates>( prefix + "get_problem_predicates");
+  get_problem_function_details_client_ = node_.serviceClient<plansys2_msgs::GetNodeDetails>( prefix + "get_problem_function");
+  get_problem_functions_client_ = node_.serviceClient<plansys2_msgs::GetStates>( prefix + "get_problem_functions");
+  get_problem_client_ = node_.serviceClient<plansys2_msgs::GetProblem>( prefix + "get_problem");
+  remove_problem_goal_client_ = node_.serviceClient<plansys2_msgs::RemoveProblemGoal>( prefix + "remove_problem_goal");
+  clear_problem_knowledge_client_ = node_.serviceClient<plansys2_msgs::ClearProblemKnowledge>( prefix + "clear_problem_knowledge");
+  remove_problem_instance_client_ = node_.serviceClient<plansys2_msgs::AffectParam>( prefix + "remove_problem_instance");
+  remove_problem_predicate_client_ = node_.serviceClient<plansys2_msgs::AffectNode>( prefix + "remove_problem_predicate");
+  remove_problem_function_client_ = node_.serviceClient<plansys2_msgs::AffectNode>( prefix + "remove_problem_function");
+  exist_problem_predicate_client_ = node_.serviceClient<plansys2_msgs::ExistNode>( prefix + "exist_problem_predicate");
+  exist_problem_function_client_ = node_.serviceClient<plansys2_msgs::ExistNode>( prefix + "exist_problem_function");
+  update_problem_function_client_ = node_.serviceClient<plansys2_msgs::AffectNode>(  prefix + "update_problem_function");
+  is_problem_goal_satisfied_client_ = node_.serviceClient<plansys2_msgs::IsProblemGoalSatisfied>(  prefix + "is_problem_goal_satisfied");
   
 }
 
@@ -89,7 +90,7 @@ ProblemExpertClient::addInstance(const plansys2::Instance & instance)
   while (!add_problem_instance_client_.waitForExistence(ros::Duration(1.0)))
   {
     if (!ros::ok())
-      return {};
+      return false;
     
     ROS_INFO_STREAM(getName() << " Waiting for service " << add_problem_instance_client_.getService() << " to appear");      
   }

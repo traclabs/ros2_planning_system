@@ -27,18 +27,19 @@ DomainExpertClient::DomainExpertClient()
 {
   node_ = ros::NodeHandle("domain_expert_client");
 
-  get_domain_client_ = node_.serviceClient<plansys2_msgs::GetDomain>("domain_expert/get_domain");
-  get_name_client_ = node_.serviceClient<plansys2_msgs::GetDomainName>("domain_expert/get_domain_name");
-  get_types_client_ = node_.serviceClient<plansys2_msgs::GetDomainTypes>("domain_expert/get_domain_types");
-  get_constants_client_ = node_.serviceClient<plansys2_msgs::GetDomainConstants>("domain_expert/get_domain_constants");
-  get_predicates_client_ = node_.serviceClient<plansys2_msgs::GetStates>("domain_expert/get_domain_predicates");
-  get_functions_client_ = node_.serviceClient<plansys2_msgs::GetStates>("domain_expert/get_domain_functions");
-  get_actions_client_ = node_.serviceClient<plansys2_msgs::GetDomainActions>("domain_expert/get_domain_actions");
-  get_durative_actions_client_ = node_.serviceClient<plansys2_msgs::GetDomainActions>("domain_expert/get_domain_durative_actions");
-  get_predicate_details_client_ = node_.serviceClient<plansys2_msgs::GetNodeDetails>("domain_expert/get_domain_predicate_details");
-  get_function_details_client_ = node_.serviceClient<plansys2_msgs::GetNodeDetails>("domain_expert/get_domain_function_details");
-  get_action_details_client_ = node_.serviceClient<plansys2_msgs::GetDomainActionDetails>("domain_expert/get_domain_action_details");
-  get_durative_action_details_client_ = node_.serviceClient<plansys2_msgs::GetDomainDurativeActionDetails>("domain_expert/get_domain_durative_action_details");
+  std::string prefix = std::string("/domain_expert/");
+  get_domain_client_ = node_.serviceClient<plansys2_msgs::GetDomain>( prefix + "get_domain");
+  get_name_client_ = node_.serviceClient<plansys2_msgs::GetDomainName>( prefix + "get_domain_name");
+  get_types_client_ = node_.serviceClient<plansys2_msgs::GetDomainTypes>( prefix + "get_domain_types");
+  get_constants_client_ = node_.serviceClient<plansys2_msgs::GetDomainConstants>( prefix + "get_domain_constants");
+  get_predicates_client_ = node_.serviceClient<plansys2_msgs::GetStates>( prefix + "get_domain_predicates");
+  get_functions_client_ = node_.serviceClient<plansys2_msgs::GetStates>( prefix + "get_domain_functions");
+  get_actions_client_ = node_.serviceClient<plansys2_msgs::GetDomainActions>( prefix + "get_domain_actions");
+  get_durative_actions_client_ = node_.serviceClient<plansys2_msgs::GetDomainActions>( prefix + "get_domain_durative_actions");
+  get_predicate_details_client_ = node_.serviceClient<plansys2_msgs::GetNodeDetails>( prefix + "get_domain_predicate_details");
+  get_function_details_client_ = node_.serviceClient<plansys2_msgs::GetNodeDetails>( prefix + "get_domain_function_details");
+  get_action_details_client_ = node_.serviceClient<plansys2_msgs::GetDomainActionDetails>( prefix + "get_domain_action_details");
+  get_durative_action_details_client_ = node_.serviceClient<plansys2_msgs::GetDomainDurativeActionDetails>( prefix + "get_domain_durative_action_details");
 }
 
 std::string DomainExpertClient::getNodeName()

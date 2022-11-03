@@ -34,38 +34,39 @@ namespace plansys2
   // ROS1 : No need to declare parameter
   //declare_parameter("model_file", "");
 
-  get_name_service_ = getBaseNode().advertiseService("domain_expert/get_domain_name",
+  std::string prefix(""); //("domain_expert/");
+  get_name_service_ = getBaseNode().advertiseService( prefix + "get_domain_name",
 						     &DomainExpertNode::get_domain_name_service_callback,
 						     this);
   
-  get_types_service_ = getBaseNode().advertiseService("domain_expert/get_domain_types",
+  get_types_service_ = getBaseNode().advertiseService( prefix + "get_domain_types",
 						      &DomainExpertNode::get_domain_types_service_callback,
 						      this);
-  get_domain_actions_service_ = getBaseNode().advertiseService("domain_expert/get_domain_actions",
+  get_domain_actions_service_ = getBaseNode().advertiseService( prefix + "get_domain_actions",
 							       &DomainExpertNode::get_domain_actions_service_callback,
 							       this);
-  get_domain_action_details_service_ = getBaseNode().advertiseService("domain_expert/get_domain_action_details",
+  get_domain_action_details_service_ = getBaseNode().advertiseService( prefix + "get_domain_action_details",
 								      &DomainExpertNode::get_domain_action_details_service_callback,
 								      this);
-  get_domain_durative_actions_service_ = getBaseNode().advertiseService("domain_expert/get_domain_durative_actions",
+  get_domain_durative_actions_service_ = getBaseNode().advertiseService( prefix + "get_domain_durative_actions",
 									&DomainExpertNode::get_domain_durative_actions_service_callback,
 									this);
-  get_domain_durative_action_details_service_ = getBaseNode().advertiseService("domain_expert/get_domain_durative_action_details",
+  get_domain_durative_action_details_service_ = getBaseNode().advertiseService( prefix + "get_domain_durative_action_details",
 									       &DomainExpertNode::get_domain_durative_action_details_service_callback,
 									       this);
-  get_domain_predicates_service_ = getBaseNode().advertiseService("domain_expert/get_domain_predicates", 
+  get_domain_predicates_service_ = getBaseNode().advertiseService( prefix + "get_domain_predicates", 
 								  &DomainExpertNode::get_domain_predicates_service_callback,
 								  this);
-  get_domain_predicate_details_service_ = getBaseNode().advertiseService("domain_expert/get_domain_predicate_details",
+  get_domain_predicate_details_service_ = getBaseNode().advertiseService( prefix + "get_domain_predicate_details",
 									 &DomainExpertNode::get_domain_predicate_details_service_callback,
 									 this);
-  get_domain_functions_service_ = getBaseNode().advertiseService("domain_expert/get_domain_functions",
+  get_domain_functions_service_ = getBaseNode().advertiseService( prefix + "get_domain_functions",
 								 &DomainExpertNode::get_domain_functions_service_callback,
 								 this);
-  get_domain_function_details_service_ = getBaseNode().advertiseService("domain_expert/get_domain_function_details",
+  get_domain_function_details_service_ = getBaseNode().advertiseService( prefix + "get_domain_function_details",
 									&DomainExpertNode::get_domain_function_details_service_callback,
 									this);
-  get_domain_service_ = getBaseNode().advertiseService("domain_expert/get_domain", 
+  get_domain_service_ = getBaseNode().advertiseService( prefix + "get_domain", 
 						       &DomainExpertNode::get_domain_service_callback,
 						       this);
 }
