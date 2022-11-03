@@ -10,23 +10,23 @@
  
   <license>Apache License, Version 2.0</license>
 
-  <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>catkin</buildtool_depend>
 
-  <depend>rclcpp</depend>
+  <depend>roscpp</depend>
   <depend>plansys2_domain_expert</depend>
   <depend>plansys2_problem_expert</depend>
   <depend>plansys2_planner</depend>
   <depend>plansys2_executor</depend>
   <depend>plansys2_lifecycle_manager</depend>
 
-  <exec_depend>launch_ros</exec_depend>
+<!--  <exec_depend>launch_ros</exec_depend>
 
   <test_depend>ament_lint_common</test_depend>
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>launch</test_depend>
   <test_depend>launch_testing</test_depend>
-
+-->
   <export>
-    <build_type>ament_cmake</build_type>
   </export>
+  
 </package>

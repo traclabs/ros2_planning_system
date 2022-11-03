@@ -49,80 +49,51 @@ LifecycleServiceClient::init()
   client_change_state_ = this->create_client<lifecycle_msgs::srv::ChangeState>(
     change_state_service_name);
   */
-  lm_client_.reset(new ros::lifecycle::LifecycleClient(nh_, managed_node_);
+  lm_client_.reset(new ros::lifecycle::LifecycleClient(nh_, managed_node_));
 }
 
 unsigned int
 LifecycleServiceClient::get_state(std::chrono::seconds time_out)
 {
-  auto request = std::make_shared<lifecycle_msgs::srv::GetState::Request>();
-  if (!client_get_state_->wait_for_service(time_out)) {
-    RCLCPP_ERROR(
-      get_logger(),
-      "Service %s is not available.",
-      client_get_state_->get_service_name());
-    return lifecycle_msgs::msg::State::PRIMARY_STATE_UNKNOWN;
-  }
-  // We send the service request for asking the current
-  // state of the lc_talker node.
-  auto future_result = client_get_state_->async_send_request(request);
-  // Let's wait until we have the answer from the node.
-  // If the request times out, we return an unknown state.
-  auto future_status = wait_for_result(future_result, time_out);
-  auto state = future_result.get();
-
-  if (future_status != std::future_status::ready) {
-    RCLCPP_ERROR(
-      get_logger(), "Server time out while getting current state for node %s",
-      managed_node_.c_str());
-    return lifecycle_msgs::msg::State::PRIMARY_STATE_UNKNOWN;
-  }
-  // We have an succesful answer. So let's print the current state.
-  if (state != nullptr) {
-    RCLCPP_INFO(
-      get_logger(), "Node %s has current state %s.",
-      get_name(), state->current_state.label.c_str());
-    return state->current_state.id;
-  } else {
-    RCLCPP_ERROR(
-      get_logger(), "Failed to get current state for node %s", managed_node_.c_str());
-    return lifecycle_msgs::msg::State::PRIMARY_STATE_UNKNOWN;
-  }
+  return lm_client_->getState();
 }
 
-bool
-LifecycleServiceClient::change_state(std::uint8_t transition, std::chrono::seconds time_out)
+
+void LifecycleServiceClient::change_state_cb(bool result)
 {
-  auto request = std::make_shared<lifecycle_msgs::srv::ChangeState::Request>();
-  request->transition.id = transition;
-  if (!client_change_state_->wait_for_service(time_out)) {
-    RCLCPP_ERROR(
-      get_logger(),
-      "Service %s is not available.",
-      client_change_state_->get_service_name());
-    return false;
+  result_ = result;
+  received_result_ = true;
+}
+
+void LifecycleServiceClient::reset_result()
+{
+  result_ = false;
+  received_result_ = false;
+}
+ 
+  bool LifecycleServiceClient::change_state(ros::lifecycle::State transition, std::chrono::seconds time_out)
+{
+  reset_result();
+  lm_client_->goToState(transition,
+			boost::bind(&LifecycleServiceClient::change_state_cb, this, _1));
+
+  ros::Time ts = ros::Time::now();
+  while( (ros::Time::now() - ts).toSec() < time_out.count())
+  {
+    ros::spinOnce();
+    if(received_result_)
+      break;
   }
-  // We send the request with the transition we want to invoke.
-  auto future_result = client_change_state_->async_send_request(request);
-  // Let's wait until we have the answer from the node.
-  // If the request times out, we return an unknown state.
-  auto future_status = wait_for_result(future_result, time_out);
-  if (future_status != std::future_status::ready) {
-    RCLCPP_ERROR(
-      get_logger(), "Server time out while getting current state for node %s",
-      managed_node_.c_str());
-    return false;
-  }
-  // We have an answer, let's print our success.
-  if (future_result.get()->success) {
-    RCLCPP_INFO(
-goo      get_logger(), "Transition %d successfully triggered.", static_cast<int>(transition));
-    return true;
-  } else {
-    RCLCPP_WARN(
-      get_logger(), "Failed to trigger transition %u", static_cast<unsigned int>(transition));
-    return false;
-  }
+
+  bool res;
+  if(!received_result_)
+    res = false;
+  else
+    res = result_;
+  
+  reset_result();
+  
+  return res;
 }
 
 bool
@@ -133,14 +104,14 @@ startup_function(
   // configure domain_expert
   {
     if (!manager_nodes["domain_expert"]->change_state(
-        lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE,
-        timeout))
+						      ros::lifecycle::INACTIVE,
+						      timeout))
     {
       return false;
     }
 
     while (manager_nodes["domain_expert"]->get_state() !=
-      lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE)
+	   ros::lifecycle::INACTIVE)
     {
       std::cerr << "Waiting for inactive state for domain_expert" << std::endl;
     }
@@ -149,14 +120,14 @@ startup_function(
   // configure problem_expert
   {
     if (!manager_nodes["problem_expert"]->change_state(
-        lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE,
+						       ros::lifecycle::INACTIVE,
         timeout))
     {
       return false;
     }
 
     while (manager_nodes["problem_expert"]->get_state() !=
-      lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE)
+	   ros::lifecycle::INACTIVE)
     {
       std::cerr << "Waiting for inactive state for problem_expert" << std::endl;
     }
@@ -165,14 +136,14 @@ startup_function(
   // configure planner
   {
     if (!manager_nodes["planner"]->change_state(
-        lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE,
-        timeout))
+						ros::lifecycle::INACTIVE,
+						timeout))
     {
       return false;
     }
 
     while (manager_nodes["planner"]->get_state() !=
-      lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE)
+	   ros::lifecycle::INACTIVE)
     {
       std::cerr << "Waiting for inactive state for planner" << std::endl;
     }
@@ -181,14 +152,14 @@ startup_function(
   // configure executor
   {
     if (!manager_nodes["executor"]->change_state(
-        lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE,
-        timeout))
+						 ros::lifecycle::INACTIVE,
+						 timeout))
     {
       return false;
     }
 
     while (manager_nodes["executor"]->get_state() !=
-      lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE)
+	   ros::lifecycle::INACTIVE)
     {
       std::cerr << "Waiting for inactive state for planner" << std::endl;
     }
@@ -196,29 +167,29 @@ startup_function(
 
   // activate
   {
-    if (!rclcpp::ok()) {
+    if (!ros::ok()) {
       return false;
     }
     if (!manager_nodes["domain_expert"]->change_state(
-        lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE,
-        timeout))
+						      ros::lifecycle::ACTIVE,
+						      timeout))
     {
       return false;
     }
     if (!manager_nodes["problem_expert"]->change_state(
-        lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE,
+						       ros::lifecycle::ACTIVE,
         timeout))
     {
       return false;
     }
     if (!manager_nodes["planner"]->change_state(
-        lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE,
+        ros::lifecycle::ACTIVE,
         timeout))
     {
       return false;
     }
     if (!manager_nodes["executor"]->change_state(
-        lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE,
+        ros::lifecycle::ACTIVE,
         timeout))
     {
       return false;
