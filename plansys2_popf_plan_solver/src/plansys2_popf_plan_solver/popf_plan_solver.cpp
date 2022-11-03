@@ -71,7 +71,7 @@ POPFPlanSolver::getPlan(const std::string & domain,
   problem_out.close();
 
 
-  std::string popf_bin = ros::package::getPath("popf_plan_solver") + ("/common/bin/popf");
+  std::string popf_bin = ros::package::getPath("plansys2_popf_plan_solver") + ("/common/bin/popf");
   std::string extra_params;
   lc_node_->getBaseNode().getParam(parameter_name_, extra_params);
 
@@ -147,12 +147,21 @@ POPFPlanSolver::is_valid_domain(
   domain_out.close();
 
   std::ofstream problem_out(temp_dir.string() + "/check_problem.pddl");
-  problem_out << "(define (problem void) (:domain plansys2))";
+
+  problem_out << "(define (problem void) (:domain plansys2) \n";
+  problem_out << "(:objects ) \n";
+  problem_out << "(:init ) \n";
+  problem_out << "(:goal ) \n"; 
+  problem_out << ") \n"; 
+     
   problem_out.close();
 
-  int status = system(
-    ("ros2 run popf popf " + temp_dir.string() + "/check_domain.pddl " + temp_dir.string() +
-    "/check_problem.pddl > " + temp_dir.string() + "/check.out").c_str());
+  std::string popf_bin = ros::package::getPath("plansys2_popf_plan_solver") + ("/common/bin/popf");
+
+  std::string command_line = std::string(popf_bin + " " + temp_dir.string() + "/check_domain.pddl " + temp_dir.string() +
+    "/check_problem.pddl > " + temp_dir.string() + "/check.out");
+    
+  int status = system( command_line.c_str() );
 
   if (status == -1) {
     return false;
@@ -161,7 +170,8 @@ POPFPlanSolver::is_valid_domain(
   std::string line;
   std::ifstream plan_file(temp_dir.string() + "/check.out");
   bool solution = false;
-
+  bool domain_error = false;
+  bool problem_error = false;
   if (plan_file && plan_file.is_open()) {
     while (getline(plan_file, line)) {
       if (!solution) {
@@ -169,11 +179,21 @@ POPFPlanSolver::is_valid_domain(
           solution = true;
         }
       }
+      
+      if (line.find("Syntax error in domain") != std::string::npos)
+        domain_error = true;
+        
+      if (line.find("Syntax error in problem definition") != std::string::npos)
+        problem_error = true;
+        
     }
     plan_file.close();
   }
 
-  return solution;
+  if(solution || (!domain_error && problem_error) )
+    return true;
+
+  return false;
 }
 
 }  // namespace plansys2

@@ -78,7 +78,12 @@ DomainExpertNode::onConfigure()
 	   getNodeName().c_str(),
 	   get_name());
   std::string model_file;
-  getBaseNode().getParam("model_file", model_file);
+
+  if(!getBaseNode().getParam("model_file", model_file))
+  {
+     ROS_ERROR("model_file parameter not defined for domain_expert");
+     return false;
+  }
 
   auto model_files = tokenize(model_file, ":");
 
@@ -88,8 +93,12 @@ DomainExpertNode::onConfigure()
     std::istreambuf_iterator<char>());
 
   auto planner = std::make_shared<plansys2::POPFPlanSolver>();
-  domain_expert_ = std::make_shared<DomainExpert>(domain_str);
 
+  domain_expert_ = std::make_shared<DomainExpert>(domain_str);
+  
+  std::string name= domain_expert_->getName();
+  std::vector<std::string> types = domain_expert_->getTypes();
+    
   bool check_valid = planner->is_valid_domain(domain_expert_->getDomain(), get_namespace());
   if (!check_valid) {
     ROS_ERROR("%s -- PDDL syntax error", getNodeName().c_str());
