@@ -166,7 +166,7 @@ DomainExpertNode::onError(const std::exception &)
 {
   ROS_ERROR("%s -- [%s] Error transition", getNodeName().c_str(), get_name());
 
-  return true;
+  return false;
 }
 
 bool

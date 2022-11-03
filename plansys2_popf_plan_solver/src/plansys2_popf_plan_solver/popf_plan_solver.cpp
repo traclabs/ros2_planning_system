@@ -36,7 +36,7 @@ POPFPlanSolver::POPFPlanSolver()
 void POPFPlanSolver::configure(std::shared_ptr<ros::lifecycle::ManagedNode> & lc_node,
 			       const std::string & plugin_name)
 {
-  parameter_name_ = plugin_name + ".arguments";
+  parameter_name_ = plugin_name + "/arguments";
   lc_node_ = lc_node;
   // Backport: No need to declare parameters in ROS1
   //lc_node_->declare_parameter<std::string>(parameter_name_, "");

@@ -4,7 +4,7 @@
   <!-- arguments -->
   <arg name="model_file" default="$(find plum_plan)/common/pddl/inspection_domain.pddl"/>
   <arg name="namespace" default="" />
-  <arg name="params_file" default="$(find plum_plan)/params/plansys2_params.yaml" />
+  <arg name="params_file" default="$(find plansys2_bringup)/params/plansys2_params.yaml" />
   <arg name="action_bt_file" default="$(find plansys2_executor)/behavior_trees/plansys2_action_bt.xml" />
   <arg name="start_action_bt_file" default="$(find plansys2_executor)/behavior_trees/plansys2_start_action_bt.xml"/>
   <arg name="end_action_bt_file" default="$(find plansys2_executor)/behavior_trees/plansys2_end_action_bt.xml" />
@@ -25,6 +25,11 @@
   </include>
   
   
+  <!-- Planner -->
+  <include file="$(find plansys2_planner)/launch/planner.launch">
+    <arg name="namespace"  value="$(arg namespace)"/>
+    <arg name="params_file" value="$(arg params_file)"/>
+  </include>
 
 </launch>
 

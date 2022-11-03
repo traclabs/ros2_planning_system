@@ -21,7 +21,8 @@ int main(int argc, char ** argv)
 {
   ros::init(argc, argv, "problem_expert");
   ros::NodeHandle nh("problem_expert");
-  plansys2::ProblemExpertNode pen(nh);
+  std::shared_ptr<plansys2::ProblemExpertNode> pen; 
+  pen.reset( new plansys2::ProblemExpertNode(nh) );  
 
   ros::spin();
 

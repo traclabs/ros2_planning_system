@@ -21,7 +21,10 @@ int main(int argc, char ** argv)
 {
   ros::init(argc, argv, "planner");
   ros::NodeHandle nh("planner");
-  plansys2::PlannerNode pn(nh);
+  //https://stackoverflow.com/questions/25628704/enable-shared-from-this-why-the-crash
+  // very important. To use shared_from_this, this class has to be a shared_ptr managed itself!
+  std::shared_ptr<plansys2::PlannerNode> pn; 
+  pn.reset( new plansys2::PlannerNode(nh) );
 
   ros::spin();
 

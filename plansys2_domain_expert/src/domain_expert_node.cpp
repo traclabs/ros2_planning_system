@@ -21,7 +21,8 @@ int main(int argc, char ** argv)
 {
   ros::init(argc, argv, "domain_expert_node");
   ros::NodeHandle nh("domain_expert");
-  plansys2::DomainExpertNode den(nh);
+  std::shared_ptr<plansys2::DomainExpertNode> den; 
+  den.reset( new plansys2::DomainExpertNode(nh) );
 
   ros::spin();
 

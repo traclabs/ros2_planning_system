@@ -30,8 +30,9 @@ namespace plansys2
   lp_loader_("plansys2_core", "plansys2::PlanSolverBase"),
   default_ids_{},
   default_types_{}
-{
-  get_plan_service_ = getBaseNode().advertiseService("planner/get_plan",
+{ 
+  std::string prefix(""); //("planner/");
+  get_plan_service_ = getBaseNode().advertiseService(prefix + "get_plan",
 						     &PlannerNode::get_plan_service_callback,
 						     this);
 
@@ -45,33 +46,31 @@ bool
 PlannerNode::onConfigure()
 {
   ROS_INFO("[%s] Configuring...", get_name());
-
+  
+  std::string prefix = "planner/"; // "";
+  getBaseNode().getParam(prefix + "plan_solver_plugins", solver_ids_);
+  
   auto node = shared_from_this();
-  
-  getBaseNode().getParam("plan_solver_plugins", solver_ids_);
 
-  
   if (!solver_ids_.empty()) {
-    /*if (solver_ids_ == default_ids_) {
+    /*
+    if (solver_ids_ == default_ids_) {
       for (size_t i = 0; i < default_ids_.size(); ++i) {
         plansys2::declare_parameter_if_not_declared(
 						    node, default_ids_[i] + ".plugin",
 						    rclcpp::ParameterValue(default_types_[i]));
       }
-      }*/
+    }*/
     solver_types_.resize(solver_ids_.size());
-
+    printf("Solver types size: %d \n", solver_types_.size());
     for (size_t i = 0; i != solver_types_.size(); i++) {
       try {
-
-	getBaseNode().getParam(solver_ids_[i], solver_types_[i]);
         //solver_types_[i] = plansys2::get_plugin_type_param(node, solver_ids_[i]);
+	getBaseNode().getParam(prefix + solver_ids_[i] + "/plugin", solver_types_[i]);
 	if(solver_types_[i].empty())
 	  continue;
-	
-	plansys2::PlanSolverBase::Ptr solver =
-          lp_loader_.createUniqueInstance(solver_types_[i]);
-	
+
+	plansys2::PlanSolverBase::Ptr solver = lp_loader_.createUniqueInstance(solver_types_[i]);
         solver->configure(node, solver_ids_[i]);
 
         ROS_INFO("%s -- Created solver : %s of type %s",
@@ -136,7 +135,7 @@ PlannerNode::onError(const std::exception &)
 {
   ROS_ERROR("[%s] Error transition", get_name());
 
-  return true;
+  return false;
 }
 
 

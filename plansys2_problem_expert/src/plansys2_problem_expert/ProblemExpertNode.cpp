@@ -234,7 +234,7 @@ bool ProblemExpertNode::onError(std::exception &)
 {
   ROS_ERROR("[%s] Error transition", get_name());
 
-  return true;
+  return false;
 }
 
 bool ProblemExpertNode::add_problem_service_callback(plansys2_msgs::AddProblem::Request &request,

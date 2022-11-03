@@ -27,7 +27,8 @@ PlannerClient::PlannerClient()
 {
   node_ = ros::NodeHandle("planner_client");
 
-  get_plan_client_ = node_.serviceClient<plansys2_msgs::GetPlan>("planner/get_plan");
+  std::string prefix("/planner/"); 
+  get_plan_client_ = node_.serviceClient<plansys2_msgs::GetPlan>(prefix + "get_plan");
 }
 
 std::string PlannerClient::getName()
