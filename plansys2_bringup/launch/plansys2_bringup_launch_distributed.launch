@@ -16,6 +16,14 @@
     <arg name="namespace"  value="$(arg namespace)"/>
     <arg name="params_file" value="$(arg params_file)"/>
   </include>
+
+  <!-- Problem Expert -->
+  <include file="$(find plansys2_problem_expert)/launch/problem_expert.launch">
+    <arg name="model_file"   value="$(arg model_file)"/>
+    <arg name="namespace"  value="$(arg namespace)"/>
+    <arg name="params_file" value="$(arg params_file)"/>
+  </include>
+  
   
 
 </launch>
