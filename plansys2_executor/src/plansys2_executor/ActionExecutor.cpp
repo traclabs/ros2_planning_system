@@ -33,9 +33,9 @@ ActionExecutor::ActionExecutor(
 {
 
   action_hub_pub_.reset(new ros::lifecycle::LifecyclePublisher<plansys2_msgs::ActionExecution>(node_,
-											       "actions_hub"));
+											       "/actions_hub"));
   action_hub_sub_.reset(new ros::lifecycle::LifecycleSubscriber_<plansys2_msgs::ActionExecution>(node_,
-												 "actions_hub",
+												 "/actions_hub",
 												 &ActionExecutor::action_hub_callback,
 												 this));
 

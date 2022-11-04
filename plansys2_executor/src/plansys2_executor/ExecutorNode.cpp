@@ -250,7 +250,6 @@ ExecutorNode::get_ordered_sub_goals_service_callback(plansys2_msgs::GetOrderedSu
 std::optional<std::vector<plansys2_msgs::Tree>>
 ExecutorNode::getOrderedSubGoals()
 {
-  printf("Get ordered subgoals \n");
   if (!current_plan_.has_value()) {
     return {};
   }
@@ -384,7 +383,7 @@ void ExecutorNode::execute(plansys2_msgs::ExecutePlanGoalConstPtr _goal)
 	     action_name.c_str(),
       (*action_map)[index].duration_overrun_percentage);
   }
-  printf("Ordered subgoals \n");
+
   ordered_sub_goals_ = getOrderedSubGoals();
 
   std::string bt_builder_plugin;
@@ -443,7 +442,7 @@ void ExecutorNode::execute(plansys2_msgs::ExecutePlanGoalConstPtr _goal)
   std::ofstream out(std::string("/tmp/") + get_namespace() + "/bt.xml");
   out << bt_xml_tree;
   out.close();
-  printf("Even here? \n");
+
   auto tree = factory.createTreeFromText(bt_xml_tree, blackboard);
 
 #ifdef ZMQ_FOUND
@@ -536,11 +535,10 @@ void ExecutorNode::execute(plansys2_msgs::ExecutePlanGoalConstPtr _goal)
 
 void ExecutorNode::handle_accepted()
 {
-  printf("Handle goal...\n");
   handle_goal();
   // if (not busy?)
   goal_ = execute_plan_action_server_->acceptNewGoal();
-  printf("about to call execute \n");
+
   using namespace std::placeholders;
   std::thread th( &ExecutorNode::execute, this, goal_ );
   th.detach();

@@ -49,7 +49,7 @@ BTAction::BTAction(
 
 bool BTAction::onConfigure()
 {
-  std::string prefix = get_name();
+  std::string prefix = std::string("/") + std::string(get_name());
   
   getBaseNode().getParam(prefix + "/action_name", action_);
   getBaseNode().getParam(prefix + "/bt_xml_file", bt_xml_file_);
@@ -76,7 +76,7 @@ bool BTAction::onConfigure()
   blackboard_ = BT::Blackboard::create();
   blackboard_->set("node", node);
 
-  return true;
+  return ActionExecutorClient::onConfigure();
 }
 
 bool
@@ -85,17 +85,17 @@ BTAction::onCleanup()
   #ifdef ZMQ_FOUND
   publisher_zmq_.reset();
   #endif
-  return true;
+  return ActionExecutorClient::onCleanup();
 }
 
 bool BTAction::onActivate()
-{
+{ 
   try {
     tree_ = factory_.createTreeFromFile(bt_xml_file_, blackboard_);
   } catch (const std::exception & ex) {
     ROS_ERROR_STREAM(get_name() <<
-		     "Failed to create BT with exception: " << ex.what());
-    ROS_ERROR_STREAM(get_name() << "Transition to activate failed");
+		     " -- Failed to create BT with exception: " << ex.what());
+    ROS_ERROR_STREAM(get_name() << " -- Transition to activate failed");
     return false;
   }
 
@@ -177,7 +177,7 @@ BTAction::onDeactivate()
   bt_file_logger_.reset();
   tree_.haltTree();
 
-  return true;
+  return ActionExecutorClient::onDeactivate();
 }
 
 void

@@ -48,7 +48,7 @@ ActionExecutorClient::ActionExecutorClient(
 
 
 bool ActionExecutorClient::onConfigure()
-{
+{ 
   status_pub_.reset(new ros::lifecycle::LifecyclePublisher<plansys2_msgs::ActionPerformerStatus>(shared_from_this(),
 												 "performers_status"));
   status_pub_->on_activate();
@@ -76,8 +76,8 @@ bool ActionExecutorClient::onConfigure()
     std::chrono::duration<double>(1.0 / rate));
 
   action_hub_pub_.reset(new ros::lifecycle::LifecyclePublisher<plansys2_msgs::ActionExecution>(shared_from_this(),
-											       "actions_hub"));
-  action_hub_sub_ = std::make_shared<ros::Subscriber>( getBaseNode().subscribe("actions_hub", 10,
+											       "/actions_hub"));
+  action_hub_sub_ = std::make_shared<ros::Subscriber>( getBaseNode().subscribe("/actions_hub", 10,
 									       &ActionExecutorClient::action_hub_callback, this));
 
   action_hub_pub_->on_activate();
@@ -92,7 +92,7 @@ bool ActionExecutorClient::onConfigure()
 
 bool
 ActionExecutorClient::onActivate()
-{
+{ 
   status_.state = plansys2_msgs::ActionPerformerStatus::RUNNING;
   status_.status_stamp = now();
   // nanoseconds?
@@ -114,12 +114,12 @@ bool ActionExecutorClient::onDeactivate()
 }
 
 void ActionExecutorClient::action_hub_callback(const plansys2_msgs::ActionExecution::ConstPtr &msg)
-{
+{  
   switch (msg->type) {
     case plansys2_msgs::ActionExecution::REQUEST:
       if (getCurrentState() == ros::lifecycle::INACTIVE &&
         !commited_ && should_execute(msg->action, msg->arguments))
-      {
+      {  
         commited_ = true;
         send_response(msg);
       }

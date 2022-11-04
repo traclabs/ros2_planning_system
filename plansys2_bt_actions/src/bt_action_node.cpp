@@ -37,7 +37,11 @@ int main(int argc, char ** argv)
 
   action_node->trigger_transition(ros::lifecycle::CONFIGURE);
 
-  ros::spin();
+  //ros::spin();
+
+ros::AsyncSpinner spinner(4); // Use 4 threads
+spinner.start();
+ros::waitForShutdown();
 
   return 0;
 }
