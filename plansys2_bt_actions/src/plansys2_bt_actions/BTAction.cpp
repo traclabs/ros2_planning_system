@@ -182,7 +182,7 @@ BTAction::onDeactivate()
 
 void
 BTAction::do_work()
-{
+{  
   if (!finished_) {
     BT::NodeStatus result;
     try {
