@@ -28,13 +28,18 @@ namespace plansys2
 
 using namespace std::chrono_literals;
 
-ActionExecutorClient::ActionExecutorClient(
+ActionExecutorClient::ActionExecutorClient(const ros::NodeHandle &nh, 
 					   const std::string & node_name,
 					   const std::chrono::nanoseconds & rate)
-  : CascadeLifecycleNode(node_name),
+  : 
+    CascadeLifecycleNode(nh),
     rate_(rate),
     commited_(false)
-{  
+{
+  // Note that nh should have the same namespace as node_name
+  // node_name should be removed after I test a bit more
+  // Ana 
+    printf("Node inside ActionExecutorClient: namespace: %s \n", nh.getNamespace().c_str());
   //declare_parameter<std::string>("action_name", "");
   //declare_parameter<std::vector<std::string>>(
   //"specialized_arguments", std::vector<std::string>({}));
@@ -49,6 +54,8 @@ ActionExecutorClient::ActionExecutorClient(
 
 bool ActionExecutorClient::onConfigure()
 { 
+  printf("On configure. Node base name: %s namespace: %s \n", get_name().c_str(), getBaseNode().getNamespace().c_str());
+  
   status_pub_.reset(new ros::lifecycle::LifecyclePublisher<plansys2_msgs::ActionPerformerStatus>(shared_from_this(),
 												 "performers_status"));
   status_pub_->on_activate();
@@ -60,7 +67,7 @@ bool ActionExecutorClient::onConfigure()
 										 }) );
 
   if (!getBaseNode().getParam("action_name", action_managed_)) {
-    ROS_ERROR("%s -- action_name parameter not set", get_name());
+    ROS_ERROR("%s -- action_name parameter not set", get_name().c_str());
     status_.state = plansys2_msgs::ActionPerformerStatus::FAILURE;
     status_.status_stamp = now();
   }
@@ -153,8 +160,8 @@ void ActionExecutorClient::action_hub_callback(const plansys2_msgs::ActionExecut
     default:
       ROS_ERROR(
         "%s -- Msg %d type not recognized in %s executor performer",
-	get_name(),
-	msg->type, get_name());
+	get_name().c_str(),
+	msg->type, get_name().c_str());
       break;
   }
 }
@@ -170,7 +177,7 @@ ActionExecutorClient::should_execute(
   if (!specialized_arguments_.empty()) {
     if (specialized_arguments_.size() != args.size()) {
       ROS_WARN( "%s -- current and specialized arguments length doesn't match %zu %zu",
-		get_name(),
+		get_name().c_str(),
 		args.size(), specialized_arguments_.size());
     }
 

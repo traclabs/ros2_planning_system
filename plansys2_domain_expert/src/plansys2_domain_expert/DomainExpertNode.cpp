@@ -77,7 +77,7 @@ DomainExpertNode::onConfigure()
 {
   ROS_INFO("%s -- [%s] Configuring...",
 	   getNodeName().c_str(),
-	   get_name());
+	   get_name().c_str());
   std::string model_file;
 
   if(!getBaseNode().getParam("model_file", model_file))
@@ -121,15 +121,15 @@ DomainExpertNode::onConfigure()
     }
   }
 
-  ROS_INFO("%s --[%s] Configured", getNodeName().c_str(), get_name());
+  ROS_INFO("%s --[%s] Configured", getNodeName().c_str(), get_name().c_str());
   return true;
 }
 
 bool
 DomainExpertNode::onActivate()
 {
-  ROS_INFO("%s --[%s] Activating...", getNodeName().c_str(), get_name());
-  ROS_INFO("%s --[%s] Activated", getNodeName().c_str(), get_name());
+  ROS_INFO("%s --[%s] Activating...", getNodeName().c_str(), get_name().c_str());
+  ROS_INFO("%s --[%s] Activated", getNodeName().c_str(), get_name().c_str());
 
   return true;
 }
@@ -137,8 +137,8 @@ DomainExpertNode::onActivate()
 bool
 DomainExpertNode::onDeactivate()
 {
-  ROS_INFO("%s --[%s] Deactivating...", getNodeName().c_str(), get_name());
-  ROS_INFO("%s --[%s] Deactivated", getNodeName().c_str(), get_name());
+  ROS_INFO("%s --[%s] Deactivating...", getNodeName().c_str(), get_name().c_str());
+  ROS_INFO("%s --[%s] Deactivated", getNodeName().c_str(), get_name().c_str());
 
   return true;
 }
@@ -146,8 +146,8 @@ DomainExpertNode::onDeactivate()
 bool
 DomainExpertNode::onCleanup()
 {
-  ROS_INFO("%s --[%s] Cleaning up...", getNodeName().c_str(), get_name());
-  ROS_INFO("%s --[%s] Cleaned up", getNodeName().c_str(), get_name());
+  ROS_INFO("%s --[%s] Cleaning up...", getNodeName().c_str(), get_name().c_str());
+  ROS_INFO("%s --[%s] Cleaned up", getNodeName().c_str(), get_name().c_str());
 
   return true;
 }
@@ -155,8 +155,8 @@ DomainExpertNode::onCleanup()
 bool
 DomainExpertNode::onShutdown()
 {
-  ROS_INFO("%s --[%s] Shutting down...", getNodeName().c_str(), get_name());
-  ROS_INFO("%s --[%s] Shutted down", getNodeName().c_str(), get_name());
+  ROS_INFO("%s --[%s] Shutting down...", getNodeName().c_str(), get_name().c_str());
+  ROS_INFO("%s --[%s] Shutted down", getNodeName().c_str(), get_name().c_str());
 
   return true;
 }
@@ -164,7 +164,7 @@ DomainExpertNode::onShutdown()
 bool
 DomainExpertNode::onError(const std::exception &)
 {
-  ROS_ERROR("%s -- [%s] Error transition", getNodeName().c_str(), get_name());
+  ROS_ERROR("%s -- [%s] Error transition", getNodeName().c_str(), get_name().c_str());
 
   return false;
 }

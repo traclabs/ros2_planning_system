@@ -155,7 +155,7 @@ namespace plansys2
 
 bool ProblemExpertNode::onConfigure()
 {
-  ROS_INFO("[%s] Configuring...", get_name());
+  ROS_INFO("[%s] Configuring...", get_name().c_str());
 
   // (fmrico) Here we could have a discussion if we should read the domain from file or
   // from the domain_expert service. Then, we should configure first domain_expert node
@@ -191,48 +191,48 @@ bool ProblemExpertNode::onConfigure()
     problem_expert_->addProblem(problem_str);
   }
 
-  ROS_INFO("[%s] Configured", get_name());
+  ROS_INFO("[%s] Configured", get_name().c_str());
   return true;
 }
 
 bool ProblemExpertNode::onActivate()
 {
-  ROS_INFO("[%s] Activating...", get_name());
+  ROS_INFO("[%s] Activating...", get_name().c_str());
   //update_pub_->on_activate(); // ANA HACK
   //knowledge_pub_->on_activate(); // ANA HACK
-  ROS_INFO("[%s] Activated", get_name());
+  ROS_INFO("[%s] Activated", get_name().c_str());
   return true;
 }
 
 bool ProblemExpertNode::onDeactivate()
 {
-  ROS_INFO("[%s] Deactivating...", get_name());
+  ROS_INFO("[%s] Deactivating...", get_name().c_str());
   //update_pub_.on_deactivate(); // ANA HACK
   //knowledge_pub_.on_deactivate(); // ANA HACK
-  ROS_INFO("[%s] Deactivated", get_name());
+  ROS_INFO("[%s] Deactivated", get_name().c_str());
 
   return true;
 }
 
 bool ProblemExpertNode::onCleanup()
 {
-  ROS_INFO("[%s] Cleaning up...", get_name());
-  ROS_INFO("[%s] Cleaned up", get_name());
+  ROS_INFO("[%s] Cleaning up...", get_name().c_str());
+  ROS_INFO("[%s] Cleaned up", get_name().c_str());
 
   return true;
 }
 
 bool ProblemExpertNode::onShutdown()
 {
-  ROS_INFO("[%s] Shutting down...", get_name());
-  ROS_INFO("[%s] Shutted down", get_name());
+  ROS_INFO("[%s] Shutting down...", get_name().c_str());
+  ROS_INFO("[%s] Shutted down", get_name().c_str());
 
   return true;
 }
 
 bool ProblemExpertNode::onError(std::exception &)
 {
-  ROS_ERROR("[%s] Error transition", get_name());
+  ROS_ERROR("[%s] Error transition", get_name().c_str());
 
   return false;
 }
@@ -243,7 +243,7 @@ bool ProblemExpertNode::add_problem_service_callback(plansys2_msgs::AddProblem::
   if (problem_expert_ == nullptr) {
     response.success = false;
     response.error_info = "Requesting service in non-active state";
-    ROS_WARN("%s -- Requesting service in non-active state", get_name());
+    ROS_WARN("%s -- Requesting service in non-active state", get_name().c_str());
   } else {
     ROS_INFO("Adding problem:\n%s", request.problem.c_str());
     response.success = problem_expert_->addProblem(request.problem);
@@ -265,7 +265,7 @@ bool ProblemExpertNode::add_problem_goal_service_callback(plansys2_msgs::AddProb
   if (problem_expert_ == nullptr) {
     response.success = false;
     response.error_info = "Requesting service in non-active state";
-    ROS_WARN("%s -- Requesting service in non-active state", get_name());
+    ROS_WARN("%s -- Requesting service in non-active state", get_name().c_str());
   } else {
     if (!parser::pddl::empty(request.tree)) {
       response.success = problem_expert_->setGoal(request.tree);
@@ -290,7 +290,7 @@ bool ProblemExpertNode::add_problem_instance_service_callback(plansys2_msgs::Aff
   if (problem_expert_ == nullptr) {
     response.success = false;
     response.error_info = "Requesting service in non-active state";
-    ROS_WARN("%s -- Requesting service in non-active state", get_name());
+    ROS_WARN("%s -- Requesting service in non-active state", get_name().c_str());
   } else {
     response.success = problem_expert_->addInstance(request.param);
     if (response.success) {
@@ -310,7 +310,7 @@ bool ProblemExpertNode::add_problem_predicate_service_callback(plansys2_msgs::Af
   if (problem_expert_ == nullptr) {
     response.success = false;
     response.error_info = "Requesting service in non-active state";
-    ROS_WARN("%s --Requesting service in non-active state", get_name());
+    ROS_WARN("%s --Requesting service in non-active state", get_name().c_str());
   } else {
     response.success = problem_expert_->addPredicate(request.node);
     if (response.success) {
@@ -331,7 +331,7 @@ bool ProblemExpertNode::add_problem_function_service_callback(plansys2_msgs::Aff
   if (problem_expert_ == nullptr) {
     response.success = false;
     response.error_info = "Requesting service in non-active state";
-    ROS_WARN("%s --Requesting service in non-active state", get_name());
+    ROS_WARN("%s --Requesting service in non-active state", get_name().c_str());
   } else {
     response.success = problem_expert_->addFunction(request.node);
     if (response.success) {
@@ -352,7 +352,7 @@ bool ProblemExpertNode::get_problem_goal_service_callback(plansys2_msgs::GetProb
   if (problem_expert_ == nullptr) {
     response.success = false;
     response.error_info = "Requesting service in non-active state";
-    ROS_WARN("%s --Requesting service in non-active state", get_name());
+    ROS_WARN("%s --Requesting service in non-active state", get_name().c_str());
   } else {
     response.success = true;
     response.tree = problem_expert_->getGoal();
@@ -367,7 +367,7 @@ bool ProblemExpertNode::get_problem_instance_details_service_callback(plansys2_m
   if (problem_expert_ == nullptr) {
     response.success = false;
     response.error_info = "Requesting service in non-active state";
-    ROS_WARN("%s --Requesting service in non-active state", get_name());
+    ROS_WARN("%s --Requesting service in non-active state", get_name().c_str());
   } else {
     auto instance = problem_expert_->getInstance(request.instance);
     if (instance) {
@@ -388,7 +388,7 @@ bool ProblemExpertNode::get_problem_instances_service_callback(plansys2_msgs::Ge
   if (problem_expert_ == nullptr) {
     response.success = false;
     response.error_info = "Requesting service in non-active state";
-    ROS_WARN("%s --Requesting service in non-active state", get_name());
+    ROS_WARN("%s --Requesting service in non-active state", get_name().c_str());
   } else {
     response.success = true;
     response.instances = plansys2::convertVector<plansys2_msgs::Param, plansys2::Instance>(
@@ -404,7 +404,7 @@ bool ProblemExpertNode::get_problem_predicate_details_service_callback(plansys2_
   if (problem_expert_ == nullptr) {
     response.success = false;
     response.error_info = "Requesting service in non-active state";
-    ROS_WARN("%s --Requesting service in non-active state", get_name());
+    ROS_WARN("%s --Requesting service in non-active state", get_name().c_str());
   } else {
     auto predicate = problem_expert_->getPredicate(request.expression);
     if (predicate) {
@@ -425,7 +425,7 @@ bool ProblemExpertNode::get_problem_predicates_service_callback(plansys2_msgs::G
   if (problem_expert_ == nullptr) {
     response.success = false;
     response.error_info = "Requesting service in non-active state";
-    ROS_WARN("%s --Requesting service in non-active state", get_name());
+    ROS_WARN("%s --Requesting service in non-active state", get_name().c_str());
   } else {
     response.success = true;
     response.states = plansys2::convertVector<plansys2_msgs::Node, plansys2::Predicate>(
@@ -441,7 +441,7 @@ bool ProblemExpertNode::get_problem_function_details_service_callback(plansys2_m
   if (problem_expert_ == nullptr) {
     response.success = false;
     response.error_info = "Requesting service in non-active state";
-    ROS_WARN("%s --Requesting service in non-active state", get_name());
+    ROS_WARN("%s --Requesting service in non-active state", get_name().c_str());
   } else {
     auto function = problem_expert_->getFunction(request.expression);
     if (function) {
@@ -462,7 +462,7 @@ bool ProblemExpertNode::get_problem_functions_service_callback(plansys2_msgs::Ge
   if (problem_expert_ == nullptr) {
     response.success = false;
     response.error_info = "Requesting service in non-active state";
-    ROS_WARN("%s --Requesting service in non-active state", get_name());
+    ROS_WARN("%s --Requesting service in non-active state", get_name().c_str());
   } else {
     response.success = true;
     response.states = plansys2::convertVector<plansys2_msgs::Node, plansys2::Function>(
@@ -478,7 +478,7 @@ bool ProblemExpertNode::get_problem_service_callback(plansys2_msgs::GetProblem::
   if (problem_expert_ == nullptr) {
     response.success = false;
     response.error_info = "Requesting service in non-active state";
-    ROS_WARN("%s --Requesting service in non-active state", get_name());
+    ROS_WARN("%s --Requesting service in non-active state", get_name().c_str());
   } else {
     response.success = true;
     response.problem = problem_expert_->getProblem();
@@ -493,7 +493,7 @@ bool ProblemExpertNode::is_problem_goal_satisfied_service_callback(plansys2_msgs
   if (problem_expert_ == nullptr) {
     response.success = false;
     response.error_info = "Requesting service in non-active state";
-    ROS_WARN("%s --Requesting service in non-active state", get_name());
+    ROS_WARN("%s --Requesting service in non-active state", get_name().c_str());
   } else {
     response.success = true;
     response.satisfied = problem_expert_->isGoalSatisfied(request.tree);
@@ -508,7 +508,7 @@ bool ProblemExpertNode::remove_problem_goal_service_callback(plansys2_msgs::Remo
   if (problem_expert_ == nullptr) {
     response.success = false;
     response.error_info = "Requesting service in non-active state";
-    ROS_WARN("%s --Requesting service in non-active state", get_name());
+    ROS_WARN("%s --Requesting service in non-active state", get_name().c_str());
   } else {
     response.success = problem_expert_->clearGoal();
 
@@ -529,7 +529,7 @@ bool ProblemExpertNode::clear_problem_knowledge_service_callback(plansys2_msgs::
   if (problem_expert_ == nullptr) {
     response.success = false;
     response.error_info = "Requesting service in non-active state";
-    ROS_WARN("%s --Requesting service in non-active state", get_name());
+    ROS_WARN("%s --Requesting service in non-active state", get_name().c_str());
   } else {
     response.success = problem_expert_->clearKnowledge();
 
@@ -551,7 +551,7 @@ bool ProblemExpertNode::remove_problem_instance_service_callback(plansys2_msgs::
   if (problem_expert_ == nullptr) {
     response.success = false;
     response.error_info = "Requesting service in non-active state";
-    ROS_WARN("%s --Requesting service in non-active state", get_name());
+    ROS_WARN("%s --Requesting service in non-active state", get_name().c_str());
   } else {
     response.success = problem_expert_->removeInstance(request.param);
     if (response.success) {
@@ -572,7 +572,7 @@ ProblemExpertNode::remove_problem_predicate_service_callback(plansys2_msgs::Affe
   if (problem_expert_ == nullptr) {
     response.success = false;
     response.error_info = "Requesting service in non-active state";
-    ROS_WARN("%s --Requesting service in non-active state", get_name());
+    ROS_WARN("%s --Requesting service in non-active state", get_name().c_str());
   } else {
     response.success = problem_expert_->removePredicate(request.node);
     if (response.success) {
@@ -593,7 +593,7 @@ ProblemExpertNode::remove_problem_function_service_callback(plansys2_msgs::Affec
   if (problem_expert_ == nullptr) {
     response.success = false;
     response.error_info = "Requesting service in non-active state";
-    ROS_WARN("%s --Requesting service in non-active state", get_name());
+    ROS_WARN("%s --Requesting service in non-active state", get_name().c_str());
   } else {
     response.success = problem_expert_->removeFunction(request.node);
     if (response.success) {
@@ -611,7 +611,7 @@ bool ProblemExpertNode::exist_problem_predicate_service_callback(plansys2_msgs::
 {
   if (problem_expert_ == nullptr) {
     response.exist = false;
-    ROS_WARN("%s --Requesting service in non-active state", get_name());
+    ROS_WARN("%s --Requesting service in non-active state", get_name().c_str());
   } else {
     response.exist = problem_expert_->existPredicate(request.node);
   }
@@ -624,7 +624,7 @@ bool ProblemExpertNode::exist_problem_function_service_callback(plansys2_msgs::E
 {
   if (problem_expert_ == nullptr) {
     response.exist = false;
-    ROS_WARN("%s --Requesting service in non-active state", get_name());
+    ROS_WARN("%s --Requesting service in non-active state", get_name().c_str());
   } else {
     response.exist = problem_expert_->existFunction(request.node);
   }
@@ -638,7 +638,7 @@ bool ProblemExpertNode::update_problem_function_service_callback(plansys2_msgs::
   if (problem_expert_ == nullptr) {
     response.success = false;
     response.error_info = "Requesting service in non-active state";
-    ROS_WARN("%s --Requesting service in non-active state", get_name());
+    ROS_WARN("%s --Requesting service in non-active state", get_name().c_str());
   } else {
     response.success = problem_expert_->updateFunction(request.node);
     if (response.success) {

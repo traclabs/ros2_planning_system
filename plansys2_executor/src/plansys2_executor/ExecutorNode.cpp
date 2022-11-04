@@ -108,7 +108,7 @@ using namespace std::chrono_literals;
 bool
 ExecutorNode::onConfigure()
 {
-  ROS_INFO("[%s] Configuring...", get_name());
+  ROS_INFO("[%s] Configuring...", get_name().c_str());
 
   std::string default_action_bt_xml_filename;
   getBaseNode().getParam("default_action_bt_xml_filename", default_action_bt_xml_filename);
@@ -121,7 +121,7 @@ ExecutorNode::onConfigure()
 
   std::ifstream action_bt_ifs(default_action_bt_xml_filename);
   if (!action_bt_ifs) {
-    ROS_ERROR_STREAM(get_name() << " Error openning [" << default_action_bt_xml_filename << "]");
+    ROS_ERROR_STREAM(get_name().c_str() << " Error openning [" << default_action_bt_xml_filename << "]");
     return false;
   }
 
@@ -139,7 +139,7 @@ ExecutorNode::onConfigure()
 
   std::ifstream start_action_bt_ifs(default_start_action_bt_xml_filename);
   if (!start_action_bt_ifs) {
-    ROS_ERROR_STREAM(get_name() <<
+    ROS_ERROR_STREAM(get_name().c_str() <<
 		     "Error openning [" << default_start_action_bt_xml_filename << "]");
     return false;
   }
@@ -157,7 +157,7 @@ ExecutorNode::onConfigure()
 
   std::ifstream end_action_bt_ifs(default_end_action_bt_xml_filename);
   if (!end_action_bt_ifs) {
-    ROS_ERROR_STREAM(get_name() <<
+    ROS_ERROR_STREAM(get_name().c_str() <<
 		     "Error openning [" << default_end_action_bt_xml_filename << "]");
     return false;
   }
@@ -175,18 +175,18 @@ ExecutorNode::onConfigure()
   // Start action server
   execute_plan_action_server_->start();
   
-  ROS_INFO("[%s] Configured", get_name());
+  ROS_INFO("[%s] Configured", get_name().c_str());
   return true;
 }
 
 bool
 ExecutorNode::onActivate()
 {
-  ROS_INFO("[%s] Activating...", get_name());
+  ROS_INFO("[%s] Activating...", get_name().c_str());
   dotgraph_pub_->on_activate();
   execution_info_pub_->on_activate();
   executing_plan_pub_->on_activate();
-  ROS_INFO("[%s] Activated", get_name());
+  ROS_INFO("[%s] Activated", get_name().c_str());
 
   return true;
 }
@@ -194,10 +194,10 @@ ExecutorNode::onActivate()
 bool
 ExecutorNode::onDeactivate()
 {
-  ROS_INFO("[%s] Deactivating...", get_name());
+  ROS_INFO("[%s] Deactivating...", get_name().c_str());
   dotgraph_pub_->on_deactivate();
   executing_plan_pub_->on_deactivate();
-  ROS_INFO("[%s] Deactivated", get_name());
+  ROS_INFO("[%s] Deactivated", get_name().c_str());
 
   return true;
 }
@@ -205,10 +205,10 @@ ExecutorNode::onDeactivate()
 bool
 ExecutorNode::onCleanup()
 {
-  ROS_INFO("[%s] Cleaning up...", get_name());
+  ROS_INFO("[%s] Cleaning up...", get_name().c_str());
   dotgraph_pub_.reset();
   executing_plan_pub_.reset();
-  ROS_INFO("[%s] Cleaned up", get_name());
+  ROS_INFO("[%s] Cleaned up", get_name().c_str());
 
   return true;
 }
@@ -216,10 +216,10 @@ ExecutorNode::onCleanup()
 bool
 ExecutorNode::onShutdown()
 {
-  ROS_INFO("[%s] Shutting down...", get_name());
+  ROS_INFO("[%s] Shutting down...", get_name().c_str());
   dotgraph_pub_.reset();
   executing_plan_pub_.reset();
-  ROS_INFO("[%s] Shutted down", get_name());
+  ROS_INFO("[%s] Shutted down", get_name().c_str());
 
   return true;
 }
@@ -227,7 +227,7 @@ ExecutorNode::onShutdown()
 bool
 ExecutorNode::onError(std::exception &)
 {
-  ROS_ERROR("[%s] Error transition", get_name());
+  ROS_ERROR("[%s] Error transition", get_name().c_str());
 
   return true;
 }
@@ -313,7 +313,7 @@ ExecutorNode::get_plan_service_callback(plansys2_msgs::GetPlan::Request &request
 
 void ExecutorNode::handle_goal()
 {
-  ROS_DEBUG("[%s] Received goal request with order", get_name());
+  ROS_DEBUG("[%s] Received goal request with order", get_name().c_str());
 
   current_plan_ = {};
   ordered_sub_goals_ = {};
@@ -324,7 +324,7 @@ void ExecutorNode::handle_goal()
 void
 ExecutorNode::handle_cancel()
 {
-  ROS_DEBUG("%s -- Received request to cancel goal", get_name());
+  ROS_DEBUG("%s -- Received request to cancel goal", get_name().c_str());
 
   cancel_plan_requested_ = true;
 
@@ -341,7 +341,7 @@ void ExecutorNode::execute(plansys2_msgs::ExecutePlanGoalConstPtr _goal)
   current_plan_ = _goal->plan;
 
   if (!current_plan_.has_value()) {
-    ROS_ERROR("%s -- No plan found", get_name());
+    ROS_ERROR("%s -- No plan found", get_name().c_str());
     result.success = false;
     execute_plan_action_server_->setSucceeded(result);
 
@@ -379,7 +379,7 @@ void ExecutorNode::execute(plansys2_msgs::ExecutePlanGoalConstPtr _goal)
       (*action_map)[index].duration_overrun_percentage = dop;
     }
     ROS_INFO("%s -- Action %s timeout percentage %f",
-	     get_name(),
+	     get_name().c_str(),
 	     action_name.c_str(),
       (*action_map)[index].duration_overrun_percentage);
   }
@@ -399,7 +399,7 @@ void ExecutorNode::execute(plansys2_msgs::ExecutePlanGoalConstPtr _goal)
     bt_builder = bt_builder_loader_.createInstance("plansys2::" + bt_builder_plugin);
 
   } catch (pluginlib::PluginlibException & ex) {
-    ROS_ERROR("%s -- pluginlib error: %s", get_name(), ex.what());
+    ROS_ERROR("%s -- pluginlib error: %s", get_name().c_str(), ex.what());
   }
 
   if (bt_builder_plugin == "SimpleBTBuilder") {
@@ -504,7 +504,7 @@ void ExecutorNode::execute(plansys2_msgs::ExecutePlanGoalConstPtr _goal)
   if (status == BT::NodeStatus::FAILURE) {
     tree.haltTree();
     ROS_ERROR("%s -- Executor BT finished with FAILURE state",
-	      get_name());
+	      get_name().c_str());
   }
 
   dotgraph_msg.data = bt_builder->get_dotgraph(action_map, enable_dot);
@@ -526,9 +526,9 @@ void ExecutorNode::execute(plansys2_msgs::ExecutePlanGoalConstPtr _goal)
   if (ros::ok()) {
     execute_plan_action_server_->setSucceeded(result);
     if (result.success) {
-      ROS_INFO("%s -- Plan Succeeded", get_name());
+      ROS_INFO("%s -- Plan Succeeded", get_name().c_str());
     } else {
-      ROS_INFO("%s -- Plan Failed", get_name());
+      ROS_INFO("%s -- Plan Failed", get_name().c_str());
     }
   }
 }
@@ -557,7 +557,7 @@ ExecutorNode::get_feedback_info(
 
   for (const auto & action : *action_map) {
     if (!action.second.action_executor) {
-      ROS_WARN("%s -- Action executor does not exist for %s. Skipping", get_name(),
+      ROS_WARN("%s -- Action executor does not exist for %s. Skipping", get_name().c_str(),
 	       action.first.c_str());
       continue;
     }

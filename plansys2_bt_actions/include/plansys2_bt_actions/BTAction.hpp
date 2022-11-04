@@ -38,7 +38,7 @@ namespace plansys2
 class BTAction : public plansys2::ActionExecutorClient
 {
 public:
-  explicit BTAction(
+  explicit BTAction(ros::NodeHandle nh,
     const std::string & action,
     const std::chrono::nanoseconds & rate);
 

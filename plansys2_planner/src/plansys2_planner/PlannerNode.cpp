@@ -45,7 +45,7 @@ namespace plansys2
 bool
 PlannerNode::onConfigure()
 {
-  ROS_INFO("[%s] Configuring...", get_name());
+  ROS_INFO("[%s] Configuring...", get_name().c_str());
   
   std::string prefix = "planner/"; // "";
   getBaseNode().getParam(prefix + "plan_solver_plugins", solver_ids_);
@@ -74,11 +74,11 @@ PlannerNode::onConfigure()
         solver->configure(node, solver_ids_[i]);
 
         ROS_INFO("%s -- Created solver : %s of type %s",
-		 get_name(),
+		 get_name().c_str(),
 		 solver_ids_[i].c_str(), solver_types_[i].c_str());
         solvers_.insert({solver_ids_[i], solver});
       } catch (const pluginlib::PluginlibException & ex) {
-        ROS_FATAL("%s -- Failed to create solver. Exception: %s", get_name(), ex.what());
+        ROS_FATAL("%s -- Failed to create solver. Exception: %s", get_name().c_str(), ex.what());
         exit(-1);
       }
     }
@@ -87,27 +87,27 @@ PlannerNode::onConfigure()
     default_solver->configure(node, "POPF");
     solvers_.insert({"POPF", default_solver});
     ROS_INFO("%s -- Created default solver : %s of type %s",
-	     get_name(),
+	     get_name().c_str(),
 	     "POPF", "plansys2/POPFPlanSolver");
   }
 
-  ROS_INFO("[%s] Configured", get_name());
+  ROS_INFO("[%s] Configured", get_name().c_str());
   return true;
 }
 
 bool
 PlannerNode::onActivate()
 {
-  ROS_INFO("[%s] Activating...", get_name());
-  ROS_INFO("[%s] Activated", get_name());
+  ROS_INFO("[%s] Activating...", get_name().c_str());
+  ROS_INFO("[%s] Activated", get_name().c_str());
   return true;
 }
 
 bool
 PlannerNode::onDeactivate()
 {
-  ROS_INFO("[%s] Deactivating...", get_name());
-  ROS_INFO("[%s] Deactivated", get_name());
+  ROS_INFO("[%s] Deactivating...", get_name().c_str());
+  ROS_INFO("[%s] Deactivated", get_name().c_str());
 
   return true;
 }
@@ -115,8 +115,8 @@ PlannerNode::onDeactivate()
 bool
 PlannerNode::onCleanup()
 {
-  ROS_INFO("[%s] Cleaning up...", get_name());
-  ROS_INFO("[%s] Cleaned up", get_name());
+  ROS_INFO("[%s] Cleaning up...", get_name().c_str());
+  ROS_INFO("[%s] Cleaned up", get_name().c_str());
 
   return true;
 }
@@ -124,8 +124,8 @@ PlannerNode::onCleanup()
 bool
 PlannerNode::onShutdown()
 {
-  ROS_INFO("[%s] Shutting down...", get_name());
-  ROS_INFO("[%s] Shutted down", get_name());
+  ROS_INFO("[%s] Shutting down...", get_name().c_str());
+  ROS_INFO("[%s] Shutted down", get_name().c_str());
 
   return true;
 }
@@ -133,7 +133,7 @@ PlannerNode::onShutdown()
 bool
 PlannerNode::onError(const std::exception &)
 {
-  ROS_ERROR("[%s] Error transition", get_name());
+  ROS_ERROR("[%s] Error transition", get_name().c_str());
 
   return false;
 }

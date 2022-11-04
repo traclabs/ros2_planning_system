@@ -37,12 +37,13 @@ class ActionExecutorClient : public ros::lifecycle::CascadeLifecycleNode
 {
 public:
   using Ptr = std::shared_ptr<ActionExecutorClient>;
-  static Ptr make_shared(const std::string & node_name, const std::chrono::nanoseconds & rate)
+  static Ptr make_shared(const ros::NodeHandle &nh, const std::string & node_name, const std::chrono::nanoseconds & rate)
   {
-    return std::make_shared<ActionExecutorClient>(node_name, rate);
+    return std::make_shared<ActionExecutorClient>(nh, node_name, rate);
   }
 
   ActionExecutorClient(
+    const ros::NodeHandle &nh,
     const std::string & node_name,
     const std::chrono::nanoseconds & rate);
 

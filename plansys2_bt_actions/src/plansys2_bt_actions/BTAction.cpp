@@ -28,10 +28,10 @@
 namespace plansys2
 {
 
-BTAction::BTAction(
+BTAction::BTAction(ros::NodeHandle nh,
   const std::string & action,
   const std::chrono::nanoseconds & rate)
-: ActionExecutorClient(action, rate)
+: ActionExecutorClient(nh, action, rate)
 {
   /*
   declare_parameter<std::string>("bt_xml_file", "");

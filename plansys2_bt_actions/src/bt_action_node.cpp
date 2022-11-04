@@ -24,16 +24,15 @@ using namespace std::chrono_literals;
 int main(int argc, char ** argv)
 {
   ros::init(argc, argv, "bt_action_node");
-
+  
   std::string name = ros::this_node::getName();
   if(name.empty() || (name.size() == 1 && name[0] == '/') )
     name = "default";
   else if(name[0] == '/')
     name = name.substr(1);
   
-  auto action_node = std::make_shared<plansys2::BTAction>(name,
-							  200ms  // ToDo(fmrico): This should be specified by a parameter
-							  );
+  ros::NodeHandle nh(name);
+  auto action_node = std::make_shared<plansys2::BTAction>(nh, name, 200ms);
 
   action_node->trigger_transition(ros::lifecycle::CONFIGURE);
 
