@@ -43,7 +43,7 @@ ActionExecutor::ActionExecutor(
 
   action_ = action;
   action_name_ = get_name(action);
-  node_->getBaseNode().getParam(action, action_params_);
+  action_params_ = get_params(action);
 
   start_execution_ = ros::Time::now();
   state_time_ = start_execution_;

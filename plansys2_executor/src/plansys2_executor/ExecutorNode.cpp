@@ -172,6 +172,9 @@ ExecutorNode::onConfigure()
   problem_client_ = std::make_shared<plansys2::ProblemExpertClient>();
   planner_client_ = std::make_shared<plansys2::PlannerClient>();
 
+  // Start action server
+  execute_plan_action_server_->start();
+  
   ROS_INFO("[%s] Configured", get_name());
   return true;
 }
@@ -247,6 +250,7 @@ ExecutorNode::get_ordered_sub_goals_service_callback(plansys2_msgs::GetOrderedSu
 std::optional<std::vector<plansys2_msgs::Tree>>
 ExecutorNode::getOrderedSubGoals()
 {
+  printf("Get ordered subgoals \n");
   if (!current_plan_.has_value()) {
     return {};
   }
@@ -346,13 +350,13 @@ void ExecutorNode::execute(plansys2_msgs::ExecutePlanGoalConstPtr _goal)
     executing_plan_pub_->publish(plansys2_msgs::Plan());
     return;
   }
-
+  
   executing_plan_pub_->publish(current_plan_.value());
 
   auto action_map = std::make_shared<std::map<std::string, ActionExecutionInfo>>();
   std::vector<std::string> action_timeouts_actions;
 
-  getBaseNode().getParam("action_timeouts.actions", action_timeouts_actions);
+  getBaseNode().getParam("action_timeouts/actions", action_timeouts_actions);
 
   for (const auto & plan_item : current_plan_.value().items) {
     auto index = BTBuilder::to_action_id(plan_item, 3);
@@ -367,10 +371,11 @@ void ExecutorNode::execute(plansys2_msgs::ExecutePlanGoalConstPtr _goal)
     (*action_map)[index].duration = plan_item.duration;
     std::string action_name = (*action_map)[index].durative_action_info->name;
     double dop;
+
     if (std::find(
         action_timeouts_actions.begin(), action_timeouts_actions.end(),
         action_name) != action_timeouts_actions.end() &&
-	getBaseNode().getParam("action_timeouts." + action_name + ".duration_overrun_percentage", dop) )
+	getBaseNode().getParam("action_timeouts/" + action_name + "/duration_overrun_percentage", dop) )
     {
       (*action_map)[index].duration_overrun_percentage = dop;
     }
@@ -379,7 +384,7 @@ void ExecutorNode::execute(plansys2_msgs::ExecutePlanGoalConstPtr _goal)
 	     action_name.c_str(),
       (*action_map)[index].duration_overrun_percentage);
   }
-
+  printf("Ordered subgoals \n");
   ordered_sub_goals_ = getOrderedSubGoals();
 
   std::string bt_builder_plugin;
@@ -423,6 +428,7 @@ void ExecutorNode::execute(plansys2_msgs::ExecutePlanGoalConstPtr _goal)
   factory.registerNodeType<ApplyAtEndEffect>("ApplyAtEndEffect");
   factory.registerNodeType<CheckTimeout>("CheckTimeout");
 
+
   auto bt_xml_tree = bt_builder->get_tree(current_plan_.value());
   std_msgs::String dotgraph_msg;
   bool enable_dot = false;
@@ -437,7 +443,7 @@ void ExecutorNode::execute(plansys2_msgs::ExecutePlanGoalConstPtr _goal)
   std::ofstream out(std::string("/tmp/") + get_namespace() + "/bt.xml");
   out << bt_xml_tree;
   out.close();
-
+  printf("Even here? \n");
   auto tree = factory.createTreeFromText(bt_xml_tree, blackboard);
 
 #ifdef ZMQ_FOUND
@@ -530,10 +536,11 @@ void ExecutorNode::execute(plansys2_msgs::ExecutePlanGoalConstPtr _goal)
 
 void ExecutorNode::handle_accepted()
 {
+  printf("Handle goal...\n");
   handle_goal();
   // if (not busy?)
   goal_ = execute_plan_action_server_->acceptNewGoal();
-  
+  printf("about to call execute \n");
   using namespace std::placeholders;
   std::thread th( &ExecutorNode::execute, this, goal_ );
   th.detach();

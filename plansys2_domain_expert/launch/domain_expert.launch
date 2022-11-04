@@ -7,7 +7,7 @@
 <!--  <group ns="$(arg namespace)"> -->
     <node name="domain_expert" pkg="plansys2_domain_expert" type="domain_expert_node" output="screen">
       <param name="model_file" value="$(arg model_file)"/>
-      <!--<rosparam load "$(arg params_file)"/>-->
+      <rosparam command="load" file="$(arg params_file)"/> 
     </node>
 <!--  </group> -->
 

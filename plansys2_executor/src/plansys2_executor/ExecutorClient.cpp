@@ -34,9 +34,10 @@ ExecutorClient::ExecutorClient()
 
   createActionClient();
 
-  get_ordered_sub_goals_client_ = node_->serviceClient<plansys2_msgs::GetOrderedSubGoals>(
-    "executor/get_ordered_sub_goals");
-  get_plan_client_ = node_->serviceClient<plansys2_msgs::GetPlan>("executor/get_plan");
+  std::string prefix = std::string("/executor/");
+  get_ordered_sub_goals_client_ = node_->serviceClient<plansys2_msgs::GetOrderedSubGoals>(prefix + 
+    "get_ordered_sub_goals");
+  get_plan_client_ = node_->serviceClient<plansys2_msgs::GetPlan>(prefix + "get_plan");
 }
 
 ExecutorClient::ExecutorClient(const std::string & node_name)
@@ -44,17 +45,20 @@ ExecutorClient::ExecutorClient(const std::string & node_name)
   node_ = std::make_shared<ros::NodeHandle>(ros::NodeHandle(node_name));
 
   createActionClient();
-
-  get_ordered_sub_goals_client_ = node_->serviceClient<plansys2_msgs::GetOrderedSubGoals>(
-    "executor/get_ordered_sub_goals");
-  get_plan_client_ = node_->serviceClient<plansys2_msgs::GetPlan>("executor/get_plan");
+  
+  std::string prefix = std::string("/executor/");
+  get_ordered_sub_goals_client_ = node_->serviceClient<plansys2_msgs::GetOrderedSubGoals>(prefix +
+    "get_ordered_sub_goals");
+  get_plan_client_ = node_->serviceClient<plansys2_msgs::GetPlan>(prefix + "get_plan");
 }
 
 void
 ExecutorClient::createActionClient()
 {
-  action_client_.reset( new actionlib::SimpleActionClient<plansys2_msgs::ExecutePlanAction>("execute_plan", true));
-
+  std::string prefix = std::string("/executor/");
+  std::string action_name = prefix + "execute_plan";
+  action_client_.reset( new actionlib::SimpleActionClient<plansys2_msgs::ExecutePlanAction>(action_name, true));
+  printf("Creating simple action client to: %s \n", action_name.c_str()); 
   if (!this->action_client_->waitForServer(ros::Duration(3.0))) {
     ROS_ERROR("%s -- Action server not available after waiting",
 	      getName().c_str());

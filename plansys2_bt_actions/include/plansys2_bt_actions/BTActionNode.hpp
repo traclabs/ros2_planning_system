@@ -18,17 +18,17 @@
 #include <memory>
 #include <string>
 
-#include "behaviortree_cpp_v3/action_node.h"
-#include "rclcpp/rclcpp.hpp"
-#include "lifecycle/managed_node.hpp"
-#include "rclcpp_action/rclcpp_action.hpp"
+#include <behaviortree_cpp_v3/action_node.h>
+#include <ros/ros.h>
+#include <ros/lifecycle/managed_node.h>
+//#include "rclcpp_action/rclcpp_action.hpp"
 
 namespace plansys2
 {
 
 using namespace std::chrono_literals;  // NOLINT
 
-template<class ActionT, class NodeT = rclcpp::Node>
+template<class ActionT, class ActionTGoal class NodeT = ros::lifecycle::ManagedNode>
 class BtActionNode : public BT::ActionNodeBase
 {
 public:
@@ -38,14 +38,14 @@ public:
     const BT::NodeConfiguration & conf)
   : BT::ActionNodeBase(xml_tag_name, conf), action_name_(action_name)
   {
-    node_ = config().blackboard->get<typename NodeT::SharedPtr>("node");
+    node_ = config().blackboard->get<std::shared_ptr<NodeT> >("node");
 
     // Get the required items from the blackboard
     server_timeout_ = 5s;
 
     // Initialize the input and output messages
-    goal_ = typename ActionT::Goal();
-    result_ = typename rclcpp_action::ClientGoalHandle<ActionT>::WrappedResult();
+    goal_ = typename ActionTGoal();
+    //result_ = typename rclcpp_action::ClientGoalHandle<ActionT>::WrappedResult();
 
     std::string remapped_action_name;
     if (getInput("server_name", remapped_action_name)) {
@@ -53,7 +53,8 @@ public:
     }
 
     // Give the derive class a chance to do any initialization
-    RCLCPP_INFO(node_->get_logger(), "\"%s\" BtActionNode initialized", xml_tag_name.c_str());
+    ROS_INFO("\"%s\" BtActionNode initialized",
+	     xml_tag_name.c_str());
   }
 
   BtActionNode() = delete;
@@ -66,19 +67,18 @@ public:
   bool createActionClient(const std::string & action_name)
   {
     // Now that we have the ROS node to use, create the action client for this BT action
-    action_client_ = rclcpp_action::create_client<ActionT>(node_, action_name);
+    action_client_.reset( new actionlib::SimpleActionClient<ActionT>(action_name, true));
 
     // Make sure the server is actually there before continuing
-    RCLCPP_INFO(node_->get_logger(), "Waiting for \"%s\" action server", action_name.c_str());
+    ROS_INFO("Waiting for \"%s\" action server", action_name.c_str());
 
-    bool success_waiting = action_client_->wait_for_action_server(server_timeout_);
+    bool success_waiting = action_client_->waitForServer(ros::Duration(server_timeout_.count()*1000));
 
     if (!success_waiting) {
-      RCLCPP_ERROR(
-        node_->get_logger(),
-        "Timeout (%ld secs) waiting for \"%s\" action server",
-        server_timeout_.count() * 1000,
-        action_name.c_str());
+      ROS_ERROR(
+		"Timeout (%ld secs) waiting for \"%s\" action server",
+		server_timeout_.count() * 1000,
+		action_name.c_str());
     }
 
     return success_waiting;
@@ -117,11 +117,11 @@ public:
 
   // Provides the opportunity for derived classes to log feedback, update the
   // goal, or cancel the goal
-  virtual void on_feedback(
+  /*virtual void on_feedback(
     const std::shared_ptr<const typename ActionT::Feedback> feedback)
   {
     (void)feedback;
-  }
+    }*/
 
   // Called upon successful completion of the action. A derived class can override this
   // method to put a value on the blackboard, for example.
@@ -151,15 +151,14 @@ public:
     if (status() == BT::NodeStatus::IDLE) {
       double server_timeout = 5.0;
       if (!getInput("server_timeout", server_timeout)) {
-        RCLCPP_INFO(
-          node_->get_logger(),
+        ROS_INFO(
           "Missing input port [server_timeout], "
           "using default value of 5s");
       }
       server_timeout_ = std::chrono::milliseconds(static_cast<int>(server_timeout * 1000.0));
 
       if (!createActionClient(action_name_)) {
-        RCLCPP_ERROR(node_->get_logger(), "Failed to create action client");
+        ROS_ERROR("Failed to create action client");
         return BT::NodeStatus::FAILURE;
       }
 
@@ -177,7 +176,7 @@ public:
     }
 
     // The following code corresponds to the "RUNNING" loop
-    if (rclcpp::ok() && !goal_result_available_) {
+    if (ros::ok() && !goal_result_available_) {
       auto goal_status = goal_handle_->get_status();
       if (goal_updated_ && (goal_status == action_msgs::msg::GoalStatus::STATUS_EXECUTING ||
         goal_status == action_msgs::msg::GoalStatus::STATUS_ACCEPTED))
@@ -319,17 +318,18 @@ protected:
   }
 
   std::string action_name_;
-  typename std::shared_ptr<rclcpp_action::Client<ActionT>> action_client_;
+  typename std::shared_ptr<actionlib::SimpleActionClient<ActionT> > action_client_;
 
   // All ROS2 actions have a goal and a result
-  typename ActionT::Goal goal_;
+  typename ActionTGoal goal_;
   bool goal_updated_{false};
   bool goal_result_available_{false};
+  
   typename rclcpp_action::ClientGoalHandle<ActionT>::SharedPtr goal_handle_;
   typename rclcpp_action::ClientGoalHandle<ActionT>::WrappedResult result_;
 
   // The node that will be used for any ROS operations
-  typename NodeT::SharedPtr node_;
+  typename std::shared_ptr<NodeT> node_;
 
   // The timeout value while waiting for response from a server when a
   // new action goal is sent or canceled

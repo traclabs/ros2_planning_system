@@ -49,16 +49,18 @@ BTAction::BTAction(
 
 bool BTAction::onConfigure()
 {
-  getBaseNode().getParam("action_name", action_);
-  getBaseNode().getParam("bt_xml_file", bt_xml_file_);
+  std::string prefix = get_name();
+  
+  getBaseNode().getParam(prefix + "/action_name", action_);
+  getBaseNode().getParam(prefix + "/bt_xml_file", bt_xml_file_);
 
-  ROS_INFO_STREAM(get_name() << "action_name: [" << action_ << "]");
-  ROS_INFO_STREAM(get_name() << "bt_xml_file: [" << bt_xml_file_ << "]");
+  ROS_INFO_STREAM(get_name() << " action_name: [" << action_ << "]");
+  ROS_INFO_STREAM(get_name() << " bt_xml_file: [" << bt_xml_file_ << "]");
 
   std::vector<std::string> plugin_lib_names;
-  getBaseNode().getParam("plugins", plugin_lib_names);
+  getBaseNode().getParam(prefix + prefix + "/plugins", plugin_lib_names); // TO FIX: REMOVE EXTRA NAMES IN YAML
   for (auto plugin : plugin_lib_names) {
-    ROS_INFO_STREAM(get_name() << "plugin: [" << plugin << "]");
+    ROS_INFO_STREAM(get_name() << " plugin: [" << plugin << "]");
   }
 
   BT::SharedLibrary loader;
