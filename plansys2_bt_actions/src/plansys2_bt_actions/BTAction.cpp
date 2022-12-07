@@ -22,7 +22,7 @@
 #include <memory>
 #include <chrono>
 
-#include <behaviortree_cpp_v3/utils/shared_library.h>
+#include <behaviortree_cpp/utils/shared_library.h>
 #include <plansys2_bt_actions/BTAction.hpp>
 
 namespace plansys2
