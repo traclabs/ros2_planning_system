@@ -30,6 +30,8 @@
 #include <lifecycle/lifecycle_publisher.h>
 #include <lifecycle/lifecycle_subscriber.h>
 
+#include <chrono>
+
 namespace plansys2
 {
 

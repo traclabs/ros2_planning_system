@@ -17,6 +17,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <chrono>
 
 #include <plansys2_executor/ExecutorClient.hpp>
 #include <plansys2_msgs/ActionExecutionInfo.h>
@@ -25,7 +26,7 @@ namespace plansys2
 {
 
 using namespace std::chrono_literals;
-using namespace std::placeholders;
+//using namespace std::placeholders;
 
 
 ExecutorClient::ExecutorClient()
@@ -174,9 +175,9 @@ ExecutorClient::on_new_goal_received(const plansys2_msgs::Plan & plan)
   goal.plan = plan;
 
   action_client_->sendGoal(goal,
-			   boost::bind(&ExecutorClient::result_callback, this, boost::placeholders::_1, boost::placeholders::_2),
+			   boost::bind(&ExecutorClient::result_callback, this, _1, _2),
 			   actionlib::SimpleActionClient<plansys2_msgs::ExecutePlanAction>::SimpleActiveCallback(),
-			   boost::bind(&ExecutorClient::feedback_callback, this, boost::placeholders::_1));
+			   boost::bind(&ExecutorClient::feedback_callback, this, _1));
 
 
   return true;
