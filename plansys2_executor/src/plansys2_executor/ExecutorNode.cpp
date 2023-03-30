@@ -40,10 +40,6 @@
 #include <behaviortree_cpp/utils/shared_library.h>
 #include <behaviortree_cpp/blackboard.h>
 
-#ifdef ZMQ_FOUND
-#include <behaviortree_cpp/loggers/bt_zmq_publisher.h>
-#endif
-
 #include <plansys2_executor/behavior_tree/execute_action_node.hpp>
 #include <plansys2_executor/behavior_tree/wait_action_node.hpp>
 #include <plansys2_executor/behavior_tree/check_action_node.hpp>
