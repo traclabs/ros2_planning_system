@@ -22,7 +22,7 @@
 #include <behaviortree_cpp/behavior_tree.h>
 #include <behaviortree_cpp/bt_factory.h>
 #include <behaviortree_cpp/xml_parsing.h>
-#include <behaviortree_cpp/loggers/bt_file_logger.h>
+#include <behaviortree_cpp/loggers/bt_file_logger_v2.h>
 #include <behaviortree_cpp/loggers/bt_minitrace_logger.h>
 
 #ifdef ZMQ_FOUND
@@ -69,7 +69,7 @@ private:
   #ifdef ZMQ_FOUND
   std::unique_ptr<BT::PublisherZMQ> publisher_zmq_;
   #endif
-  std::unique_ptr<BT::FileLogger> bt_file_logger_;
+  std::unique_ptr<BT::FileLogger2> bt_file_logger_;
   std::unique_ptr<BT::MinitraceLogger> bt_minitrace_logger_;
 };
 
