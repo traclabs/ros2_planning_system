@@ -36,6 +36,7 @@ public:
   using Ptr = std::shared_ptr<plansys2::PlanSolverBase>;
 
   PlanSolverBase() {}
+  virtual ~PlanSolverBase() = default;
 
   virtual void configure(std::shared_ptr<ros::lifecycle::ManagedNode> &,
 			 const std::string &) {}
