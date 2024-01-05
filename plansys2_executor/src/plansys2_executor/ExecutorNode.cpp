@@ -481,7 +481,7 @@ void ExecutorNode::execute(plansys2_msgs::ExecutePlanGoalConstPtr _goal)
       status = tree.tickOnce();
     } catch (std::exception & e) {
       std::cerr << e.what() << std::endl;
-      status == BT::NodeStatus::FAILURE;
+      status = BT::NodeStatus::FAILURE;
     }
 
     feedback.action_execution_status = get_feedback_info(action_map);
