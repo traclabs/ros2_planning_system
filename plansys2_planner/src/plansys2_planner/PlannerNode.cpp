@@ -62,7 +62,7 @@ PlannerNode::onConfigure()
       }
     }*/
     solver_types_.resize(solver_ids_.size());
-    printf("Solver types size: %d \n", solver_types_.size());
+    printf("Solver types size: %zu \n", solver_types_.size());
     for (size_t i = 0; i != solver_types_.size(); i++) {
       try {
         //solver_types_[i] = plansys2::get_plugin_type_param(node, solver_ids_[i]);

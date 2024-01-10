@@ -43,6 +43,7 @@ class PlannerNode : public ros::lifecycle::ManagedNode
 {
 public:
   PlannerNode(ros::NodeHandle _nh);
+  virtual ~PlannerNode() = default;
 
   using SolverMap = std::unordered_map<std::string, plansys2::PlanSolverBase::Ptr>;
 
