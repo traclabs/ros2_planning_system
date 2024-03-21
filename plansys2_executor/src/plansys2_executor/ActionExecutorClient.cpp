@@ -70,10 +70,18 @@ bool ActionExecutorClient::onConfigure()
     ROS_ERROR("%s -- action_name parameter not set", get_name().c_str());
     status_.state = plansys2_msgs::ActionPerformerStatus::FAILURE;
     status_.status_stamp = now();
+
+    return CallbackReturnT::FAILURE;
   }
+<<<<<<< HEAD
  
   if(!getBaseNode().getParam("specialized_arguments", specialized_arguments_))
     specialized_arguments_.clear();
+=======
+
+  get_parameter_or<std::vector<std::string>>(
+    "specialized_arguments", specialized_arguments_, std::vector<std::string>({}));
+>>>>>>> rolling
 
   double rate;
   if(!getBaseNode().getParam("rate", rate))
@@ -102,9 +110,15 @@ ActionExecutorClient::onActivate()
 { 
   status_.state = plansys2_msgs::ActionPerformerStatus::RUNNING;
   status_.status_stamp = now();
+<<<<<<< HEAD
   // nanoseconds?
   timer_ = std::make_shared<ros::WallTimer>(getBaseNode().createWallTimer(ros::WallDuration(rate_.count()/1e9), 
 							    std::bind(&ActionExecutorClient::do_work, this)));
+=======
+  start_time_ = now();
+  timer_ = create_wall_timer(
+    rate_, std::bind(&ActionExecutorClient::do_work, this));
+>>>>>>> rolling
 
 //  do_work();
 

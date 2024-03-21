@@ -47,7 +47,12 @@ public:
     const std::string & node_name,
     const std::chrono::nanoseconds & rate);
 
+<<<<<<< HEAD
   plansys2_msgs::ActionPerformerStatus get_internal_status() const {return status_;}
+=======
+  rclcpp::Time get_start_time() const {return start_time_;}
+  plansys2_msgs::msg::ActionPerformerStatus get_internal_status() const {return status_;}
+>>>>>>> rolling
 
 protected:
   virtual void do_work() {}
@@ -80,8 +85,14 @@ protected:
 
   std::shared_ptr<ros::lifecycle::LifecyclePublisher<plansys2_msgs::ActionPerformerStatus> >
     status_pub_;
+<<<<<<< HEAD
   std::shared_ptr<ros::WallTimer> hearbeat_pub_;
   plansys2_msgs::ActionPerformerStatus status_;
+=======
+  rclcpp::TimerBase::SharedPtr hearbeat_pub_;
+  plansys2_msgs::msg::ActionPerformerStatus status_;
+  rclcpp::Time start_time_;
+>>>>>>> rolling
 };
 
 }  // namespace plansys2

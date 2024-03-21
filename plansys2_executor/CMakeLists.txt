@@ -12,8 +12,8 @@ set(dependencies
     lifecycle_msgs
 #    rclcpp_cascade_lifecycle
     actionlib
-    plansys2_pddl_parser
     plansys2_core
+    plansys2_pddl_parser
     plansys2_msgs
     plansys2_domain_expert
     plansys2_problem_expert
@@ -21,17 +21,11 @@ set(dependencies
     pluginlib
     behaviortree_cpp
     std_msgs
+    std_srvs
 )
 
-
-
-find_package(ZMQ)
-if(ZMQ_FOUND)
-    message(STATUS "ZeroMQ found.")
-    add_definitions(-DZMQ_FOUND)
-else()
-  message(WARNING "ZeroMQ NOT found. Not including PublisherZMQ.")
-endif()
+find_package(eigen3_cmake_module REQUIRED)
+find_package(Eigen3 REQUIRED)
 
 find_package(catkin REQUIRED COMPONENTS
   ${dependencies}
@@ -56,6 +50,7 @@ set(EXECUTOR_SOURCES
   src/plansys2_executor/ActionExecutor.cpp
   src/plansys2_executor/ActionExecutorClient.cpp
   src/plansys2_executor/ExecutorNode.cpp
+  src/plansys2_executor/ComputeBT.cpp
   src/plansys2_executor/behavior_tree/execute_action_node.cpp
   src/plansys2_executor/behavior_tree/wait_action_node.cpp
   src/plansys2_executor/behavior_tree/check_action_node.cpp
@@ -69,10 +64,14 @@ set(EXECUTOR_SOURCES
 
 
 add_library(${PROJECT_NAME} SHARED ${EXECUTOR_SOURCES})
-target_link_libraries(${PROJECT_NAME} ${ZMQ_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
 
 add_executable(executor_node src/executor_node.cpp)
 target_link_libraries(executor_node ${PROJECT_NAME} ${catkin_LIBRARIES})
+
+add_executable(compute_bt src/compute_bt.cpp)
+target_link_libraries(compute_bt ${PROJECT_NAME})
+
 
 install(DIRECTORY include/${PROJECT_NAME}/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
@@ -99,6 +98,7 @@ install(TARGETS
   ${PROJECT_NAME}
   bt_builder_plugins
   executor_node
+  compute_bt
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

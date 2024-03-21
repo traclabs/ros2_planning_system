@@ -41,19 +41,29 @@ ProblemExpert::ProblemExpert(std::shared_ptr<DomainExpert> & domain_expert)
 bool
 ProblemExpert::addInstance(const plansys2::Instance & instance)
 {
-  if (!isValidType(instance.type)) {
+  plansys2::Instance lowercase_instance = instance;
+  std::transform(
+    lowercase_instance.type.begin(), lowercase_instance.type.end(), lowercase_instance.type.begin(),
+    [](unsigned char c) {return std::tolower(c);});
+  for (auto i = 0; i < lowercase_instance.sub_types.size(); ++i) {
+    std::transform(
+      lowercase_instance.sub_types[i].begin(), lowercase_instance.sub_types[i].end(),
+      lowercase_instance.sub_types[i].begin(), [](unsigned char c) {return std::tolower(c);});
+  }
+
+  if (!isValidType(lowercase_instance.type)) {
     return false;
   }
 
-  std::optional<plansys2::Instance> existing_instance = getInstance(instance.name);
+  std::optional<plansys2::Instance> existing_instance = getInstance(lowercase_instance.name);
   bool exist_instance = existing_instance.has_value();
 
-  if (exist_instance && existing_instance.value().type != instance.type) {
+  if (exist_instance && existing_instance.value().type != lowercase_instance.type) {
     return false;
   }
 
   if (!exist_instance) {
-    instances_.push_back(instance);
+    instances_.push_back(lowercase_instance);
   }
 
   return true;
@@ -398,8 +408,13 @@ ProblemExpert::clearKnowledge()
 bool
 ProblemExpert::isValidType(const std::string & type)
 {
+  std::string lowercase_type = type;
+  std::transform(
+    lowercase_type.begin(), lowercase_type.end(), lowercase_type.begin(),
+    [](unsigned char c) {return std::tolower(c);});
+
   auto valid_types = domain_expert_->getTypes();
-  auto it = std::find(valid_types.begin(), valid_types.end(), type);
+  auto it = std::find(valid_types.begin(), valid_types.end(), lowercase_type);
 
   return it != valid_types.end();
 }
@@ -616,7 +631,7 @@ ProblemExpert::getProblem()
   for (const auto & instance : instances_) {
     bool is_constant = domain.getType(instance.type)->parseConstant(instance.name).first;
     if (is_constant) {
-      std::cout << "Skipping adding constant as an problem :object: " << instance.name << " " <<
+      std::cout << "Skipping adding constant to problem :object: " << instance.name << " " <<
         instance.type << std::endl;
     } else {
       problem.addObject(instance.name, instance.type);
@@ -649,20 +664,8 @@ ProblemExpert::getProblem()
     problem.addInit(function.name, function.value, v);
   }
 
-  std::vector<plansys2_msgs::Node> predicates;
-  parser::pddl::getPredicates(predicates, goal_);
-
-  for (auto predicate : predicates) {
-    StringVec v;
-
-    for (size_t i = 0; i < predicate.parameters.size(); i++) {
-      v.push_back(predicate.parameters[i].name);
-    }
-
-    std::transform(predicate.name.begin(), predicate.name.end(), predicate.name.begin(), ::tolower);
-
-    problem.addGoal(predicate.name, v);
-  }
+  const std::string gs = parser::pddl::toString(goal_);
+  problem.addGoal(gs);
 
   std::ostringstream stream;
   stream << problem;
@@ -767,21 +770,14 @@ ProblemExpert::addProblem(const std::string & problem_str)
     }
   }
 
-  plansys2_msgs::Node node;
-  node.node_type = plansys2_msgs::Node::AND;
-  node.node_id = 0;
-  node.negate = false;
-
   plansys2_msgs::Tree goal;
-  goal.nodes.push_back(node);
-  for (auto ground : problem.goal) {
-    auto goal_node = ground->getTree(goal, domain);
-    std::cout << "Adding goal node: " <<
-      parser::pddl::toString(goal, goal_node->node_id) << std::endl;
-    goal.nodes[0].children.push_back(goal_node->node_id);
-  }
+  auto node = problem.goal->getTree(goal, domain);
   std::cout << "Adding Goal: " << parser::pddl::toString(goal) << std::endl;
-  setGoal(goal);
+  if (setGoal(goal)) {
+    std::cout << "Goal insertion ok" << std::endl;
+  } else {
+    std::cout << "Goal insertion failed" << std::endl;
+  }
 
   return true;
 }

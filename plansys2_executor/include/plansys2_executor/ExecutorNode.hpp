@@ -69,10 +69,13 @@ public:
     plansys2_msgs::GetPlan::Response &response);
 
 protected:
+<<<<<<< HEAD
   std::shared_ptr<ros::NodeHandle> node_;
 
   plansys2_msgs::ExecutePlanGoalConstPtr goal_;
   
+=======
+>>>>>>> rolling
   bool cancel_plan_requested_;
   std::optional<plansys2_msgs::Plan> current_plan_;
   std::optional<std::vector<plansys2_msgs::Tree>> ordered_sub_goals_;

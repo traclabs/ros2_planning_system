@@ -24,7 +24,8 @@ int main(int argc, char ** argv)
   std::shared_ptr<plansys2::DomainExpertNode> den; 
   den.reset( new plansys2::DomainExpertNode(nh) );
 
-  ros::spin();
+  ros::MultiThreadedSpinner spinner(4);
+  spinner.spin();
 
   return 0;
 }

@@ -29,6 +29,7 @@
 //#include <lifecycle_msgs/msg/state.h>
 //#include <lifecycle_msgs/msg/transition.h>
 #include <plansys2_msgs/GetPlan.h>
+#include <plansys2_msgs/ValidateDomain.h>
 
 #include <ros/ros.h>
 #include <lifecycle/managed_node.h>
@@ -57,6 +58,10 @@ public:
   bool get_plan_service_callback(plansys2_msgs::GetPlan::Request &request,
 				 plansys2_msgs::GetPlan::Response &response);
 
+  bool validate_domain_service_callback(
+    plansys2_msgs::ValidateDomain::Request &request,
+    plansys2_msgs::ValidateDomain::Response &response);
+
 private:
   pluginlib::ClassLoader<plansys2::PlanSolverBase> lp_loader_;
   SolverMap solvers_;
@@ -66,6 +71,7 @@ private:
   std::vector<std::string> solver_types_;
 
   ros::ServiceServer get_plan_service_;
+  ros::ServiceServer validate_domain_service_;
 };
 
   /*

@@ -19,7 +19,7 @@
 #include <string>
 #include <memory>
 
-#include <behaviortree_cpp/action_node.h>
+#include "behaviortree_cpp/action_node.h"
 
 #include <plansys2_problem_expert/ProblemExpertClient.hpp>
 #include <plansys2_executor/ActionExecutor.hpp>

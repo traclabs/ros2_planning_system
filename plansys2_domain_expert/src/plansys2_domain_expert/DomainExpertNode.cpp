@@ -18,8 +18,7 @@
 #include <memory>
 #include <vector>
 
-#include <plansys2_core/Utils.hpp>
-#include <plansys2_popf_plan_solver/popf_plan_solver.hpp>
+#include "plansys2_core/Utils.hpp"
 
 //#include "lifecycle_msgs/msg/state.hpp"
 
@@ -75,8 +74,7 @@ namespace plansys2
 bool
 DomainExpertNode::onConfigure()
 {
-  ROS_INFO("%s -- [%s] Configuring...",
-	   getNodeName().c_str(),
+  ROS_INFO("[%s] Configuring...",
 	   get_name().c_str());
   std::string model_file;
 
@@ -86,34 +84,51 @@ DomainExpertNode::onConfigure()
      return false;
   }
 
+  bool validate_using_planner_node;
+  getBaseNode().param("validate_using_planner_node", validate_using_planner_node, false);
+
   auto model_files = tokenize(model_file, ":");
 
-  std::ifstream domain_ifs(model_files[0]);
-  std::string domain_str((
-      std::istreambuf_iterator<char>(domain_ifs)),
-    std::istreambuf_iterator<char>());
-
-  auto planner = std::make_shared<plansys2::POPFPlanSolver>();
-
-  domain_expert_ = std::make_shared<DomainExpert>(domain_str);
-  
-  std::string name= domain_expert_->getName();
-  std::vector<std::string> types = domain_expert_->getTypes();
-    
-  bool check_valid = planner->is_valid_domain(domain_expert_->getDomain(), get_namespace());
-  if (!check_valid) {
-    ROS_ERROR("%s -- PDDL syntax error", getNodeName().c_str());
-    return false;
+  if (validate_using_planner_node) {
+    validate_domain_client_ = getBaseNode().serviceClient<plansys2_msgs::ValidateDomain>("planner/validate_domain");
+    while (!validate_domain_client_.waitForExistence(ros::Duration(3))) {
+      ROS_INFO_STREAM(
+        get_name() <<
+        validate_domain_client_.getService() <<
+          " service client: waiting for service to appear...");
+    }
+  } else {
+    popf_plan_solver_ = std::make_unique<plansys2::POPFPlanSolver>();
+    popf_plan_solver_->configure(shared_from_this(), "POPF");
   }
 
-  for (size_t i = 1; i < model_files.size(); i++) {
+
+  for (size_t i = 0; i < model_files.size(); i++) {
     std::ifstream domain_ifs(model_files[i]);
     std::string domain_str((
         std::istreambuf_iterator<char>(domain_ifs)),
       std::istreambuf_iterator<char>());
-    domain_expert_->extendDomain(domain_str);
 
-    bool check_valid = planner->is_valid_domain(domain_expert_->getDomain(), get_namespace());
+    if (i == 0) {
+      domain_expert_ = std::make_shared<DomainExpert>(domain_str);
+    } else {
+      domain_expert_->extendDomain(domain_str);
+    }
+
+    bool check_valid = true;
+    if (validate_using_planner_node) {
+      plansys2_msgs::ValidateDomain srv;
+      srv.request.domain = domain_expert_->getDomain();
+      
+      if(!validate_domain_client_.call(srv))
+      {
+        ROS_ERROR("%s -- Error calling service", getNodeName().c_str());
+        return false;
+      }
+      check_valid = srv.response.success;
+    } else {
+      check_valid = popf_plan_solver_->isDomainValid(domain_expert_->getDomain(), get_namespace());
+    }
 
     if (!check_valid) {
       ROS_ERROR("%s -- PDDL syntax error", getNodeName().c_str());

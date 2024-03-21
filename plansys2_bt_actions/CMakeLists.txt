@@ -4,15 +4,6 @@ set(CMAKE_CXX_STANDARD 17)
 
 cmake_minimum_required(VERSION 3.5)
 
-
-find_package(ZMQ)
-if(ZMQ_FOUND)
-    message(STATUS "ZeroMQ found.")
-    add_definitions(-DZMQ_FOUND)
-else()
-  message(WARNING "ZeroMQ NOT found. Not including PublisherZMQ.")
-endif()
-
 set(CMAKE_CXX_STANDARD 17)
 
 set(dependencies
@@ -21,7 +12,7 @@ set(dependencies
     lifecycle
     plansys2_executor
     behaviortree_cpp
-#    action_msgs
+    action_msgs
     lifecycle_msgs
 )
 
@@ -39,7 +30,6 @@ catkin_package(
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
-  ${ZMQ_INCLUDE_DIRS}
 )
 
 set(BT_ACTIONS_SOURCES
@@ -47,7 +37,7 @@ set(BT_ACTIONS_SOURCES
 )
 
 add_library(${PROJECT_NAME} SHARED ${BT_ACTIONS_SOURCES})
-target_link_libraries(${PROJECT_NAME} ${ZMQ_LIBRARIES} ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
 
 add_executable(bt_action_node  src/bt_action_node.cpp)
 target_link_libraries(bt_action_node ${PROJECT_NAME} ${catkin_LIBRARIES})

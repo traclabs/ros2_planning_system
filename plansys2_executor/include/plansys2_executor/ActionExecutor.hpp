@@ -19,10 +19,17 @@
 #include <memory>
 #include <vector>
 
+<<<<<<< HEAD
 #include <plansys2_msgs/ActionExecution.h>
 #include <plansys2_msgs/ActionExecutionInfo.h>
 #include <plansys2_msgs/DurativeAction.h>
 #include <behaviortree_cpp/behavior_tree.h>
+=======
+#include "plansys2_msgs/msg/action_execution.hpp"
+#include "plansys2_msgs/msg/action_execution_info.hpp"
+#include "plansys2_msgs/msg/durative_action.hpp"
+#include "behaviortree_cpp/behavior_tree.h"
+>>>>>>> rolling
 
 #include <ros/ros.h>
 #include <lifecycle/managed_node.h>
@@ -68,8 +75,14 @@ public:
   std::vector<std::string> get_action_params() const {return action_params_;}
   plansys2_msgs::ActionExecution last_msg;
 
+<<<<<<< HEAD
   ros::Time get_start_time() const {return start_execution_;}
   ros::Time get_status_time() const {return state_time_;}
+=======
+  rclcpp::Time get_start_time() const {return start_execution_;}
+  rclcpp::Time get_current_time() const {return node_->now();}
+  rclcpp::Time get_status_time() const {return state_time_;}
+>>>>>>> rolling
 
   std::string get_feedback() const {return feedback_;}
   float get_completion() const {return completion_;}
@@ -110,7 +123,13 @@ struct ActionExecutionInfo
   std::shared_ptr<ActionExecutor> action_executor = {nullptr};
   bool at_start_effects_applied = {false};
   bool at_end_effects_applied = {false};
+<<<<<<< HEAD
   std::shared_ptr<plansys2_msgs::DurativeAction> durative_action_info = {nullptr};
+=======
+  rclcpp::Time at_start_effects_applied_time;
+  rclcpp::Time at_end_effects_applied_time;
+  std::shared_ptr<plansys2_msgs::msg::DurativeAction> durative_action_info = {nullptr};
+>>>>>>> rolling
   std::string execution_error_info;
   double duration;
   double duration_overrun_percentage = -1.0;

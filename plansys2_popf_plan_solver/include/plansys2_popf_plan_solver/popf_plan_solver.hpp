@@ -15,6 +15,7 @@
 #ifndef PLANSYS2_POPF_PLAN_SOLVER__POPF_PLAN_SOLVER_HPP_
 #define PLANSYS2_POPF_PLAN_SOLVER__POPF_PLAN_SOLVER_HPP_
 
+#include <filesystem>
 #include <optional>
 #include <memory>
 #include <string>
@@ -27,20 +28,22 @@ namespace plansys2
 class POPFPlanSolver : public PlanSolverBase
 {
 private:
-  std::string parameter_name_;
+  std::string arguments_parameter_name_;
+  std::string output_dir_parameter_name_;
   std::shared_ptr<ros::lifecycle::ManagedNode> lc_node_;
 
 public:
   POPFPlanSolver();
 
-  void configure(std::shared_ptr<ros::lifecycle::ManagedNode> &, const std::string &);
+  std::optional<std::filesystem::path> create_folders(const std::string & node_namespace);
+  void configure(const std::shared_ptr<ros::lifecycle::ManagedNode> &, const std::string &);
 
   std::optional<plansys2_msgs::Plan> getPlan(
     const std::string & domain,
     const std::string & problem,
     const std::string & node_namespace = "");
 
-  bool is_valid_domain(
+  bool isDomainValid(
     const std::string & domain,
     const std::string & node_namespace = "");
 };

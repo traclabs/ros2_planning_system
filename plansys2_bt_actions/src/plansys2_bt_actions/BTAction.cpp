@@ -22,8 +22,13 @@
 #include <memory>
 #include <chrono>
 
+<<<<<<< HEAD
 #include <behaviortree_cpp/utils/shared_library.h>
 #include <plansys2_bt_actions/BTAction.hpp>
+=======
+#include "behaviortree_cpp/utils/shared_library.h"
+#include "plansys2_bt_actions/BTAction.hpp"
+>>>>>>> rolling
 
 namespace plansys2
 {
@@ -39,12 +44,15 @@ BTAction::BTAction(ros::NodeHandle nh,
     "plugins", std::vector<std::string>({}));
   declare_parameter<bool>("bt_file_logging", false);
   declare_parameter<bool>("bt_minitrace_logging", false);
+<<<<<<< HEAD
 #ifdef ZMQ_FOUND
   declare_parameter<bool>("enable_groot_monitoring", true);
   declare_parameter<int>("publisher_port", -1);
   declare_parameter<int>("server_port", -1);
   declare_parameter<int>("max_msgs_per_second", 25);
   #endif*/
+=======
+>>>>>>> rolling
 }
 
 bool BTAction::onConfigure()
@@ -69,12 +77,15 @@ bool BTAction::onConfigure()
     factory_.registerFromPlugin(loader.getOSName(plugin));
   }
 
+<<<<<<< HEAD
   //  auto options = rclcpp::NodeOptions().arguments(
   //  {"--ros-args", "-r", std::string("__node:=") + get_name() + "_bb_node"});
   //auto node = rclcpp::Node::make_shared("_", options);
   auto node = std::make_shared<ros::NodeHandle>(ros::NodeHandle( std::string(get_name()) + std::string("_bb_node") ));
+=======
+>>>>>>> rolling
   blackboard_ = BT::Blackboard::create();
-  blackboard_->set("node", node);
+  blackboard_->set("node", shared_from_this());
 
   return ActionExecutorClient::onConfigure();
 }
@@ -82,10 +93,14 @@ bool BTAction::onConfigure()
 bool
 BTAction::onCleanup()
 {
+<<<<<<< HEAD
   #ifdef ZMQ_FOUND
   publisher_zmq_.reset();
   #endif
   return ActionExecutorClient::onCleanup();
+=======
+  return ActionExecutorClient::on_cleanup(previous_state);
+>>>>>>> rolling
 }
 
 bool BTAction::onActivate()
@@ -100,8 +115,12 @@ bool BTAction::onActivate()
   }
 
   for (int i = 0; i < get_arguments().size(); i++) {
+    auto arg = get_arguments()[i];
+    RCLCPP_DEBUG_STREAM(
+      get_logger(),
+      "Setting arg" << i << " [" << arg << "]");
     std::string argname = "arg" + std::to_string(i);
-    blackboard_->set(argname, get_arguments()[i]);
+    blackboard_->set(argname, arg);
   }
 
   bool bfl = false; bool bml = false;
@@ -123,7 +142,11 @@ bool BTAction::onActivate()
       ROS_INFO_STREAM(get_name() <<
         "Logging to file: " << filename_extension);
       bt_file_logger_ =
+<<<<<<< HEAD
         std::make_unique<BT::FileLogger2>(tree_, std::filesystem::path(filename_extension));
+=======
+        std::make_unique<BT::FileLogger2>(tree_, filename_extension.c_str());
+>>>>>>> rolling
     }
 
     if (bml) {
@@ -134,6 +157,7 @@ bool BTAction::onActivate()
         std::make_unique<BT::MinitraceLogger>(tree_, filename_extension.c_str());
     }
   }
+<<<<<<< HEAD
   /*
 #ifdef ZMQ_FOUND
   int publisher_port = get_parameter("publisher_port").as_int();
@@ -162,6 +186,9 @@ bool BTAction::onActivate()
   }
 #endif
   */
+=======
+
+>>>>>>> rolling
   finished_ = false;
   return ActionExecutorClient::onActivate();
 }
@@ -169,10 +196,13 @@ bool BTAction::onActivate()
 bool
 BTAction::onDeactivate()
 {
+<<<<<<< HEAD
   #ifdef ZMQ_FOUND
   publisher_zmq_.reset();
   #endif
 
+=======
+>>>>>>> rolling
   bt_minitrace_logger_.reset();
   bt_file_logger_.reset();
   tree_.haltTree();

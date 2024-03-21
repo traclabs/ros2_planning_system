@@ -53,6 +53,7 @@ add_service_files(
   IsProblemGoalSatisfied.srv
   RemoveProblemGoal.srv
   ClearProblemKnowledge.srv
+  ValidateDomain.srv
 )
 
 add_action_files (

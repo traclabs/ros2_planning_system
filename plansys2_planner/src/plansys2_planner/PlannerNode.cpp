@@ -31,13 +31,6 @@ namespace plansys2
   default_ids_{},
   default_types_{}
 { 
-  std::string prefix(""); //("planner/");
-  get_plan_service_ = getBaseNode().advertiseService(prefix + "get_plan",
-						     &PlannerNode::get_plan_service_callback,
-						     this);
-
-  // No declaration needed in ROS1
-  //declare_parameter("plan_solver_plugins", default_ids_);
 }
 
 
@@ -91,7 +84,16 @@ PlannerNode::onConfigure()
 	     "POPF", "plansys2/POPFPlanSolver");
   }
 
-  ROS_INFO("[%s] Configured", get_name().c_str());
+  prefix = ""; //("planner/");
+  get_plan_service_ = getBaseNode().advertiseService(prefix + "get_plan",
+						     &PlannerNode::get_plan_service_callback,
+						     this);
+
+  get_plan_service_ = getBaseNode().advertiseService(prefix + "validate_domain",
+						     &PlannerNode::validate_domain_service_callback,
+						     this);
+
+  ROS_INFO("[%s] Configured", get_name());
   return true;
 }
 
@@ -138,13 +140,12 @@ PlannerNode::onError(const std::exception &)
   return false;
 }
 
-
 bool
 PlannerNode::get_plan_service_callback(
   plansys2_msgs::GetPlan::Request &request,
   plansys2_msgs::GetPlan::Response &response)
 {
-  auto plan = solvers_.begin()->second->getPlan(request.domain,
+  const auto plan = solvers_.begin()->second->getPlan(request.domain,
 						request.problem,
 						get_namespace());
 
@@ -156,6 +157,20 @@ PlannerNode::get_plan_service_callback(
     response.error_info = "Plan not found";
   }
 
+  return true;
+}
+
+bool
+PlannerNode::validate_domain_service_callback(
+  plansys2_msgs::ValidateDomain::Request &request,
+  plansys2_msgs::ValidateDomain::Response &response)
+{
+  response.success = solvers_.begin()->second->isDomainValid(
+    request.domain, get_namespace());
+
+  if (!response.success) {
+    response.error_info = "Domain is not valid";
+  }
   return true;
 }
 

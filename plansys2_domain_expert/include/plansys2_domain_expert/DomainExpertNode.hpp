@@ -18,11 +18,10 @@
 #include <optional>
 #include <memory>
 
-#include <plansys2_domain_expert/DomainExpert.hpp>
+#include "plansys2_domain_expert/DomainExpert.hpp"
+#include "plansys2_popf_plan_solver/popf_plan_solver.hpp"
 
 #include <std_msgs/String.h>
-//#include "lifecycle_msgs/msg/state.hpp"
-//#include "lifecycle_msgs/msg/transition.hpp"
 #include <plansys2_msgs/GetDomainName.h>
 #include <plansys2_msgs/GetDomainTypes.h>
 #include <plansys2_msgs/GetDomainActions.h>
@@ -31,6 +30,7 @@
 #include <plansys2_msgs/GetDomain.h>
 #include <plansys2_msgs/GetNodeDetails.h>
 #include <plansys2_msgs/GetStates.h>
+#include <plansys2_msgs/ValidateDomain.h>
 
 #include <ros/ros.h>
 #include <lifecycle/managed_node.h>
@@ -214,6 +214,10 @@ private:
   ros::ServiceServer get_domain_functions_service_;
   ros::ServiceServer get_domain_function_details_service_;
   ros::ServiceServer get_domain_service_;
+
+  ros::ServiceClient validate_domain_client_;
+
+  std::unique_ptr<plansys2::POPFPlanSolver> popf_plan_solver_;
 
   std::string node_name_;
 };

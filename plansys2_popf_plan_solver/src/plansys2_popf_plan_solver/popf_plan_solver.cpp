@@ -33,13 +33,48 @@ POPFPlanSolver::POPFPlanSolver()
 {
 }
 
-void POPFPlanSolver::configure(std::shared_ptr<ros::lifecycle::ManagedNode> & lc_node,
-			       const std::string & plugin_name)
+std::optional<std::filesystem::path>
+POPFPlanSolver::create_folders(const std::string & node_namespace)
 {
-  parameter_name_ = plugin_name + "/arguments";
+  std::string output_dir; 
+  lc_node_->getBaseNode().param(output_dir_parameter_name_, output_dir, std::filesystem::temp_directory_path().string());
+
+  // Allow usage of the HOME directory with the `~` character, returning if there is an error.
+  const char * home_dir = std::getenv("HOME");
+  if (output_dir[0] == '~' && home_dir) {
+    output_dir.replace(0, 1, home_dir);
+  } else if (!home_dir) {
+    ROS_ERROR("Invalid use of the ~ character in the path: %s", output_dir.c_str()
+    );
+    return std::nullopt;
+  }
+
+  // Create the necessary folders, returning if there is an error.
+  auto output_path = std::filesystem::path(output_dir);
+  if (node_namespace != "") {
+    for (auto p : std::filesystem::path(node_namespace) ) {
+      if (p != std::filesystem::current_path().root_directory()) {
+        output_path /= p;
+      }
+    }
+    try {
+      std::filesystem::create_directories(output_path);
+    } catch (std::filesystem::filesystem_error & err) {
+      ROS_ERROR("Error writing directories: %s", err.what());
+      return std::nullopt;
+    }
+  }
+  return output_path;
+}
+
+void POPFPlanSolver::configure(
+  const std::shared_ptr<ros::lifecycle::ManagedNode> & lc_node,
+  const std::string & plugin_name)
+{
   lc_node_ = lc_node;
-  // Backport: No need to declare parameters in ROS1
-  //lc_node_->declare_parameter<std::string>(parameter_name_, "");
+
+  arguments_parameter_name_ = plugin_name + "/arguments";
+  output_dir_parameter_name_ = plugin_name + "/output_dir";
 }
 
 std::optional<plansys2_msgs::Plan>
@@ -51,42 +86,44 @@ POPFPlanSolver::getPlan(const std::string & domain,
     return {};
   }
 
-  if (node_namespace != "") {
-    std::filesystem::path tp = std::filesystem::temp_directory_path();
-    for (auto p : std::filesystem::path(node_namespace) ) {
-      if (p != std::filesystem::current_path().root_directory()) {
-        tp /= p;
-      }
-    }
-    std::filesystem::create_directories(tp);
+  // Set up the folders
+  const auto output_dir_maybe = create_folders(node_namespace);
+  if (!output_dir_maybe) {
+    return {};
   }
+  const auto & output_dir = output_dir_maybe.value();
+  ROS_INFO("Writing planning results to %s.", output_dir.string().c_str());
 
+  // Perform planning
   plansys2_msgs::Plan ret;
-  std::ofstream domain_out("/tmp/" + node_namespace + "/domain.pddl");
+
+  const auto domain_file_path = output_dir / std::filesystem::path("domain.pddl");
+  std::ofstream domain_out(domain_file_path);
+
   domain_out << domain;
   domain_out.close();
 
-  std::ofstream problem_out("/tmp/" + node_namespace + "/problem.pddl");
+  const auto problem_file_path = output_dir / std::filesystem::path("problem.pddl");
+  std::ofstream problem_out(problem_file_path);
   problem_out << problem;
   problem_out.close();
 
 
-  std::string popf_bin = ros::package::getPath("plansys2_popf_plan_solver") + ("/common/bin/popf");
-  std::string extra_params;
-  lc_node_->getBaseNode().getParam(parameter_name_, extra_params);
-
-  int status = system(
-    (popf_bin +
-      extra_params +
-    " /tmp/" + node_namespace + "/domain.pddl /tmp/" + node_namespace +
-    "/problem.pddl > /tmp/" + node_namespace + "/plan").c_str());
+  const auto plan_file_path = output_dir / std::filesystem::path("plan");
+  std::string args;
+  lc_node_->getBaseNode().getParam(arguments_parameter_name_, args);
+  std::string popf_command = ros::package::getPath("plansys2_popf_plan_solver") + ("/common/bin/popf "); // ros2 run popf popf
+  const int status = system(
+    (popf_command + args + " " +
+    domain_file_path.string() + " " + problem_file_path.string() + " > " + plan_file_path.string())
+    .c_str());
 
   if (status == -1) {
     return {};
   }
 
   std::string line;
-  std::ifstream plan_file("/tmp/" + node_namespace + "/plan");
+  std::ifstream plan_file(plan_file_path);
   bool solution = false;
 
   if (plan_file.is_open()) {
@@ -124,7 +161,7 @@ POPFPlanSolver::getPlan(const std::string & domain,
 }
 
 bool
-POPFPlanSolver::is_valid_domain(
+POPFPlanSolver::isDomainValid(
   const std::string & domain,
   const std::string & node_namespace)
 {
@@ -132,43 +169,45 @@ POPFPlanSolver::is_valid_domain(
     return false;
   }
 
-  std::filesystem::path temp_dir = std::filesystem::temp_directory_path();
-  if (node_namespace != "") {
-    for (auto p : std::filesystem::path(node_namespace) ) {
-      if (p != std::filesystem::current_path().root_directory()) {
-        temp_dir /= p;
-      }
-    }
-    std::filesystem::create_directories(temp_dir);
+  // Set up the folders
+  const auto output_dir_maybe = create_folders(node_namespace);
+  if (!output_dir_maybe) {
+    return {};
   }
+  const auto & output_dir = output_dir_maybe.value();
+  ROS_INFO("Writing domain validation results to %s.",
+    output_dir.string().c_str()
+  );
 
-  std::ofstream domain_out(temp_dir.string() + "/check_domain.pddl");
+  // Perform domain validation
+  const auto domain_file_path = output_dir / std::filesystem::path("check_domain.pddl");
+  std::ofstream domain_out(domain_file_path);
   domain_out << domain;
   domain_out.close();
 
-  std::ofstream problem_out(temp_dir.string() + "/check_problem.pddl");
-
-  problem_out << "(define (problem void) (:domain plansys2) \n";
-  problem_out << "(:objects ) \n";
-  problem_out << "(:init ) \n";
-  problem_out << "(:goal ) \n"; 
-  problem_out << ") \n"; 
-     
+  const auto problem_file_path = output_dir / std::filesystem::path("check_problem.pddl");
+  std::ofstream problem_out(problem_file_path);
+  problem_out << "(define (problem void) (:domain plansys2))";
+  //problem_out << "(define (problem void) (:domain plansys2) \n";
+  //problem_out << "(:objects ) \n";
+  //problem_out << "(:init ) \n";
+  //problem_out << "(:goal ) \n"; 
+  //problem_out << ") \n"; // From behaviortree_cpp last hotfix. maybe no longer needed, have to test TODO  
   problem_out.close();
 
-  std::string popf_bin = ros::package::getPath("plansys2_popf_plan_solver") + ("/common/bin/popf");
-
-  std::string command_line = std::string(popf_bin + " " + temp_dir.string() + "/check_domain.pddl " + temp_dir.string() +
-    "/check_problem.pddl > " + temp_dir.string() + "/check.out");
-    
-  int status = system( command_line.c_str() );
+  const auto plan_file_path = output_dir / std::filesystem::path("check.out");
+  std::string popf_command = ros::package::getPath("plansys2_popf_plan_solver") + ("/common/bin/popf "); // "ros2 run popf popf " 
+  const int status = system(
+    (popf_command +
+    domain_file_path.string() + " " + problem_file_path.string() + " > " + plan_file_path.string())
+    .c_str());
 
   if (status == -1) {
     return false;
   }
 
   std::string line;
-  std::ifstream plan_file(temp_dir.string() + "/check.out");
+  std::ifstream plan_file(plan_file_path);
   bool solution = false;
   bool domain_error = false;
   bool problem_error = false;

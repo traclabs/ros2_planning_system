@@ -23,6 +23,7 @@
 #include <set>
 #include <vector>
 
+<<<<<<< HEAD
 #include <plansys2_executor/ExecutorNode.hpp>
 #include <plansys2_executor/ActionExecutor.hpp>
 #include <plansys2_executor/BTBuilder.hpp>
@@ -49,6 +50,34 @@
 #include <plansys2_executor/behavior_tree/check_timeout_node.hpp>
 #include <plansys2_executor/behavior_tree/apply_atstart_effect_node.hpp>
 #include <plansys2_executor/behavior_tree/apply_atend_effect_node.hpp>
+=======
+#include "plansys2_executor/ExecutorNode.hpp"
+#include "plansys2_executor/ActionExecutor.hpp"
+#include "plansys2_executor/BTBuilder.hpp"
+#include "plansys2_problem_expert/Utils.hpp"
+#include "plansys2_pddl_parser/Utils.h"
+
+#include "lifecycle_msgs/msg/state.hpp"
+#include "plansys2_msgs/msg/action_execution_info.hpp"
+#include "plansys2_msgs/msg/plan.hpp"
+
+#include "ament_index_cpp/get_package_share_directory.hpp"
+
+#include "behaviortree_cpp/behavior_tree.h"
+#include "behaviortree_cpp/bt_factory.h"
+#include "behaviortree_cpp/utils/shared_library.h"
+#include "behaviortree_cpp/blackboard.h"
+
+#include "plansys2_executor/behavior_tree/execute_action_node.hpp"
+#include "plansys2_executor/behavior_tree/wait_action_node.hpp"
+#include "plansys2_executor/behavior_tree/check_action_node.hpp"
+#include "plansys2_executor/behavior_tree/wait_atstart_req_node.hpp"
+#include "plansys2_executor/behavior_tree/check_overall_req_node.hpp"
+#include "plansys2_executor/behavior_tree/check_atend_req_node.hpp"
+#include "plansys2_executor/behavior_tree/check_timeout_node.hpp"
+#include "plansys2_executor/behavior_tree/apply_atstart_effect_node.hpp"
+#include "plansys2_executor/behavior_tree/apply_atend_effect_node.hpp"
+>>>>>>> rolling
 
 namespace plansys2
 {
@@ -76,6 +105,7 @@ using namespace std::chrono_literals;
     this->declare_parameter<double>(
       "action_timeouts." + action + ".duration_overrun_percentage",
       0.0);
+<<<<<<< HEAD
       }*/
   /*
 #ifdef ZMQ_FOUND
@@ -98,6 +128,33 @@ using namespace std::chrono_literals;
   get_plan_service_ = getBaseNode().advertiseService("executor/get_plan",
 						     &ExecutorNode::get_plan_service_callback,
 						     this);
+=======
+  }
+
+  execute_plan_action_server_ = rclcpp_action::create_server<ExecutePlan>(
+    this->get_node_base_interface(),
+    this->get_node_clock_interface(),
+    this->get_node_logging_interface(),
+    this->get_node_waitables_interface(),
+    "execute_plan",
+    std::bind(&ExecutorNode::handle_goal, this, _1, _2),
+    std::bind(&ExecutorNode::handle_cancel, this, _1),
+    std::bind(&ExecutorNode::handle_accepted, this, _1));
+
+  get_ordered_sub_goals_service_ = create_service<plansys2_msgs::srv::GetOrderedSubGoals>(
+    "executor/get_ordered_sub_goals",
+    std::bind(
+      &ExecutorNode::get_ordered_sub_goals_service_callback,
+      this, std::placeholders::_1, std::placeholders::_2,
+      std::placeholders::_3));
+
+  get_plan_service_ = create_service<plansys2_msgs::srv::GetPlan>(
+    "executor/get_plan",
+    std::bind(
+      &ExecutorNode::get_plan_service_callback,
+      this, std::placeholders::_1, std::placeholders::_2,
+      std::placeholders::_3));
+>>>>>>> rolling
 }
 
 
@@ -353,6 +410,12 @@ void ExecutorNode::execute(plansys2_msgs::ExecutePlanGoalConstPtr _goal)
 
   getBaseNode().getParam("action_timeouts/actions", action_timeouts_actions);
 
+  (*action_map)[":0"] = ActionExecutionInfo();
+  (*action_map)[":0"].action_executor = ActionExecutor::make_shared("(INIT)", shared_from_this());
+  (*action_map)[":0"].action_executor->set_internal_status(ActionExecutor::Status::SUCCESS);
+  (*action_map)[":0"].at_start_effects_applied = true;
+  (*action_map)[":0"].at_end_effects_applied = true;
+
   for (const auto & plan_item : current_plan_.value().items) {
     auto index = BTBuilder::to_action_id(plan_item, 3);
 
@@ -401,16 +464,42 @@ void ExecutorNode::execute(plansys2_msgs::ExecutePlanGoalConstPtr _goal)
   if (bt_builder_plugin == "SimpleBTBuilder") {
     bt_builder->initialize(action_bt_xml_);
   } else if (bt_builder_plugin == "STNBTBuilder") {
+<<<<<<< HEAD
     int precision;
     getBaseNode().getParam("action_time_precision", precision);
     bt_builder->initialize(start_action_bt_xml_, end_action_bt_xml_, precision);
+=======
+    bt_builder_plugin = "SimpleBTBuilder";
+    bt_builder->initialize(action_bt_xml_);
+    RCLCPP_WARN(get_logger(), "STN disabled until fixed. Using SimpleBTBuilder instead");
+    // auto precision = this->get_parameter("action_time_precision").as_int();
+    // bt_builder->initialize(start_action_bt_xml_, end_action_bt_xml_, precision);
+>>>>>>> rolling
   }
-  auto blackboard = BT::Blackboard::create();
 
-  blackboard->set("action_map", action_map);
-  blackboard->set("node", shared_from_this());
-  blackboard->set("domain_client", domain_client_);
-  blackboard->set("problem_client", problem_client_);
+  auto bt_xml_tree = bt_builder->get_tree(current_plan_.value());
+  if (bt_xml_tree.empty()) {
+    RCLCPP_ERROR(get_logger(), "Error computing behavior tree!");
+
+    result->success = false;
+    goal_handle->succeed(result);
+
+    // Publish void plan
+    executing_plan_pub_->publish(plansys2_msgs::msg::Plan());
+    return;
+  }
+
+  auto action_graph = bt_builder->get_graph();
+  std_msgs::msg::String dotgraph_msg;
+  dotgraph_msg.data = bt_builder->get_dotgraph(
+    action_map, this->get_parameter("enable_dotgraph_legend").as_bool(),
+    this->get_parameter("print_graph").as_bool());
+  dotgraph_pub_->publish(dotgraph_msg);
+
+  std::filesystem::path tp = std::filesystem::temp_directory_path();
+  std::ofstream out(std::string("/tmp/") + get_namespace() + "/bt.xml");
+  out << bt_xml_tree;
+  out.close();
 
   BT::BehaviorTreeFactory factory;
   factory.registerNodeType<ExecuteAction>("ExecuteAction");
@@ -423,6 +512,7 @@ void ExecutorNode::execute(plansys2_msgs::ExecutePlanGoalConstPtr _goal)
   factory.registerNodeType<ApplyAtEndEffect>("ApplyAtEndEffect");
   factory.registerNodeType<CheckTimeout>("CheckTimeout");
 
+<<<<<<< HEAD
 
   auto bt_xml_tree = bt_builder->get_tree(current_plan_.value());
   std_msgs::String dotgraph_msg;
@@ -433,14 +523,22 @@ void ExecutorNode::execute(plansys2_msgs::ExecutePlanGoalConstPtr _goal)
   dotgraph_msg.data = bt_builder->get_dotgraph(
     action_map, enable_dot, print_graph);
   dotgraph_pub_->publish(dotgraph_msg);
+=======
+  (*action_map)[":0"].at_start_effects_applied_time = now();
+  (*action_map)[":0"].at_end_effects_applied_time = now();
+>>>>>>> rolling
 
-  std::filesystem::path tp = std::filesystem::temp_directory_path();
-  std::ofstream out(std::string("/tmp/") + get_namespace() + "/bt.xml");
-  out << bt_xml_tree;
-  out.close();
+  auto blackboard = BT::Blackboard::create();
+  blackboard->set("action_map", action_map);
+  blackboard->set("action_graph", action_graph);
+  blackboard->set("node", shared_from_this());
+  blackboard->set("domain_client", domain_client_);
+  blackboard->set("problem_client", problem_client_);
+  blackboard->set("bt_builder", bt_builder);
 
   auto tree = factory.createTreeFromText(bt_xml_tree, blackboard);
 
+<<<<<<< HEAD
 #ifdef ZMQ_FOUND
   /*
 // ANA HACK -- FIRST LET'S CHECK STUFF WORKS WITHOUT ZMQ
@@ -472,6 +570,15 @@ void ExecutorNode::execute(plansys2_msgs::ExecutePlanGoalConstPtr _goal)
 						    execution_info_pub_->publish(msg);
 						  }
 						});
+=======
+  auto info_pub = create_wall_timer(
+    1s, [this, &action_map]() {
+      auto msgs = get_feedback_info(action_map);
+      for (const auto & msg : msgs) {
+        execution_info_pub_->publish(msg);
+      }
+    });
+>>>>>>> rolling
 
   ros::Rate rate(10);
   auto status = BT::NodeStatus::RUNNING;
@@ -519,10 +626,21 @@ void ExecutorNode::execute(plansys2_msgs::ExecutePlanGoalConstPtr _goal)
     i++;
   }
 
+<<<<<<< HEAD
   if (ros::ok()) {
     execute_plan_action_server_->setSucceeded(result);
     if (result.success) {
       ROS_INFO("%s -- Plan Succeeded", get_name().c_str());
+=======
+  if (rclcpp::ok()) {
+    if (cancel_plan_requested_) {
+      goal_handle->canceled(result);
+    } else {
+      goal_handle->succeed(result);
+    }
+    if (result->success) {
+      RCLCPP_INFO(this->get_logger(), "Plan Succeeded");
+>>>>>>> rolling
     } else {
       ROS_INFO("%s -- Plan Failed", get_name().c_str());
     }
@@ -553,8 +671,13 @@ ExecutorNode::get_feedback_info(
 
   for (const auto & action : *action_map) {
     if (!action.second.action_executor) {
+<<<<<<< HEAD
       ROS_WARN("%s -- Action executor does not exist for %s. Skipping", get_name().c_str(),
 	       action.first.c_str());
+=======
+      RCLCPP_WARN(
+        get_logger(), "Action executor does not exist for %s. Skipping", action.first.c_str());
+>>>>>>> rolling
       continue;
     }
 

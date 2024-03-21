@@ -42,9 +42,7 @@ WaitAction::tick()
   }
 
   if ((*action_map_)[action].action_executor != nullptr &&
-    (*action_map_)[action].action_executor->is_finished() &&
-    (*action_map_)[action].at_start_effects_applied &&
-    (*action_map_)[action].at_end_effects_applied)
+    (*action_map_)[action].action_executor->is_finished())
   {
     return BT::NodeStatus::SUCCESS;
   } else {

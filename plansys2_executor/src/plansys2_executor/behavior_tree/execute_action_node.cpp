@@ -52,6 +52,8 @@ ExecuteAction::tick()
   std::string action;
   getInput("action", action);
 
+  auto node = config().blackboard->get<rclcpp_lifecycle::LifecycleNode::SharedPtr>("node");
+
   size_t delim = action.find(":");
   auto action_expr = action.substr(0, delim);
 
@@ -64,8 +66,14 @@ ExecuteAction::tick()
   if (retval == BT::NodeStatus::FAILURE) {
     (*action_map_)[action].execution_error_info = "Error executing the action";
 
+<<<<<<< HEAD
     ROS_ERROR_STREAM(node_->get_name() <<
 		     "[" << action << "]" << (*action_map_)[action].execution_error_info);
+=======
+    RCLCPP_ERROR_STREAM(
+      node->get_logger(),
+      "[" << action << "]" << (*action_map_)[action].execution_error_info);
+>>>>>>> rolling
   }
 
   return retval;
